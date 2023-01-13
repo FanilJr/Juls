@@ -1,6 +1,6 @@
 ### Hi there 👋, Меня зовут Фаниль. Я студент университета Нетология
 #### приложение "Juls"
-![приложение "Juls"](https://i.ibb.co/Bs4TfZS/Juls.png)
+![приложение "Juls"](https://i.ibb.co/Bs4TfZS/Juls.png, https://i.ibb.co/m6Rxf9v/IMG-0692.jpg)
 (https://i.ibb.co/m6Rxf9v/IMG-0692.jpg)
 (https://i.ibb.co/b3HZCMj/IMG-0691.jpg)
 (https://i.ibb.co/88QfbPt/IMG-0690.jpg)
