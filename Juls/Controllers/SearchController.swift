@@ -15,6 +15,7 @@ class SearchViewController: UIViewController {
     var filteredUsers = [User]()
     var users = [User]()
     let juls = JulsView()
+    var refreshControler = UIRefreshControl()
     
     var searchController: UISearchController = {
         let search = UISearchController(searchResultsController: nil)
@@ -33,6 +34,7 @@ class SearchViewController: UIViewController {
         let tableView = UITableView(frame: .zero, style: .grouped)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
+        tableView.refreshControl = refreshControler
         tableView.register(CellIdTableViewCell.self, forCellReuseIdentifier: "CellIdTableViewCell")
         return tableView
     }()
@@ -41,6 +43,8 @@ class SearchViewController: UIViewController {
         super.viewDidLoad()
         navigationItem.titleView = juls
         layout()
+        refreshControler.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
+        refreshControler.attributedTitle = NSAttributedString(string: "Обновление")
         navigationItem.searchController = searchController
         searchController.searchBar.delegate = self
         tableView.delegate = self
@@ -57,11 +61,16 @@ class SearchViewController: UIViewController {
         tableView.reloadData()
         print("reaload SearchTable")
     }
+    
+    @objc func didTapRefresh() {
+        self.users.removeAll()
+        self.fetchUsers()
+    }
 
     func fetchUsers() {
         let ref = Database.database().reference().child("users")
         ref.observeSingleEvent(of: .value, with: { snapshot in
-            
+            self.tableView.refreshControl?.endRefreshing()
             guard let dictionaries = snapshot.value as? [String: Any] else { return }
             
             dictionaries.forEach { key, value in
