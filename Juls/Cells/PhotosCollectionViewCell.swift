@@ -10,8 +10,15 @@ import UIKit
 
 class PhotosCollectionViewCell: UICollectionViewCell {
     
-    let image: UIImageView = {
-        let image = UIImageView()
+    var post: Post? {
+        didSet {
+            guard let imageURL = post?.imageUrl else { return }
+            image.loadImage(urlString: imageURL)
+        }
+    }
+    
+    let image: CustomImageView = {
+        let image = CustomImageView()
         image.contentMode = .scaleAspectFill
         image.translatesAutoresizingMaskIntoConstraints = false
         return image
@@ -41,7 +48,5 @@ class PhotosCollectionViewCell: UICollectionViewCell {
         clipsToBounds = true
     }
  
-    func pullCell(photo: UIImage) {
-        image.image = photo
-    }
+
 }

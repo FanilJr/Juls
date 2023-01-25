@@ -149,7 +149,7 @@ class FavoriteViewController: UIViewController {
     }
 }
 
-////MARK: ПРИМЕР С ТАБЛИЦЕЙ
+////MARK: ПРИМЕР С ТАБЛИЦЕЙ*/
 //extension FavoriteViewController: UITableViewDelegate {
 //
 //    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -180,7 +180,7 @@ class FavoriteViewController: UIViewController {
 //
 //            return swipeActionsConfig
 //        }
-//}
+//}/*
 //
 //extension FavoriteViewController: UITableViewDataSource {
 //    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -198,116 +198,116 @@ class FavoriteViewController: UIViewController {
 //    }
 //}
 //
-extension FavoriteViewController: NSFetchedResultsControllerDelegate {
-
-    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        collectionView.beginInteractiveMovementForItem(at: IndexPath())
-    }
-
-    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType) {
-
-        switch type {
-        case .insert:
-            collectionView.insertSections(NSIndexSet(index: sectionIndex) as IndexSet)
-        case .delete:
-            collectionView.deleteSections(NSIndexSet(index: sectionIndex) as IndexSet)
-        case .update:
-            collectionView.reloadSections(NSIndexSet(index: sectionIndex) as IndexSet)
-        default:
-            return
-        }
-    }
-
-    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
-
-        switch type {
-        case .insert:
-            if let indexPath = indexPath {
-                collectionView.insertItems(at: [indexPath])
-            }
-        case .delete:
-            if let indexPath = indexPath {
-                collectionView.deleteItems(at: [indexPath])
-            }
-        case .update:
-            if let indexPath = indexPath {
-//                let post = CoreDataManager.shared.favoritePost[indexPath.row]
-                guard let cell = collectionView.cellForItem(at: indexPath as IndexPath) as? FavoriteCollectionViewCell else { break }
-//                cell.myCells(post)
-
-            }
-        case .move:
-            if let indexPath = indexPath {
-                collectionView.deleteItems(at: [indexPath])
-            }
-            if let newIndexPath = newIndexPath {
-                collectionView.insertItems(at: [newIndexPath])
-            }
-
-        @unknown default:
-            fatalError()
-        }
-    }
-
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        collectionView.endInteractiveMovement()
-    }
-}
-
-//MARK: ПРИМЕР С КОЛЛЕКЦИЕЙ
-extension FavoriteViewController: UICollectionViewDataSource {
-
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-//        return CoreDataManager.shared.favoritePost.count
-        return 1
-    }
-
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "FavoriteCollectionViewCell", for: indexPath) as! FavoriteCollectionViewCell
-//        let post = CoreDataManager.shared.favoritePost[indexPath.row]
-        cell.backgroundColor = .white
-//        cell.myCells(post)
-        return cell
-    }
-
-    func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        
-        let appDelegate = UIApplication.shared.delegate as? AppDelegate
-        let managedContext = appDelegate!.persistentContainer.viewContext
+//extension FavoriteViewController: NSFetchedResultsControllerDelegate {
+//
+//    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+//        collectionView.beginInteractiveMovementForItem(at: IndexPath())
+//    }
+//
+//    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType) {
+//
+//        switch type {
+//        case .insert:
+//            collectionView.insertSections(NSIndexSet(index: sectionIndex) as IndexSet)
+//        case .delete:
+//            collectionView.deleteSections(NSIndexSet(index: sectionIndex) as IndexSet)
+//        case .update:
+//            collectionView.reloadSections(NSIndexSet(index: sectionIndex) as IndexSet)
+//        default:
+//            return
+//        }
+//    }
+//
+//    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+//
+//        switch type {
+//        case .insert:
+//            if let indexPath = indexPath {
+//                collectionView.insertItems(at: [indexPath])
+//            }
+//        case .delete:
+//            if let indexPath = indexPath {
+//                collectionView.deleteItems(at: [indexPath])
+//            }
+//        case .update:
+//            if let indexPath = indexPath {
+////                let post = CoreDataManager.shared.favoritePost[indexPath.row]
+//                guard let cell = collectionView.cellForItem(at: indexPath as IndexPath) as? FavoriteCollectionViewCell else { break }
+////                cell.myCells(post)
+//
+//            }
+//        case .move:
+//            if let indexPath = indexPath {
+//                collectionView.deleteItems(at: [indexPath])
+//            }
+//            if let newIndexPath = newIndexPath {
+//                collectionView.insertItems(at: [newIndexPath])
+//            }
+//
+//        @unknown default:
+//            fatalError()
+//        }
+//    }
+//
+//    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+//        collectionView.endInteractiveMovement()
+//    }
+//}
+//
+////MARK: ПРИМЕР С КОЛЛЕКЦИЕЙ
+//extension FavoriteViewController: UICollectionViewDataSource {
+//
+//    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+////        return CoreDataManager.shared.favoritePost.count
+//        return 1
+//    }
+//
+//    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+//
+//        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "FavoriteCollectionViewCell", for: indexPath) as! FavoriteCollectionViewCell
+////        let post = CoreDataManager.shared.favoritePost[indexPath.row]
+//        cell.backgroundColor = .white
+////        cell.myCells(post)
+//        return cell
+//    }
+//*/
+//    func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+//        
+//        let appDelegate = UIApplication.shared.delegate as? AppDelegate
+//        let managedContext = appDelegate!.persistentContainer.viewContext
 //        let person = CoreDataManager.shared.favoritePost[indexPath.row]
 //        let personTextForShare = CoreDataManager.shared.favoritePost[indexPath.row].authorCell
 //        let personImageForShare = CoreDataManager.shared.favoritePost[indexPath.row].imageCell
 //
-        let configuration = UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
-            
-            let share = UIAction(title: "Share", image: UIImage(systemName:"square.and.arrow.up.circle")) { _ in
-                
+//        let configuration = UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
+//            
+//            let share = UIAction(title: "Share", image: UIImage(systemName:"square.and.arrow.up.circle")) { _ in
+//                
 //                let avc = UIActivityViewController(activityItems: [personTextForShare as Any, personImageForShare as Any], applicationActivities: nil)
-        
+//        
 //                self.present(avc, animated: true)
-            }
-            let remove = UIAction(title: "Remove Favorite", image: UIImage(systemName: "trash.circle"), attributes: .destructive) { _ in
-                
+//            }
+//            let remove = UIAction(title: "Remove Favorite", image: UIImage(systemName: "trash.circle"), attributes: .destructive) { _ in
+//                
 //                managedContext.delete(person as NSManagedObject)
 //                CoreDataManager.shared.favoritePost.remove(at: indexPath.row)
-                
-                do {
-                    try managedContext.save()
-                } catch
-                    let error as NSError {
-                    print("Could not save. \(error),\(error.userInfo)")
-                }
-                self.collectionView.deleteItems(at: [indexPath])
-            }
-            
-            let menu = UIMenu(title: "", children: [share, remove])
-            return menu
-        })
-        return configuration
-    }
-}
-
+//                
+//                do {
+//                    try managedContext.save()
+//                } catch
+//                    let error as NSError {
+//                    print("Could not save. \(error),\(error.userInfo)")
+//                }
+//                self.collectionView.deleteItems(at: [indexPath])
+//            }
+//            
+//            let menu = UIMenu(title: "", children: [share, remove])
+//            return menu
+//        })
+//        return configuration
+//    }
+//}
+/*
 extension FavoriteViewController: UICollectionViewDelegateFlowLayout {
 
     private var interSpace: CGFloat { return 8 }

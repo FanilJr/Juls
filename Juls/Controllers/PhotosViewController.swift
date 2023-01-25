@@ -6,13 +6,17 @@
 //
 
 import UIKit
+import Firebase
 
 class PhotosViewController: UIViewController {
 
+    var user: User?
+    var posts = [Post]()
+    
     let background: UIImageView = {
         let back = UIImageView()
         back.clipsToBounds = true
-        back.image = UIImage(named: "tekstura")
+        back.image = UIImage(named: "sunset")
         back.translatesAutoresizingMaskIntoConstraints = false
         return back
     }()
@@ -30,10 +34,11 @@ class PhotosViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "galery.title".localized
-        view.backgroundColor = .white
+        view.backgroundColor = .clear
+        title = "Альбом"
         navigationController?.navigationBar.isHidden = false
         layout()
+        fetchUser()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -46,7 +51,6 @@ class PhotosViewController: UIViewController {
     }
     
     private func layout() {
-        
         [background, collectionView].forEach { view.addSubview($0) }
         
         NSLayoutConstraint.activate([
@@ -65,17 +69,15 @@ class PhotosViewController: UIViewController {
 
 extension PhotosViewController: UICollectionViewDataSource {
     
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotosCollectionViewCell", for: indexPath) as! PhotosCollectionViewCell
-        cell.pullCell(photo: galery[indexPath.row])
-        cell.backgroundColor = .white
-        return cell
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        posts.count
     }
     
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        galery.count
-        
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotosCollectionViewCell", for: indexPath) as! PhotosCollectionViewCell
+        cell.post = posts[indexPath.row]
+        cell.backgroundColor = .white
+        return cell
     }
 }
 
@@ -99,5 +101,40 @@ extension PhotosViewController: UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return interSpace
+    }
+}
+
+extension PhotosViewController {
+    
+    func fetchUser() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        Database.fetchUserWithUID(uid: uid) { user in
+            self.user = user
+            self.collectionView.reloadData()
+            self.fetchPostsWithUser(user: user)
+            print("Перезагрузка в ProfileViewController fetchUser")
+        }
+    }
+    
+    func fetchPostsWithUser(user: User) {
+        
+    let ref = Database.database().reference().child("posts").child(user.uid)
+        
+        ref.observeSingleEvent(of: .value, with: { snapshot in
+        guard let dictionaries = snapshot.value as? [String: Any] else { return }
+        
+        dictionaries.forEach { key, value in
+            guard let dictionary = value as? [String: Any] else { return }
+            let post = Post(user: user, dictionary: dictionary)
+            self.posts.append(post)
+        }
+        self.posts.sort { p1, p2 in
+            return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+        }
+        self.collectionView.reloadData()
+        }) { error in
+            print("Failed to fetch posts:", error)
+            return
+        }
     }
 }

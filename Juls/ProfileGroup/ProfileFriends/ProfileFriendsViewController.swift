@@ -28,6 +28,7 @@ class ProfileFriendsViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
         tableView.register(MainFriendsTableViewCell.self, forCellReuseIdentifier: "MainFriendsTableViewCell")
+        tableView.register(PhotosFriendsTableViewCell.self, forCellReuseIdentifier: "PhotosFriendsTableViewCell")
         tableView.register(PostFriendsTableViewCell.self, forCellReuseIdentifier: "PostFriendsTableViewCell")
         return tableView
     }()
@@ -35,7 +36,6 @@ class ProfileFriendsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        view.backgroundColor = .white
         title = user?.username
         layout()
         tableView.delegate = self
@@ -86,6 +86,8 @@ extension ProfileFriendsViewController: UITableViewDataSource {
         switch section {
         case 0:
             return 1
+//        case 1:
+//            return 1
         case 1:
             return posts.count
         default:
@@ -128,10 +130,18 @@ extension ProfileFriendsViewController: UITableViewDataSource {
             cell.selectionStyle = UITableViewCell.SelectionStyle.none
             return cell
             
+//        case 1:
+//            let cell = tableView.dequeueReusableCell(withIdentifier: "PhotosFriendsTableViewCell", for: indexPath) as! PhotosFriendsTableViewCell
+//            cell.backgroundColor = .clear
+//            cell.user = user
+//            cell.selectionStyle = UITableViewCell.SelectionStyle.none
+//            cell.reloadInputViews()
+//            return cell
+//
         case 1:
             let cell = tableView.dequeueReusableCell(withIdentifier: "PostFriendsTableViewCell", for: indexPath) as! PostFriendsTableViewCell
             cell.backgroundColor = .clear
-            cell.post = posts[indexPath.item]
+            cell.post = posts[indexPath.row]
             cell.selectionStyle = UITableViewCell.SelectionStyle.none
             return cell
             
@@ -156,9 +166,9 @@ extension ProfileFriendsViewController: UITableViewDelegate {
         switch section {
         case 0:
             return UITableView.automaticDimension
+//        case 1:
+//            return 0
         case 1:
-            return 0
-        case 2:
             return 0
             
         default:

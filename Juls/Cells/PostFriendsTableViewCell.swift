@@ -10,13 +10,40 @@ import UIKit
 class PostFriendsTableViewCell: UITableViewCell {
 
     var post: Post? {
-        
         didSet {
-            self.descriptionText.text = post?.message
+            descriptionText.text = post?.message
+            nameAuthor.text = post?.user.username
             guard let imageUrl = post?.imageUrl else { return }
             postImage.loadImage(urlString: imageUrl)
+            guard let authorImageUrl = post?.user.picture else { return }
+            authorImage.loadImage(urlString: authorImageUrl)
         }
     }
+    
+    lazy var authorImage: CustomImageView = {
+        let imageView = CustomImageView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.layer.cornerRadius = 50/2
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
+    var blure: UIVisualEffectView = {
+        let bluereEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
+        let blure = UIVisualEffectView()
+        blure.effect = bluereEffect
+        blure.translatesAutoresizingMaskIntoConstraints = false
+        blure.clipsToBounds = true
+        return blure
+    }()
+    
+    lazy var nameAuthor: UILabel = {
+        let name = UILabel()
+        name.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
+        name.translatesAutoresizingMaskIntoConstraints = false
+        return name
+    }()
     
     lazy var descriptionText: UILabel = {
         let name = UILabel()
@@ -27,9 +54,10 @@ class PostFriendsTableViewCell: UITableViewCell {
     
     lazy var postImage: CustomImageView = {
         let imageView = CustomImageView()
-        imageView.contentMode = .scaleAspectFit
-        imageView.backgroundColor = .white
+        imageView.contentMode = .scaleAspectFill
+        imageView.backgroundColor = .gray
         imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.clipsToBounds = true
         return imageView
     }()
     
@@ -43,15 +71,29 @@ class PostFriendsTableViewCell: UITableViewCell {
     }
     
     func layout() {
-        [postImage, descriptionText].forEach { contentView.addSubview($0) }
+        [blure, authorImage, nameAuthor, postImage, descriptionText].forEach { contentView.addSubview($0) }
         
         NSLayoutConstraint.activate([
-            postImage.topAnchor.constraint(equalTo: contentView.topAnchor),
-            postImage.heightAnchor.constraint(equalTo: contentView.widthAnchor),
+            blure.topAnchor.constraint(equalTo: contentView.topAnchor),
+            blure.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            blure.heightAnchor.constraint(equalToConstant: 70),
+            blure.widthAnchor.constraint(equalTo: contentView.widthAnchor),
+            
+            authorImage.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10),
+            authorImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
+            authorImage.heightAnchor.constraint(equalToConstant: 50),
+            authorImage.widthAnchor.constraint(equalToConstant: 50),
+            
+            nameAuthor.centerYAnchor.constraint(equalTo: authorImage.centerYAnchor),
+            nameAuthor.leadingAnchor.constraint(equalTo: authorImage.trailingAnchor,constant: 10),
+            
+            postImage.topAnchor.constraint(equalTo: authorImage.bottomAnchor,constant: 10),
+            postImage.heightAnchor.constraint(equalTo: contentView.widthAnchor,constant: 100),
             postImage.widthAnchor.constraint(equalTo: contentView.widthAnchor),
             
             descriptionText.topAnchor.constraint(equalTo: postImage.bottomAnchor,constant: 20),
-            descriptionText.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            descriptionText.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
+            descriptionText.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             descriptionText.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -20)
         ])
     }

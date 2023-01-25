@@ -81,6 +81,9 @@
 		849ABB40296E7E3D000ABEA2 /* PostFriendsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849ABB3F296E7E3D000ABEA2 /* PostFriendsTableViewCell.swift */; };
 		849ABB4229700EAC000ABEA2 /* HomeTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849ABB4129700EAC000ABEA2 /* HomeTableViewCell.swift */; };
 		849ABB44297047F7000ABEA2 /* JulsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849ABB43297047F7000ABEA2 /* JulsView.swift */; };
+		84A42BFA29786439001FD432 /* PostViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A42BF929786439001FD432 /* PostViewController.swift */; };
+		84B3C167297E8CB80044EE9C /* PhotosFriendsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B3C166297E8CB80044EE9C /* PhotosFriendsTableViewCell.swift */; };
+		84B3C169297E8D7C0044EE9C /* CustomFriendsCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B3C168297E8D7B0044EE9C /* CustomFriendsCollectionViewCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -156,6 +159,9 @@
 		849ABB3F296E7E3D000ABEA2 /* PostFriendsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostFriendsTableViewCell.swift; sourceTree = "<group>"; };
 		849ABB4129700EAC000ABEA2 /* HomeTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTableViewCell.swift; sourceTree = "<group>"; };
 		849ABB43297047F7000ABEA2 /* JulsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JulsView.swift; sourceTree = "<group>"; };
+		84A42BF929786439001FD432 /* PostViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostViewController.swift; sourceTree = "<group>"; };
+		84B3C166297E8CB80044EE9C /* PhotosFriendsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosFriendsTableViewCell.swift; sourceTree = "<group>"; };
+		84B3C168297E8D7B0044EE9C /* CustomFriendsCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomFriendsCollectionViewCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -253,6 +259,8 @@
 				848882862967FA78006BE6A1 /* MainFriendTableView.swift */,
 				849ABB3F296E7E3D000ABEA2 /* PostFriendsTableViewCell.swift */,
 				849ABB4129700EAC000ABEA2 /* HomeTableViewCell.swift */,
+				84B3C166297E8CB80044EE9C /* PhotosFriendsTableViewCell.swift */,
+				84B3C168297E8D7B0044EE9C /* CustomFriendsCollectionViewCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -264,6 +272,7 @@
 				8488828B2968BC4B006BE6A1 /* HomeViewController.swift */,
 				8488827A29678494006BE6A1 /* SearchController.swift */,
 				848881E62964D022006BE6A1 /* SettingsViewController.swift */,
+				84A42BF929786439001FD432 /* PostViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -487,12 +496,14 @@
 				848881EE2964D0D7006BE6A1 /* PostFavoriteCoordinator.swift in Sources */,
 				848881CC2964CC4B006BE6A1 /* ViewControllerFactory.swift in Sources */,
 				848882282964D59A006BE6A1 /* LocalNotificationService.swift in Sources */,
+				84A42BFA29786439001FD432 /* PostViewController.swift in Sources */,
 				848882732964DB48006BE6A1 /* SettingsCoordinator.swift in Sources */,
 				848882772966555E006BE6A1 /* User.swift in Sources */,
 				848881D62964CE64006BE6A1 /* CustomCollectionViewCell.swift in Sources */,
 				848881CF2964CCD9006BE6A1 /* FavoriteTableViewCell.swift in Sources */,
 				848882482964D806006BE6A1 /* NewsListController.swift in Sources */,
 				8488827B29678494006BE6A1 /* SearchController.swift in Sources */,
+				84B3C167297E8CB80044EE9C /* PhotosFriendsTableViewCell.swift in Sources */,
 				8488821A2964D4D5006BE6A1 /* ColorMode.swift in Sources */,
 				848881F42964D11A006BE6A1 /* LoginCoordinator.swift in Sources */,
 				848881FA2964D181006BE6A1 /* PhotosCoordinator.swift in Sources */,
@@ -534,6 +545,7 @@
 				8488820A2964D3F9006BE6A1 /* LikeView.swift in Sources */,
 				848881FF2964D2AB006BE6A1 /* CustomTextfield.swift in Sources */,
 				848882902968D5F9006BE6A1 /* CustomMessagePost.swift in Sources */,
+				84B3C169297E8D7C0044EE9C /* CustomFriendsCollectionViewCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

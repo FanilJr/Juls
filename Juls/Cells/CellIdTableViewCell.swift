@@ -22,6 +22,7 @@ class CellIdTableViewCell: UITableViewCell {
         pi.contentMode = .scaleAspectFill
         pi.layer.cornerRadius = 80/2
         pi.clipsToBounds = true
+        pi.backgroundColor = .gray
         pi.translatesAutoresizingMaskIntoConstraints = false
         return pi
     }()

@@ -56,10 +56,10 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
     
     private func initTabBarController() {
         tabBarController.viewControllers = settingsViewControllers()
+        tabBarController.selectedIndex = 3
     }
     
     private func settingsViewControllers() -> [UIViewController] {
-        
         
         //MARK: NEWS
         let newsVc = viewControllerFactory.viewController(for: .news)
@@ -103,7 +103,7 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
             let logInCoordinator = LogInCoordinator(navigationController: navLogInVc, viewControllerFactory: viewControllerFactory)
             addDependency(logInCoordinator)
             logInCoordinator.start()
-            return [navLogInVc, navSearchVC, navHomeVC, navNewsVC, navSettingsVC]
+            return [navNewsVC, navSearchVC, navHomeVC, navLogInVc, navSettingsVC]
         }
         
         let profileViewModel = ProfileViewModel()
@@ -116,7 +116,7 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
         
         addDependency(profileCoordinator)
         profileCoordinator.start()
-        return [navProfileInVc, navSearchVC, navHomeVC, navNewsVC, navSettingsVC]
+        return [navNewsVC, navSearchVC, navHomeVC, navProfileInVc, navSettingsVC]
     }
     
     private func createNavController(for rootViewController: UIViewController, title: String, image: UIImage, selectImage: UIImage) -> UINavigationController {

@@ -137,7 +137,7 @@ final class ProfileHeaderView: UIView {
     lazy var phoneButton: UIButton = {
         let button = UIButton()
         button.addTarget(self, action: #selector(callNumber), for: .touchUpInside)
-        button.tintColor = .white
+        button.tintColor = #colorLiteral(red: 0.4666666687, green: 0.7647058964, blue: 0.2666666806, alpha: 1)
         button.setBackgroundImage(UIImage(systemName: "phone.circle"), for: .normal)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.clipsToBounds = true
@@ -148,7 +148,7 @@ final class ProfileHeaderView: UIView {
     lazy var messageButton: UIButton = {
         let button = UIButton()
         button.addTarget(self, action: #selector(openMessage), for: .touchUpInside)
-        button.tintColor = .white
+        button.tintColor = #colorLiteral(red: 0.2285125894, green: 0.5558477767, blue: 0.9294139743, alpha: 1)
         button.setBackgroundImage(UIImage(systemName: "message.circle"), for: .normal)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.clipsToBounds = true
@@ -158,7 +158,7 @@ final class ProfileHeaderView: UIView {
     lazy var albumButton: UIButton = {
         let button = UIButton()
         button.addTarget(self, action: #selector(postsCountPressed), for: .touchUpInside)
-        button.tintColor = .white
+        button.tintColor = #colorLiteral(red: 0.9764705896, green: 0.850980401, blue: 0.5490196347, alpha: 1)
         button.setBackgroundImage(UIImage(systemName: "photo.circle"), for: .normal)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.clipsToBounds = true
@@ -226,7 +226,7 @@ final class ProfileHeaderView: UIView {
         editButton.widthAnchor.constraint(equalToConstant: 30).isActive = true
         
         addButton.topAnchor.constraint(equalTo: containerView.topAnchor,constant: 20).isActive = true
-        addButton.leadingAnchor.constraint(equalTo: containerView.leadingAnchor,constant: 20).isActive = true
+        addButton.trailingAnchor.constraint(equalTo: editButton.leadingAnchor,constant: -20).isActive = true
         addButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
         addButton.widthAnchor.constraint(equalToConstant: 30).isActive = true
         
@@ -337,8 +337,6 @@ final class ProfileHeaderView: UIView {
         statusTextField.delegate = self
         snp()
         tapScreen()
-//        setupAuth()
-
     }
         
     required init?(coder: NSCoder) {

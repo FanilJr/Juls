@@ -1,13 +1,14 @@
 //
-//  CustomCollectionViewCell.swift
+//  CustomFriendsCollectionViewCell.swift
 //  Juls
 //
-//  Created by Fanil_Jr on 04.01.2023.
+//  Created by Fanil_Jr on 23.01.2023.
 //
 
+import Foundation
 import UIKit
 
-class CustomCollectionViewCell: UICollectionViewCell {
+class CustomFriendsCollectionViewCell: UICollectionViewCell {
     
     var post: Post? {
         

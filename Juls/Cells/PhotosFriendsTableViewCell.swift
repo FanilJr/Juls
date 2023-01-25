@@ -1,18 +1,15 @@
 //
-//  PhotosTableViewCell.swift
+//  PhotosFriendsTableViewCell.swift
 //  Juls
 //
-//  Created by Fanil_Jr on 04.01.2023.
+//  Created by Fanil_Jr on 23.01.2023.
 //
 
+import Foundation
 import UIKit
 import Firebase
 
-protocol PhotosTableDelegate: AnyObject {
-    func tuchUp()
-}
-
-class PhotosTableViewCell: UITableViewCell {
+class PhotosFriendsTableViewCell: UITableViewCell {
             
     weak var photosDelegate: PhotosTableDelegate?
     var user: User?
@@ -20,13 +17,13 @@ class PhotosTableViewCell: UITableViewCell {
 
     lazy var collectionViews: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .horizontal
+        layout.scrollDirection = .vertical
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.backgroundColor = .clear
         collectionView.translatesAutoresizingMaskIntoConstraints = false
-        collectionView.register(CustomCollectionViewCell.self, forCellWithReuseIdentifier: "CustomCollectionViewCell")
+        collectionView.register(CustomFriendsCollectionViewCell.self, forCellWithReuseIdentifier: "CustomFriendsCollectionViewCell")
         return collectionView
     }()
         
@@ -82,44 +79,29 @@ class PhotosTableViewCell: UITableViewCell {
             collectionViews.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
             collectionViews.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12),
             collectionViews.heightAnchor.constraint(equalToConstant: 120)
-//            collectionViews.heightAnchor.constraint(equalToConstant: 720)
-
         ])
     }
 }
 
    
 
-extension PhotosTableViewCell: UICollectionViewDataSource {
+extension PhotosFriendsTableViewCell: UICollectionViewDataSource {
         
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+            
         return posts.count
+            
     }
         
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CustomCollectionViewCell", for: indexPath) as! CustomCollectionViewCell
+            
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CustomFriendsCollectionViewCell", for: indexPath) as! CustomFriendsCollectionViewCell
         cell.post = posts[indexPath.row]
         return cell
     }
-    
-//    func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-//
-//        let recipe = galery[indexPath.row]
-//
-//        let configuration = UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
-//            let share = UIAction(title: "Share", image: UIImage(systemName:"square.and.arrow.up.circle")) { _ in
-//                print("Share")
-//                let avc = UIActivityViewController(activityItems: [recipe], applicationActivities: nil)
-//                print("В коллекции тап")
-//            }
-//            let menu = UIMenu(title: "", children: [share])
-//            return menu
-//        })
-//        return configuration
-//    }
 }
 
-extension PhotosTableViewCell: UICollectionViewDelegateFlowLayout {
+extension PhotosFriendsTableViewCell: UICollectionViewDelegateFlowLayout {
         
     private var interSpace: CGFloat { return 10 }
         
@@ -132,10 +114,10 @@ extension PhotosTableViewCell: UICollectionViewDelegateFlowLayout {
     }
 }
 
-extension PhotosTableViewCell {
+extension PhotosFriendsTableViewCell {
     
     func fetchUser() {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
+        guard let uid = user?.uid else { return }
         Database.fetchUserWithUID(uid: uid) { user in
             self.user = user
             self.collectionViews.reloadData()
@@ -166,4 +148,3 @@ extension PhotosTableViewCell {
         }
     }
 }
-

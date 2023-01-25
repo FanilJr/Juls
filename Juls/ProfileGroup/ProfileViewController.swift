@@ -16,12 +16,16 @@ class ProfileViewController: UIViewController {
     var user: User?
     var userId: String?
     var posts = [Post]()
+    var postsKeyArray = [String]()
     private let customMessagePost = CustomMessagePost()
+    private let postViewController = PostViewController()
     private let viewModel: ProfileViewModel
+    private let settingsView = SettingsViewController()
     private let mapView = MapView()
     private let saveView = SaveView()
     private let numbersSection = [PhotosTableViewCell(), MainTableViewCell(), PostTableViewCell()]
     private let header = ProfileHeaderView()
+    private let photosTable = PhotosTableViewCell()
     private let profileImageView = ProfileImageView()
     private let infoView = InfoView()
     private let imagePicker = UIImagePickerController()
@@ -33,6 +37,13 @@ class ProfileViewController: UIViewController {
     private var cellIndex = 0
     
     private let spinnerView: UIActivityIndicatorView = {
+        let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .whiteLarge)
+        activityView.hidesWhenStopped = true
+        activityView.translatesAutoresizingMaskIntoConstraints = false
+        return activityView
+    }()
+    
+    private let spinnerViewForPost: UIActivityIndicatorView = {
         let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .whiteLarge)
         activityView.hidesWhenStopped = true
         activityView.translatesAutoresizingMaskIntoConstraints = false
@@ -56,13 +67,12 @@ class ProfileViewController: UIViewController {
         back.translatesAutoresizingMaskIntoConstraints = false
         return back
     }()
-    
-    /// ВАЖНО!!! задал .insetGroup, чтобы корнер радиус применился к всем ячейкам автоматически, но при этом нельзя применить конкретно к тейбл вью корнер радиус, если поставить .grouped, тогда можно для тейбл вью поставить cornerRadius и задать конкретно к ячейкам например "if indexPath.row == 0 maskedCorner" и не забыть вернуть констрейнты с отступами лево и право тейбл вью
-    
+
     private lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .grouped)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
+        tableView.separatorStyle = .none
         tableView.register(MainTableViewCell.self, forCellReuseIdentifier: "MainTableViewCell")
         tableView.register(PostTableViewCell.self, forCellReuseIdentifier: "PostTableViewCell")
         tableView.register(PhotosTableViewCell.self, forCellReuseIdentifier: "PhotosTableViewCell")
@@ -87,13 +97,11 @@ class ProfileViewController: UIViewController {
         header.user = user
         setupTableView()
         imagePicker.delegate = self
-        imagePicker.allowsEditing = true
-        imagePicker.isEditing = true
         header.delegate = self
+        postViewController.delegatePost = self
         tableView.dataSource = self
         tableView.delegate = self
         fetchUser()
-//        fetchOrderedPosts()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -134,6 +142,7 @@ extension ProfileViewController: UITableViewDataSource {
     
     func numberOfSections(in tableView: UITableView) -> Int {
         return numbersSection.count
+//        return 2
     }
         
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -186,7 +195,7 @@ extension ProfileViewController: UITableViewDataSource {
             
         case 1:
             let cell = tableView.dequeueReusableCell(withIdentifier: "PhotosTableViewCell", for: indexPath) as! PhotosTableViewCell
-            cell.tuchNew = self
+            cell.photosDelegate = self
             cell.backgroundColor = .clear
             cell.selectionStyle = UITableViewCell.SelectionStyle.none
             return cell
@@ -195,7 +204,7 @@ extension ProfileViewController: UITableViewDataSource {
             let cell = tableView.dequeueReusableCell(withIdentifier: "PostTableViewCell", for: indexPath) as! PostTableViewCell
             cell.selectionStyle = UITableViewCell.SelectionStyle.none
             cell.backgroundColor = .clear
-            cell.post = posts[indexPath.item]
+            cell.post = posts[indexPath.row]
             return cell
 
         default:
@@ -253,24 +262,74 @@ extension ProfileViewController: UITableViewDelegate {
             return 0
         }
     }
+    
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        switch indexPath.section {
+        case 2:
+            let configuration = UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
+            
+                let share = UIAction(title: "Поделится", image: UIImage(systemName:"square.and.arrow.up.circle")) { _ in
+                }
+                let remove = UIAction(title: "Удалить", image: UIImage(systemName: "trash.circle"), attributes: .destructive) { _ in
+    
+                    let alert = UIAlertController(title: "Удаление поста", message: "Вы уверены?", preferredStyle: .alert)
+                    let alertOK = UIAlertAction(title: "удалить", style: .destructive)  { [self] _ in
+                        guard let uid = Auth.auth().currentUser?.uid else { return }
+                        self.getAllKays()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
+                            Database.database().reference().child("posts").child(uid).child(self.postsKeyArray[indexPath.row]).removeValue()
+                            self.posts.remove(at: indexPath.row)
+                            self.tableView.deleteRows(at: [indexPath], with: .automatic)
+                            self.postsKeyArray = []
+                            self.tableView.reloadData()
+                        })
+                    }
+                    let alertCancel = UIAlertAction(title: "Отмена", style: .default)
+                    [alertOK,alertCancel].forEach { alert.addAction($0) }
+                    self.present(alert, animated: true)
+                }
+                let menu = UIMenu(title: "", children: [share, remove])
+                return menu
+            })
+            return configuration
+        default:
+            return nil
+        }
+    }
+    
+    func getAllKays() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        Database.database().reference().child("posts").child(uid).observeSingleEvent(of: .value, with: { snapshot in
+            
+            for child in snapshot.children {
+                let snap = child as! Firebase.DataSnapshot
+                let key = snap.key
+                self.postsKeyArray.insert(key, at: 0)
+            }
+        })
+    }
 }
     
 extension ProfileViewController: UIImagePickerControllerDelegate & UINavigationControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        guard let pickedImage = info[UIImagePickerController.InfoKey.editedImage] as? UIImage else { return }
-        customMessagePost.customImage.image = pickedImage
-//        if currentImage?.image == customAlert.customImage.image {
-//            currentImage?.image = pickedImage
+        guard let pickedImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage else { return }
+        
+        if currentImage == postViewController.customImage {
+            currentImage?.image = pickedImage
             dismiss(animated: true)
-            print("post в имейдж пикер")
+            if let sheet = postViewController.sheetPresentationController {
+                sheet.detents = [.medium()]
+                sheet.prefersGrabberVisible = true
+            }
+            present(postViewController, animated: true)
             
-//        } else {
-//            currentImage?.image = pickedImage
-//            waitingSpinnerEnable(true)
-//            dismiss(animated: true)
-//            self.saveChanges()
-//            print("header в имейдж пикер релоад")
-//        }
+        } else if currentImage == header.avatarImageView {
+            currentImage?.image = pickedImage
+            waitingSpinnerEnable(true)
+            dismiss(animated: true)
+            self.saveChanges()
+            print("header в имейдж пикер релоад")
+        }
     }
 }
 
@@ -281,7 +340,7 @@ extension ProfileViewController {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         Database.fetchUserWithUID(uid: uid) { user in
             self.user = user
-            self.tableView.reloadData()
+//            self.tableView.reloadData()
             self.fetchPostsWithUser(user: user)
             print("Перезагрузка в ProfileViewController fetchUser")
         }
@@ -289,21 +348,23 @@ extension ProfileViewController {
     
     func fetchPostsWithUser(user: User) {
         
-    let ref = Database.database().reference().child("posts").child(user.uid)
+        let ref = Database.database().reference().child("posts").child(user.uid)
         
         ref.observeSingleEvent(of: .value, with: { snapshot in
-        guard let dictionaries = snapshot.value as? [String: Any] else { return }
+            guard let dictionaries = snapshot.value as? [String: Any] else { return }
         
-        dictionaries.forEach { key, value in
-            guard let dictionary = value as? [String: Any] else { return }
-            let post = Post(user: user, dictionary: dictionary)
-            self.posts.append(post)
-        }
+            dictionaries.forEach { key, value in
+                guard let dictionary = value as? [String: Any] else { return }
+                let post = Post(user: user, dictionary: dictionary)
+                self.posts.append(post)
+            }
             self.posts.sort { p1, p2 in
                 return p1.creationDate.compare(p2.creationDate) == .orderedDescending
             }
-        self.tableView.reloadData()
-        }) { error in
+            self.tableView.reloadData()
+            print("Перезагрузка в fetchPostsWithUser")
+            
+            }) { error in
             print("Failed to fetch posts:", error)
             return
         }
@@ -312,7 +373,7 @@ extension ProfileViewController {
     func saveChanges() {
         let imageName = NSUUID().uuidString
         let storedImage = Storage.storage().reference().child("profile_image").child(imageName)
-        
+
         if let uploadData = header.avatarImageView.image?.jpegData(compressionQuality: 0.3) {
             storedImage.putData(uploadData, metadata: nil) { metadata, error in
                 if let error {
@@ -354,13 +415,13 @@ extension ProfileViewController {
         }
         self.tableView.reloadData()
     }
-    
+    //MARK: Отправка поста
     func saveToDatabaseWithImageUrl(imageUrl: String) {
         
         print("PUSH PUSH PUSH")
         
-        guard let postImage = customMessagePost.customImage.image else { return }
-        guard let caption = customMessagePost.customTextfield.text else { return }
+        guard let postImage = postViewController.customImage.image else { return }
+        guard let caption = postViewController.customTextfield.text else { return }
         
         guard let uid = Auth.auth().currentUser?.uid else { return }
         let userPostRef = Database.database().reference().child("posts").child(uid)
@@ -375,21 +436,23 @@ extension ProfileViewController {
             }
             print("succes upload Post in Firebase")
         }
+        self.postViewController.waitingSpinnerPostEnable(false)
+        self.postViewController.sendPostButton.setTitle("Отправить", for: .normal)
+        self.postViewController.sendPostButton.setImage(UIImage(systemName: "paperplane.fill"), for: .normal)
+        
         AudioServicesPlaySystemSound(self.systemSoundID2)
+        self.dismiss(animated: true)
+        tabBarController?.tabBar.isHidden = false
         
         UIView.animate(withDuration: 0.5, animations: {
-            self.header.avatarImageView.alpha = 1
-            self.customMessagePost.transform = CGAffineTransform(translationX: 0, y: 1200)
-            self.blure.alpha = 0
+            self.posts.removeAll()
+            self.fetchUser()
         })
-        tabBarController?.tabBar.isHidden = false
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.customMessagePost.removeFromSuperview()
-            self.blure.removeFromSuperview()
+            self.postViewController.customImage.image = nil
+            self.postViewController.customTextfield.text = ""
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: {
-            self.customMessagePost.transform = CGAffineTransform(translationX: 0, y: -600)
-        })
     }
 }
 
@@ -513,7 +576,7 @@ extension ProfileViewController: MainEditDelegate {
 
 //MARK: Расширение перехода к Фотоальбому
 extension ProfileViewController: PhotosTableDelegate {
-    
+
     func tuchUp() {
         print("tuch по кнопке delegate из ProfileViewController")
         viewModel.send(.showPhotosVc)
@@ -574,7 +637,9 @@ extension ProfileViewController: HeaderDelegate {
     func imagePresentPicker() {
         print("Проверка presentImage")
         currentImage = header.avatarImageView
-        present(imagePicker, animated: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
+            self.present(self.imagePicker, animated: true)
+        })
     }
     
     func postCountsPresent() {
@@ -584,58 +649,82 @@ extension ProfileViewController: HeaderDelegate {
     func presentSettings() {
         viewModel.send(.showImageSettingsVc)
     }
+    
     func addPost() {
-        view.addSubview(blure)
-        view.addSubview(customMessagePost)
-        customMessagePost.delegateAlert = self
-            
-        NSLayoutConstraint.activate([
-            blure.topAnchor.constraint(equalTo: view.topAnchor),
-            blure.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            blure.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            blure.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-                
-            customMessagePost.topAnchor.constraint(equalTo: view.topAnchor,constant: -320),
-            customMessagePost.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 50),
-            customMessagePost.trailingAnchor.constraint(equalTo: view.trailingAnchor,constant: -50),
-            customMessagePost.heightAnchor.constraint(equalToConstant: 320),
-        ])
-        
-        UIView.animate(withDuration: 0.5, animations: {
-            self.header.avatarImageView.alpha = 0.0
-            self.customMessagePost.transform = CGAffineTransform(translationX: 0, y: 600)
-            self.customMessagePost.alpha = 1
-            self.blure.alpha = 1
-        })
-        tabBarController?.tabBar.isHidden = true
+        if let sheet = postViewController.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(postViewController, animated: true)
     }
 }
 
-//MARK: Открытие, и отправка ПОСТА
+//MARK: PostViewDelegate : Отправка поста sheetController
+extension ProfileViewController: PostDelegate {
+    func closedPost2() {
+        postViewController.customTextfield.text = ""
+        postViewController.customImage.image = nil
+        dismiss(animated: true)
+    }
+    
+    func presentAlertImagePicker2() {
+        dismiss(animated: true)
+        currentImage = postViewController.customImage
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
+            self.present(self.imagePicker, animated: true)
+        })
+    }
+
+    func pushPost2() {
+        guard let caption = postViewController.customTextfield.text, caption.count > 0 else { return }
+        let imageName = NSUUID().uuidString
+        let storedImage = Storage.storage().reference().child("posts").child(imageName)
+
+        if let uploadData = postViewController.customImage.image?.jpegData(compressionQuality: 0.3) {
+            storedImage.putData(uploadData, metadata: nil) { metadata, error in
+                if let error {
+                    print("error upload", error)
+                    return
+                }
+            storedImage.downloadURL(completion: { url, error in
+                if let error {
+                    print(error)
+                    return
+                }
+                guard let imageURL = url?.absoluteString else { return }
+                print("succes download Photo in Firebase Library")
+                self.saveToDatabaseWithImageUrl(imageUrl: imageURL)
+                })
+            }
+        }
+        self.tableView.reloadData()
+    }
+}
+
+//MARK: Открытие imagePicker, и загрузка ПОСТА в FireBase
 extension ProfileViewController: MessagePostDelegate {
     
     func presentAlertImagePicker() {
         print("che kavo add Camera")
-        self.currentImage = customMessagePost.customImage
-        present(imagePicker, animated: true)
-
+        currentImage = customMessagePost.customImage
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
+            self.present(self.imagePicker, animated: true)
+        })
     }
     
     func closedPost() {
         UIView.animate(withDuration: 0.5, animations: {
             self.header.avatarImageView.alpha = 1
-            self.customMessagePost.transform = CGAffineTransform(translationX: 0, y: 1200)
+            self.customMessagePost.transform = CGAffineTransform(translationX: 0, y: 320)
             self.blure.alpha = 0
         })
-        tabBarController?.tabBar.isHidden = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             self.customMessagePost.removeFromSuperview()
             self.blure.removeFromSuperview()
+            self.customMessagePost.customImage.image = nil
+            self.customMessagePost.customTextfield.text = ""
+            self.tabBarController?.tabBar.isHidden = false
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: {
-            self.customMessagePost.transform = CGAffineTransform(translationX: 0, y: -600)
-            self.currentImage?.image = nil
-        })
     }
     
     func pushPost() {

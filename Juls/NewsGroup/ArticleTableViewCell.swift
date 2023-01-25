@@ -84,7 +84,6 @@ class ArticleTableViewCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         constraints()
-//        postImage.image = UIImage(systemName: "photo.artframe")
     }
     
     required init?(coder: NSCoder) {

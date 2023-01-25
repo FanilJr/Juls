@@ -1,24 +1,31 @@
 //
-//  CustomAlert.swift
+//  PostViewController.swift
 //  Juls
 //
-//  Created by Fanil_Jr on 07.01.2023.
+//  Created by Fanil_Jr on 18.01.2023.
 //
 
 import Foundation
 import UIKit
 
-protocol MessagePostDelegate: AnyObject {
-    func presentAlertImagePicker()
-    func pushPost()
-    func closedPost()
+protocol PostDelegate: AnyObject {
+    func presentAlertImagePicker2()
+    func pushPost2()
+    func closedPost2()
 }
 
-class CustomMessagePost: UIView {
+class PostViewController: UIViewController {
     
-    weak var delegateAlert: MessagePostDelegate?
+    weak var delegatePost: PostDelegate?
     
-    private var background: UIView = {
+    private let spinnerViewForPost: UIActivityIndicatorView = {
+        let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .whiteLarge)
+        activityView.hidesWhenStopped = true
+        activityView.translatesAutoresizingMaskIntoConstraints = false
+        return activityView
+    }()
+    
+    let background: UIView = {
         let background = UIView()
         background.layer.cornerRadius = 14
         background.backgroundColor = .systemGray6
@@ -29,22 +36,22 @@ class CustomMessagePost: UIView {
         return background
     }()
     
+    lazy var customTextfield: CustomTextField = {
+        let textField = CustomTextField(placeholder: "Подумайте о хорошем.. ", textColor: .createColor(light: .black, dark: .white), font: UIFont.systemFont(ofSize: 16))
+        textField.backgroundColor = .systemGray6
+        textField.tintColor = UIColor(named: "#4885CC")
+        textField.returnKeyType = .done
+        textField.layer.borderWidth = 0.5
+        textField.layer.cornerRadius = 14
+        return textField
+    }()
+    
     let customImage: UIImageView = {
         let image = UIImageView()
         image.translatesAutoresizingMaskIntoConstraints = false
         image.contentMode = .scaleAspectFill
         image.clipsToBounds = true
         return image
-    }()
-    
-    lazy var customTextfield: CustomTextField = {
-        let textField = CustomTextField(placeholder: "Подумайте о хорошем.. ;)", textColor: .createColor(light: .black, dark: .white), font: UIFont.systemFont(ofSize: 16))
-        textField.backgroundColor = .systemGray6
-        textField.tintColor = UIColor(named: "#4885CC")
-        textField.keyboardType = .default
-        textField.layer.borderWidth = 0.5
-        textField.layer.cornerRadius = 14
-        return textField
     }()
     
     private lazy var customAddPhotoButton: UIButton = {
@@ -57,7 +64,7 @@ class CustomMessagePost: UIView {
         return button
     }()
     
-    private lazy var sendPostButton: UIButton = {
+    lazy var sendPostButton: UIButton = {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(pushPost), for: .touchUpInside)
@@ -80,60 +87,67 @@ class CustomMessagePost: UIView {
         return button
     }()
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        translatesAutoresizingMaskIntoConstraints = false
-        alpha = 0.0
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .clear
         layout()
     }
-        
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    
+    func waitingSpinnerPostEnable(_ active: Bool) {
+        if active {
+            spinnerViewForPost.startAnimating()
+        } else {
+            spinnerViewForPost.stopAnimating()
+        }
     }
     
     @objc func apendPhotoInPost() {
-        delegateAlert?.presentAlertImagePicker()
+        delegatePost?.presentAlertImagePicker2()
     }
     
     @objc func pushPost() {
-        delegateAlert?.pushPost()
+        delegatePost?.pushPost2()
+        sendPostButton.setTitle("", for: .normal)
+        sendPostButton.setImage(UIImage(), for: .normal)
+        waitingSpinnerPostEnable(true)
     }
     
     @objc func closedPost() {
-        delegateAlert?.closedPost()
+        delegatePost?.closedPost2()
     }
     
     func layout() {
-        [background,customTextfield,customImage,customAddPhotoButton,sendPostButton,cancelButton].forEach { addSubview($0) }
+        [background,customTextfield,customImage,customAddPhotoButton,sendPostButton,spinnerViewForPost,cancelButton].forEach { view.addSubview($0) }
         
         NSLayoutConstraint.activate([
-            background.topAnchor.constraint(equalTo: topAnchor),
-            background.leadingAnchor.constraint(equalTo: leadingAnchor),
-            background.trailingAnchor.constraint(equalTo: trailingAnchor),
-            background.bottomAnchor.constraint(equalTo: bottomAnchor),
+            background.topAnchor.constraint(equalTo: view.topAnchor),
+            background.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            background.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            background.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            customTextfield.topAnchor.constraint(equalTo: background.topAnchor,constant: 20),
+            customTextfield.topAnchor.constraint(equalTo: background.topAnchor,constant: 40),
             customTextfield.leadingAnchor.constraint(equalTo: background.leadingAnchor,constant: 20),
             customTextfield.trailingAnchor.constraint(equalTo: background.trailingAnchor,constant: -20),
             customTextfield.heightAnchor.constraint(equalToConstant: 40),
             
             customImage.topAnchor.constraint(equalTo: customTextfield.bottomAnchor,constant: 10),
             customImage.centerXAnchor.constraint(equalTo: background.centerXAnchor),
-            customImage.heightAnchor.constraint(equalToConstant: 150),
-            customImage.widthAnchor.constraint(equalToConstant: 80),
+            customImage.heightAnchor.constraint(equalToConstant: 300),
+            customImage.widthAnchor.constraint(equalToConstant: 160),
             
             sendPostButton.centerXAnchor.constraint(equalTo: background.centerXAnchor),
-            sendPostButton.bottomAnchor.constraint(equalTo: background.bottomAnchor,constant: -40),
+            sendPostButton.topAnchor.constraint(equalTo: customImage.bottomAnchor,constant: 10),
             sendPostButton.heightAnchor.constraint(equalToConstant: 40),
             sendPostButton.widthAnchor.constraint(equalToConstant: 150),
+            
+            spinnerViewForPost.centerXAnchor.constraint(equalTo: sendPostButton.centerXAnchor),
+            spinnerViewForPost.centerYAnchor.constraint(equalTo: sendPostButton.centerYAnchor),
   
             customAddPhotoButton.centerYAnchor.constraint(equalTo: sendPostButton.centerYAnchor),
             customAddPhotoButton.leadingAnchor.constraint(equalTo: background.leadingAnchor,constant: 25),
             
             cancelButton.centerYAnchor.constraint(equalTo: sendPostButton.centerYAnchor),
             cancelButton.trailingAnchor.constraint(equalTo: background.trailingAnchor,constant: -25),
-            
-            
         ])
     }
 }

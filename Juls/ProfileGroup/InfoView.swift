@@ -18,6 +18,7 @@ class InfoView: UIView {
     
     weak var delegateInfo: InfoDelegate?
     private var statusText: String = ""
+    private var datePicker = UIDatePicker()
     
     let viewAccaunt: UIView = {
         let viewAccaunt = UIView()
@@ -69,7 +70,7 @@ class InfoView: UIView {
         let textField = CustomTextField(placeholder: "Имя", textColor: .createColor(light: .black, dark: .white), font: UIFont.systemFont(ofSize: 16))
         textField.backgroundColor = .systemGray6
         textField.tintColor = UIColor(named: "#4885CC")
-        textField.keyboardType = .twitter
+        textField.returnKeyType = .continue
         textField.layer.borderWidth = 0.5
         textField.layer.cornerRadius = 10
         return textField
@@ -79,18 +80,18 @@ class InfoView: UIView {
         let textField = CustomTextField(placeholder: "Фамилия", textColor: .createColor(light: .black, dark: .white), font: UIFont.systemFont(ofSize: 16))
         textField.backgroundColor = .systemGray6
         textField.tintColor = UIColor(named: "#4885CC")
-        textField.keyboardType = .twitter
         textField.layer.borderWidth = 0.5
+        textField.returnKeyType = .continue
         textField.layer.cornerRadius = 10
         return textField
     }()
     
-    private lazy var ageTextField: CustomTextField = {
+    lazy var ageTextField: CustomTextField = {
         let textField = CustomTextField(placeholder: "Возраст", textColor: .createColor(light: .black, dark: .white), font: UIFont.systemFont(ofSize: 16))
         textField.backgroundColor = .systemGray6
         textField.tintColor = UIColor(named: "#4885CC")
-        textField.keyboardType = .twitter
         textField.layer.borderWidth = 0.5
+        textField.returnKeyType = .continue
         textField.layer.cornerRadius = 10
         return textField
     }()
@@ -99,7 +100,7 @@ class InfoView: UIView {
         let textField = CustomTextField(placeholder: "Семейное положение", textColor: .createColor(light: .black, dark: .white), font: UIFont.systemFont(ofSize: 16))
         textField.backgroundColor = .systemGray6
         textField.tintColor = UIColor(named: "#4885CC")
-        textField.keyboardType = .twitter
+        textField.returnKeyType = .continue
         textField.layer.borderWidth = 0.5
         textField.layer.cornerRadius = 10
         return textField
@@ -109,7 +110,7 @@ class InfoView: UIView {
         let textField = CustomTextField(placeholder: "Рост", textColor: .createColor(light: .black, dark: .white), font: UIFont.systemFont(ofSize: 16))
         textField.backgroundColor = .systemGray6
         textField.tintColor = UIColor(named: "#4885CC")
-        textField.keyboardType = .twitter
+        textField.returnKeyType = .continue
         textField.layer.borderWidth = 0.5
         textField.layer.cornerRadius = 10
         return textField
@@ -119,7 +120,7 @@ class InfoView: UIView {
         let textField = CustomTextField(placeholder: "Привычки", textColor: .createColor(light: .black, dark: .white), font: UIFont.systemFont(ofSize: 16))
         textField.backgroundColor = .systemGray6
         textField.tintColor = UIColor(named: "#4885CC")
-        textField.keyboardType = .twitter
+        textField.returnKeyType = .done
         textField.layer.borderWidth = 0.5
         textField.layer.cornerRadius = 10
         return textField
