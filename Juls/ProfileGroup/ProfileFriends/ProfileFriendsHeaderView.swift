@@ -128,7 +128,7 @@ class ProfileFriendsHeaderView: UIView {
         let button = UIButton()
         button.addTarget(self, action: #selector(callNumber), for: .touchUpInside)
         button.tintColor = #colorLiteral(red: 0.4666666687, green: 0.7647058964, blue: 0.2666666806, alpha: 1)
-        button.setBackgroundImage(UIImage(systemName: "phone.circle"), for: .normal)
+        button.setBackgroundImage(UIImage(named: "phone.circle.fill@100x"), for: .normal)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.clipsToBounds = true
         return button
@@ -139,7 +139,7 @@ class ProfileFriendsHeaderView: UIView {
         let button = UIButton()
         button.addTarget(self, action: #selector(openMessage), for: .touchUpInside)
         button.tintColor = #colorLiteral(red: 0.2285125894, green: 0.5558477767, blue: 0.9294139743, alpha: 1)
-        button.setBackgroundImage(UIImage(systemName: "message.circle"), for: .normal)
+        button.setBackgroundImage(UIImage(named: "message.circle.fill@100x"), for: .normal)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.clipsToBounds = true
         return button
@@ -149,7 +149,7 @@ class ProfileFriendsHeaderView: UIView {
         let button = UIButton()
         button.addTarget(self, action: #selector(followFriend), for: .touchUpInside)
         button.tintColor = .white
-        button.setBackgroundImage(UIImage(systemName: "heart.circle"), for: .normal)
+        button.setBackgroundImage(UIImage(named: "heart.circle.fill@100xWhite"), for: .normal)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.clipsToBounds = true
         return button
@@ -267,7 +267,7 @@ class ProfileFriendsHeaderView: UIView {
         guard let userId = user?.uid else { return }
         
         let ref = Database.database().reference().child("following").child(myId)
-        if self.followButton.backgroundImage(for: .normal) == UIImage(systemName: "heart.circle") {
+        if self.followButton.backgroundImage(for: .normal) == UIImage(named: "heart.circle.fill@100xWhite") {
             let values = [userId: 1]
             ref.updateChildValues(values) { error, ref in
                 if let error {
@@ -276,7 +276,7 @@ class ProfileFriendsHeaderView: UIView {
                 }
                 DispatchQueue.main.async {
                     print("succes followed user: ", self.user?.username ?? "")
-                    self.followButton.setBackgroundImage(UIImage(systemName: "heart.circle.fill"), for: .normal)
+                    self.followButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100x"), for: .normal)
                     self.followButton.tintColor = .red
                 }
             }
@@ -288,7 +288,7 @@ class ProfileFriendsHeaderView: UIView {
                 }
                 DispatchQueue.main.async {
                     print("succeful unfollow user: ", self.user?.username ?? "")
-                    self.followButton.setBackgroundImage(UIImage(systemName: "heart.circle"), for: .normal)
+                    self.followButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100xWhite"), for: .normal)
                     self.followButton.tintColor = .white
                 }
             }
@@ -302,10 +302,10 @@ class ProfileFriendsHeaderView: UIView {
         Database.database().reference().child("following").child(myId).child(userId).observe(.value) { snapshot in
                 
             if let isFollowing = snapshot.value as? Int, isFollowing == 1 {
-                self.followButton.setBackgroundImage(UIImage(systemName: "heart.circle.fill"), for: .normal)
+                self.followButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100x"), for: .normal)
                 self.followButton.tintColor = .red
             } else {
-                self.followButton.setBackgroundImage(UIImage(systemName: "heart.circle"), for: .normal)
+                self.followButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100xWhite"), for: .normal)
                 self.followButton.tintColor = .white
             }
         }

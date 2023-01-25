@@ -9,8 +9,8 @@ import UIKit
 
 class CustomCollectionViewCell: UICollectionViewCell {
     
+    var user: User?
     var post: Post? {
-        
         didSet {
             guard let imageURL = post?.imageUrl else { return }
             image.loadImage(urlString: imageURL)
@@ -19,6 +19,7 @@ class CustomCollectionViewCell: UICollectionViewCell {
     
     let image: CustomImageView = {
         let image = CustomImageView()
+        image.backgroundColor = .gray
         image.contentMode = .scaleAspectFill
         image.translatesAutoresizingMaskIntoConstraints = false
         return image
@@ -46,6 +47,11 @@ class CustomCollectionViewCell: UICollectionViewCell {
             image.trailingAnchor.constraint(equalTo: trailingAnchor),
             image.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
+    }
+    
+    func configurePhotos(post: Post?) {
+        guard let imageUrl = post?.imageUrl else { return }
+        image.loadImage(urlString: imageUrl)
     }
     
     func pullCell(photo: UIImage) {

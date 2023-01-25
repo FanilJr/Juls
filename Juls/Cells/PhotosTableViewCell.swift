@@ -15,12 +15,27 @@ protocol PhotosTableDelegate: AnyObject {
 class PhotosTableViewCell: UITableViewCell {
             
     weak var photosDelegate: PhotosTableDelegate?
-    var user: User?
-    var posts = [Post]()
+    
+    var user: User? {
+        didSet {
+            label.text = user?.name
+        }
+    }
+    var post = [Post?]()
+    
+    var blureForCell: UIVisualEffectView = {
+        let bluereEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
+        let blure = UIVisualEffectView()
+        blure.effect = bluereEffect
+        blure.translatesAutoresizingMaskIntoConstraints = false
+        blure.clipsToBounds = true
+        blure.layer.cornerRadius = 14
+        return blure
+    }()
 
     lazy var collectionViews: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
-        layout.scrollDirection = .horizontal
+        layout.scrollDirection = .vertical
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.dataSource = self
         collectionView.delegate = self
@@ -32,7 +47,6 @@ class PhotosTableViewCell: UITableViewCell {
         
     private let label: UILabel = {
         let label = UILabel()
-        label.text = "profile.photos".localized
         label.textColor = .createColor(light: .black, dark: .white)
         label.font = .systemFont(ofSize: 24, weight: .bold)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -52,7 +66,7 @@ class PhotosTableViewCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         layout()
-        fetchUser()
+        
     }
     
     override func awakeFromNib() {
@@ -74,31 +88,35 @@ class PhotosTableViewCell: UITableViewCell {
     
     private func layout() {
             
-        [collectionViews].forEach { contentView.addSubview($0) }
+        [blureForCell,collectionViews].forEach { contentView.addSubview($0) }
                             
         NSLayoutConstraint.activate([
+            blureForCell.topAnchor.constraint(equalTo: contentView.topAnchor),
+            blureForCell.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 5),
+            blureForCell.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -5),
+            blureForCell.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -5),
+            
             collectionViews.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 12),
             collectionViews.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 12),
             collectionViews.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
             collectionViews.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12),
-            collectionViews.heightAnchor.constraint(equalToConstant: 120)
-//            collectionViews.heightAnchor.constraint(equalToConstant: 720)
-
         ])
     }
 }
 
-   
+extension PhotosTableViewCell: UICollectionViewDelegate {
+
+}
 
 extension PhotosTableViewCell: UICollectionViewDataSource {
         
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return posts.count
+        return post.count
     }
         
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CustomCollectionViewCell", for: indexPath) as! CustomCollectionViewCell
-        cell.post = posts[indexPath.row]
+        cell.configurePhotos(post: post[indexPath.row])
         return cell
     }
     
@@ -128,42 +146,38 @@ extension PhotosTableViewCell: UICollectionViewDelegateFlowLayout {
         let width = (collectionView.bounds.width - interSpace * 3) / 3
             
         return CGSize(width: width, height: width)
-            
     }
 }
 
 extension PhotosTableViewCell {
     
-    func fetchUser() {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        Database.fetchUserWithUID(uid: uid) { user in
-            self.user = user
-            self.collectionViews.reloadData()
-            self.fetchPostsWithUser(user: user)
-            print("Перезагрузка в ProfileViewController fetchUser")
-        }
+    func configureFetchUser(user: User?) {
+        self.user = user
+        self.post.removeAll()
+        self.configureFetchPostsUser(user: user)
     }
     
-    func fetchPostsWithUser(user: User) {
-        
-    let ref = Database.database().reference().child("posts").child(user.uid)
+    func configureFetchPostsUser(user: User?) {
+        guard let userData = user else { return }
+        let ref = Database.database().reference().child("posts").child(userData.uid)
         
         ref.observeSingleEvent(of: .value, with: { snapshot in
-        guard let dictionaries = snapshot.value as? [String: Any] else { return }
-        
-        dictionaries.forEach { key, value in
-            guard let dictionary = value as? [String: Any] else { return }
-            let post = Post(user: user, dictionary: dictionary)
-            self.posts.append(post)
-        }
-        self.posts.sort { p1, p2 in
-            return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-        }
-        self.collectionViews.reloadData()
+            guard let dictionaries = snapshot.value as? [String: Any] else { return }
+            
+            dictionaries.forEach { key, value in
+                guard let dictionary = value as? [String: Any] else { return }
+                let post = Post(user: userData, dictionary: dictionary)
+                self.post.append(post)
+            }
+            self.post.sort { p1, p2 in
+                return p1?.creationDate.compare(p2!.creationDate) == .orderedDescending
+            }
+            self.collectionViews.reloadData()
         }) { error in
             print("Failed to fetch posts:", error)
             return
         }
     }
 }
+
 

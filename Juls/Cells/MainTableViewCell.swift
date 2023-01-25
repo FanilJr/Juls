@@ -40,6 +40,7 @@ class MainTableViewCell: UITableViewCell {
         let nothing = UILabel()
         nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .semibold)
         nothing.translatesAutoresizingMaskIntoConstraints = false
+        nothing.text = "Имя:"
         return nothing
     }()
     
@@ -47,6 +48,7 @@ class MainTableViewCell: UITableViewCell {
         let nothing = UILabel()
         nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .semibold)
         nothing.translatesAutoresizingMaskIntoConstraints = false
+        nothing.text = "Возраст:"
         return nothing
     }()
     
@@ -54,6 +56,7 @@ class MainTableViewCell: UITableViewCell {
         let nothing = UILabel()
         nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .semibold)
         nothing.translatesAutoresizingMaskIntoConstraints = false
+        nothing.text = "Семейное положение:"
         return nothing
     }()
     
@@ -61,13 +64,7 @@ class MainTableViewCell: UITableViewCell {
         let nothing = UILabel()
         nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .semibold)
         nothing.translatesAutoresizingMaskIntoConstraints = false
-        return nothing
-    }()
-    
-    lazy var five: UILabel = {
-        let nothing = UILabel()
-        nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .light)
-        nothing.translatesAutoresizingMaskIntoConstraints = false
+        nothing.text = "Рост:"
         return nothing
     }()
     
@@ -140,7 +137,7 @@ class MainTableViewCell: UITableViewCell {
     }
     
     public func constraints() {
-        [info, first,two,three,four,five, name, ageUser, statusLife, heightUser, editButton, descriptionLabel].forEach { contentView.addSubview($0) }
+        [info, first,two,three,four, name, ageUser, statusLife, heightUser, editButton].forEach { contentView.addSubview($0) }
         
         NSLayoutConstraint.activate([
             info.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10),
@@ -162,10 +159,7 @@ class MainTableViewCell: UITableViewCell {
             
             four.topAnchor.constraint(equalTo: three.bottomAnchor,constant: 10),
             four.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
-            
-            five.topAnchor.constraint(equalTo: four.bottomAnchor,constant: 10),
-            five.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
-            five.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -20),
+            four.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             
             name.topAnchor.constraint(equalTo: info.bottomAnchor,constant: 10),
             name.centerYAnchor.constraint(equalTo: first.centerYAnchor),
@@ -181,12 +175,7 @@ class MainTableViewCell: UITableViewCell {
             
             heightUser.topAnchor.constraint(equalTo: statusLife.bottomAnchor,constant: 10),
             heightUser.centerYAnchor.constraint(equalTo: four.centerYAnchor),
-            heightUser.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -10),
-            
-            descriptionLabel.topAnchor.constraint(equalTo: heightUser.bottomAnchor,constant: 10),
-            descriptionLabel.centerYAnchor.constraint(equalTo: five.centerYAnchor),
-            descriptionLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -10),
-            descriptionLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -20)
+            heightUser.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -10)
         ])
     }
     
@@ -201,5 +190,12 @@ class MainTableViewCell: UITableViewCell {
     
         let menu = UIMenu(title: "Выберите действие", children: [changeInfo])
         return menu
+    }
+    
+    func configureMain(user: User?) {
+        name.text = user?.name
+        ageUser.text = user?.age
+        statusLife.text = user?.lifeStatus
+        heightUser.text = user?.height
     }
 }

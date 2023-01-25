@@ -17,8 +17,7 @@ class ProfileViewController: UIViewController {
     var userId: String?
     var posts = [Post]()
     var postsKeyArray = [String]()
-    private let customMessagePost = CustomMessagePost()
-    private let postViewController = PostViewController()
+    private let messagePostViewController = MessagePostViewController()
     private let viewModel: ProfileViewModel
     private let settingsView = SettingsViewController()
     private let mapView = MapView()
@@ -94,11 +93,10 @@ class ProfileViewController: UIViewController {
         tabBarController?.tabBar.isHidden = false
         
         title = "Профиль"
-        header.user = user
         setupTableView()
         imagePicker.delegate = self
         header.delegate = self
-        postViewController.delegatePost = self
+        messagePostViewController.delegatePost = self
         tableView.dataSource = self
         tableView.delegate = self
         fetchUser()
@@ -141,8 +139,8 @@ class ProfileViewController: UIViewController {
 extension ProfileViewController: UITableViewDataSource {
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return numbersSection.count
-//        return 2
+//        return numbersSection.count
+        return 2
     }
         
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -152,8 +150,8 @@ extension ProfileViewController: UITableViewDataSource {
             return 1
         case 1:
             return 1
-        case 2:
-            return posts.count
+//        case 2:
+//            return posts.count
         default:
             return 0
         }
@@ -167,45 +165,25 @@ extension ProfileViewController: UITableViewDataSource {
             let cell = tableView.dequeueReusableCell(withIdentifier: "MainTableViewCell", for: indexPath) as!
             MainTableViewCell
             cell.backgroundColor = .clear
-            cell.first.text = "Имя: "
-            cell.two.text = "Возраст: "
-            cell.three.text = "Семейное положение: "
-            cell.four.text = "Рост: "
-            cell.five.text = "Привычки: "
             cell.delegate = self
             cell.selectionStyle = UITableViewCell.SelectionStyle.none
-            if let uid = Auth.auth().currentUser?.uid {
-                Database.database().reference().child("users").child(uid).observeSingleEvent(of: .value, with: { snapshot in
-                    
-                    guard let dictionary = snapshot.value as? [String: Any] else { return }
-                    
-                    self.user = User(uid: uid, dictionary: dictionary)
-                    
-                    DispatchQueue.main.async {
-                        cell.name.text = self.user?.name
-                        cell.ageUser.text = self.user?.age
-                        cell.statusLife.text = self.user?.lifeStatus
-                        cell.heightUser.text = self.user?.height
-                    }
-                }) { err in
-                    print("Failet to setup user", err)
-                }
-            }
+            cell.configureMain(user: self.user)
             return cell
             
         case 1:
             let cell = tableView.dequeueReusableCell(withIdentifier: "PhotosTableViewCell", for: indexPath) as! PhotosTableViewCell
             cell.photosDelegate = self
             cell.backgroundColor = .clear
+            cell.configureFetchUser(user: self.user)
             cell.selectionStyle = UITableViewCell.SelectionStyle.none
             return cell
             
-        case 2:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "PostTableViewCell", for: indexPath) as! PostTableViewCell
-            cell.selectionStyle = UITableViewCell.SelectionStyle.none
-            cell.backgroundColor = .clear
-            cell.post = posts[indexPath.row]
-            return cell
+//        case 2:
+//            let cell = tableView.dequeueReusableCell(withIdentifier: "PostTableViewCell", for: indexPath) as! PostTableViewCell
+//            cell.selectionStyle = UITableViewCell.SelectionStyle.none
+//            cell.backgroundColor = .clear
+//            cell.post = posts[indexPath.row]
+//            return cell
 
         default:
             return UITableViewCell()
@@ -230,7 +208,31 @@ extension ProfileViewController: UITableViewDataSource {
 extension ProfileViewController: UITableViewDelegate {
   
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UITableView.automaticDimension
+        switch indexPath.section {
+        case 0:
+            return UITableView.automaticDimension
+        case 1:
+            if posts.count == 3 {
+                return 150
+            } else if posts.count == 1 {
+                return 150
+            }else if posts.count == 2 {
+                return 150
+            } else if posts.count > 3 && posts.count < 7 {
+                return 280
+            } else if posts.count > 6 && posts.count < 10 {
+                return 410
+            } else if posts.count > 9 && posts.count < 13 {
+                return 540
+            } else if posts.count > 12 && posts.count < 16 {
+                return 670
+            } else if posts.count > 16 {
+                return 800
+            }
+        default:
+            return 300
+        }
+        return 800
     }
         
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
@@ -240,8 +242,8 @@ extension ProfileViewController: UITableViewDelegate {
             return header
         case 1:
             return nil
-        case 2:
-            return nil
+//        case 2:
+//            return nil
             
         default:
             return nil
@@ -255,8 +257,8 @@ extension ProfileViewController: UITableViewDelegate {
             return UITableView.automaticDimension
         case 1:
             return 0
-        case 2:
-            return 0
+//        case 2:
+//            return 0
             
         default:
             return 0
@@ -314,14 +316,14 @@ extension ProfileViewController: UIImagePickerControllerDelegate & UINavigationC
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         guard let pickedImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage else { return }
         
-        if currentImage == postViewController.customImage {
+        if currentImage == messagePostViewController.customImage {
             currentImage?.image = pickedImage
             dismiss(animated: true)
-            if let sheet = postViewController.sheetPresentationController {
+            if let sheet = messagePostViewController.sheetPresentationController {
                 sheet.detents = [.medium()]
                 sheet.prefersGrabberVisible = true
             }
-            present(postViewController, animated: true)
+            present(messagePostViewController, animated: true)
             
         } else if currentImage == header.avatarImageView {
             currentImage?.image = pickedImage
@@ -340,7 +342,7 @@ extension ProfileViewController {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         Database.fetchUserWithUID(uid: uid) { user in
             self.user = user
-//            self.tableView.reloadData()
+            self.header.user = user
             self.fetchPostsWithUser(user: user)
             print("Перезагрузка в ProfileViewController fetchUser")
         }
@@ -362,7 +364,7 @@ extension ProfileViewController {
                 return p1.creationDate.compare(p2.creationDate) == .orderedDescending
             }
             self.tableView.reloadData()
-            print("Перезагрузка в fetchPostsWithUser")
+            print("Перезагрузка в ProfileViewController fetchPostsWithUser")
             
             }) { error in
             print("Failed to fetch posts:", error)
@@ -420,8 +422,8 @@ extension ProfileViewController {
         
         print("PUSH PUSH PUSH")
         
-        guard let postImage = postViewController.customImage.image else { return }
-        guard let caption = postViewController.customTextfield.text else { return }
+        guard let postImage = messagePostViewController.customImage.image else { return }
+        guard let caption = messagePostViewController.customTextfield.text else { return }
         
         guard let uid = Auth.auth().currentUser?.uid else { return }
         let userPostRef = Database.database().reference().child("posts").child(uid)
@@ -436,9 +438,9 @@ extension ProfileViewController {
             }
             print("succes upload Post in Firebase")
         }
-        self.postViewController.waitingSpinnerPostEnable(false)
-        self.postViewController.sendPostButton.setTitle("Отправить", for: .normal)
-        self.postViewController.sendPostButton.setImage(UIImage(systemName: "paperplane.fill"), for: .normal)
+        self.messagePostViewController.waitingSpinnerPostEnable(false)
+        self.messagePostViewController.sendPostButton.setTitle("Отправить", for: .normal)
+        self.messagePostViewController.sendPostButton.setImage(UIImage(systemName: "paperplane.fill"), for: .normal)
         
         AudioServicesPlaySystemSound(self.systemSoundID2)
         self.dismiss(animated: true)
@@ -450,8 +452,8 @@ extension ProfileViewController {
         })
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.postViewController.customImage.image = nil
-            self.postViewController.customTextfield.text = ""
+            self.messagePostViewController.customImage.image = nil
+            self.messagePostViewController.customTextfield.text = ""
         }
     }
 }
@@ -531,7 +533,8 @@ extension ProfileViewController: InfoDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
             self.infoView.removeFromSuperview()
             self.blure.removeFromSuperview()
-            self.tableView.reloadData()
+            self.posts.removeAll()
+            self.fetchUser()
         }
     }
 }
@@ -651,88 +654,36 @@ extension ProfileViewController: HeaderDelegate {
     }
     
     func addPost() {
-        if let sheet = postViewController.sheetPresentationController {
+        if let sheet = messagePostViewController.sheetPresentationController {
             sheet.detents = [.medium()]
             sheet.prefersGrabberVisible = true
         }
-        present(postViewController, animated: true)
+        present(messagePostViewController, animated: true)
     }
 }
 
 //MARK: PostViewDelegate : Отправка поста sheetController
-extension ProfileViewController: PostDelegate {
-    func closedPost2() {
-        postViewController.customTextfield.text = ""
-        postViewController.customImage.image = nil
-        dismiss(animated: true)
-    }
-    
-    func presentAlertImagePicker2() {
-        dismiss(animated: true)
-        currentImage = postViewController.customImage
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
-            self.present(self.imagePicker, animated: true)
-        })
-    }
-
-    func pushPost2() {
-        guard let caption = postViewController.customTextfield.text, caption.count > 0 else { return }
-        let imageName = NSUUID().uuidString
-        let storedImage = Storage.storage().reference().child("posts").child(imageName)
-
-        if let uploadData = postViewController.customImage.image?.jpegData(compressionQuality: 0.3) {
-            storedImage.putData(uploadData, metadata: nil) { metadata, error in
-                if let error {
-                    print("error upload", error)
-                    return
-                }
-            storedImage.downloadURL(completion: { url, error in
-                if let error {
-                    print(error)
-                    return
-                }
-                guard let imageURL = url?.absoluteString else { return }
-                print("succes download Photo in Firebase Library")
-                self.saveToDatabaseWithImageUrl(imageUrl: imageURL)
-                })
-            }
-        }
-        self.tableView.reloadData()
-    }
-}
-
-//MARK: Открытие imagePicker, и загрузка ПОСТА в FireBase
 extension ProfileViewController: MessagePostDelegate {
+    func closedPostPostDelegate() {
+        messagePostViewController.customTextfield.text = ""
+        messagePostViewController.customImage.image = nil
+        dismiss(animated: true)
+    }
     
-    func presentAlertImagePicker() {
-        print("che kavo add Camera")
-        currentImage = customMessagePost.customImage
+    func presentPostImagePicker() {
+        dismiss(animated: true)
+        currentImage = messagePostViewController.customImage
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
             self.present(self.imagePicker, animated: true)
         })
     }
-    
-    func closedPost() {
-        UIView.animate(withDuration: 0.5, animations: {
-            self.header.avatarImageView.alpha = 1
-            self.customMessagePost.transform = CGAffineTransform(translationX: 0, y: 320)
-            self.blure.alpha = 0
-        })
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.customMessagePost.removeFromSuperview()
-            self.blure.removeFromSuperview()
-            self.customMessagePost.customImage.image = nil
-            self.customMessagePost.customTextfield.text = ""
-            self.tabBarController?.tabBar.isHidden = false
-        }
-    }
-    
-    func pushPost() {
-        guard let caption = customMessagePost.customTextfield.text, caption.count > 0 else { return }
+
+    func pushPostDelegate() {
+        guard let caption = messagePostViewController.customTextfield.text, caption.count > 0 else { return }
         let imageName = NSUUID().uuidString
         let storedImage = Storage.storage().reference().child("posts").child(imageName)
-        
-        if let uploadData = customMessagePost.customImage.image?.jpegData(compressionQuality: 0.3) {
+
+        if let uploadData = messagePostViewController.customImage.image?.jpegData(compressionQuality: 0.3) {
             storedImage.putData(uploadData, metadata: nil) { metadata, error in
                 if let error {
                     print("error upload", error)

@@ -138,7 +138,8 @@ final class ProfileHeaderView: UIView {
         let button = UIButton()
         button.addTarget(self, action: #selector(callNumber), for: .touchUpInside)
         button.tintColor = #colorLiteral(red: 0.4666666687, green: 0.7647058964, blue: 0.2666666806, alpha: 1)
-        button.setBackgroundImage(UIImage(systemName: "phone.circle"), for: .normal)
+//        button.setBackgroundImage(UIImage(systemName: "phone.circle"), for: .normal)
+        button.setBackgroundImage(UIImage(named: "phone.circle.fill@100x"), for: .normal)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.clipsToBounds = true
         return button
@@ -149,7 +150,8 @@ final class ProfileHeaderView: UIView {
         let button = UIButton()
         button.addTarget(self, action: #selector(openMessage), for: .touchUpInside)
         button.tintColor = #colorLiteral(red: 0.2285125894, green: 0.5558477767, blue: 0.9294139743, alpha: 1)
-        button.setBackgroundImage(UIImage(systemName: "message.circle"), for: .normal)
+//        button.setBackgroundImage(UIImage(systemName: "message.circle"), for: .normal)
+        button.setBackgroundImage(UIImage(named: "message.circle.fill@100x"), for: .normal)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.clipsToBounds = true
         return button
@@ -159,7 +161,8 @@ final class ProfileHeaderView: UIView {
         let button = UIButton()
         button.addTarget(self, action: #selector(postsCountPressed), for: .touchUpInside)
         button.tintColor = #colorLiteral(red: 0.9764705896, green: 0.850980401, blue: 0.5490196347, alpha: 1)
-        button.setBackgroundImage(UIImage(systemName: "photo.circle"), for: .normal)
+//        button.setBackgroundImage(UIImage(systemName: "photo.circle"), for: .normal)
+        button.setBackgroundImage(UIImage(named: "photo.circle.fill@100x"), for: .normal)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.clipsToBounds = true
         return button
@@ -190,13 +193,13 @@ final class ProfileHeaderView: UIView {
         return button
     }()
     
-    func fetchUser() {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        Database.fetchUserWithUID(uid: uid) { user in
-            self.user = user
-            print("Перезагрузка в fetchUser")
-        }
-    }
+//    func fetchUser() {
+//        guard let uid = Auth.auth().currentUser?.uid else { return }
+//        Database.fetchUserWithUID(uid: uid) { user in
+//            self.user = user
+//            print("Перезагрузка в HEADERVIEW fetchUser")
+//        }
+//    }
     
     func snp() {
         containerView.translatesAutoresizingMaskIntoConstraints = false
@@ -205,7 +208,7 @@ final class ProfileHeaderView: UIView {
         //MARK: ОСНОВНАЯ ИНФОРМАЦИЯ
         [avatarImageView,addButton,editButton,stackViewVertical].forEach { containerView.addSubview($0) }
         //MARK: Background buttons
-        [backViewOne,backViewSecond,backViewThree].forEach { containerView.addSubview($0) }
+//        [backViewOne,backViewSecond,backViewThree].forEach { containerView.addSubview($0) }
         //MARK: BUTTONS
         [messageButton,phoneButton,albumButton].forEach { containerView.addSubview($0) }
         //MARK: STACKVERTICAL
@@ -234,21 +237,21 @@ final class ProfileHeaderView: UIView {
         stackViewVertical.heightAnchor.constraint(equalToConstant: 120).isActive = true
         stackViewVertical.trailingAnchor.constraint(equalTo: containerView.trailingAnchor).isActive = true
         stackViewVertical.bottomAnchor.constraint(equalTo: messageButton.topAnchor,constant: -20).isActive = true
-        
-        backViewOne.centerXAnchor.constraint(equalTo: containerView.centerXAnchor).isActive = true
-        backViewOne.heightAnchor.constraint(equalToConstant: 50).isActive = true
-        backViewOne.widthAnchor.constraint(equalToConstant: 50).isActive = true
-        backViewOne.bottomAnchor.constraint(equalTo: containerView.bottomAnchor,constant: -30).isActive = true
-        
-        backViewSecond.trailingAnchor.constraint(equalTo: phoneButton.leadingAnchor,constant: -50).isActive = true
-        backViewSecond.heightAnchor.constraint(equalToConstant: 50).isActive = true
-        backViewSecond.widthAnchor.constraint(equalToConstant: 50).isActive = true
-        backViewSecond.bottomAnchor.constraint(equalTo: containerView.bottomAnchor,constant: -30).isActive = true
-        
-        backViewThree.leadingAnchor.constraint(equalTo: phoneButton.trailingAnchor,constant: 50).isActive = true
-        backViewThree.heightAnchor.constraint(equalToConstant: 50).isActive = true
-        backViewThree.widthAnchor.constraint(equalToConstant: 50).isActive = true
-        backViewThree.bottomAnchor.constraint(equalTo: containerView.bottomAnchor,constant: -30).isActive = true
+//
+//        backViewOne.centerXAnchor.constraint(equalTo: containerView.centerXAnchor).isActive = true
+//        backViewOne.heightAnchor.constraint(equalToConstant: 50).isActive = true
+//        backViewOne.widthAnchor.constraint(equalToConstant: 50).isActive = true
+//        backViewOne.bottomAnchor.constraint(equalTo: containerView.bottomAnchor,constant: -30).isActive = true
+//
+//        backViewSecond.trailingAnchor.constraint(equalTo: phoneButton.leadingAnchor,constant: -50).isActive = true
+//        backViewSecond.heightAnchor.constraint(equalToConstant: 50).isActive = true
+//        backViewSecond.widthAnchor.constraint(equalToConstant: 50).isActive = true
+//        backViewSecond.bottomAnchor.constraint(equalTo: containerView.bottomAnchor,constant: -30).isActive = true
+//
+//        backViewThree.leadingAnchor.constraint(equalTo: phoneButton.trailingAnchor,constant: 50).isActive = true
+//        backViewThree.heightAnchor.constraint(equalToConstant: 50).isActive = true
+//        backViewThree.widthAnchor.constraint(equalToConstant: 50).isActive = true
+//        backViewThree.bottomAnchor.constraint(equalTo: containerView.bottomAnchor,constant: -30).isActive = true
 
         phoneButton.centerXAnchor.constraint(equalTo: containerView.centerXAnchor).isActive = true
         phoneButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
@@ -333,7 +336,7 @@ final class ProfileHeaderView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        fetchUser()
+//        fetchUser()
         statusTextField.delegate = self
         snp()
         tapScreen()

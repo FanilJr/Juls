@@ -8,15 +8,15 @@
 import Foundation
 import UIKit
 
-protocol PostDelegate: AnyObject {
-    func presentAlertImagePicker2()
-    func pushPost2()
-    func closedPost2()
+protocol MessagePostDelegate: AnyObject {
+    func presentPostImagePicker()
+    func pushPostDelegate()
+    func closedPostPostDelegate()
 }
 
-class PostViewController: UIViewController {
+class MessagePostViewController: UIViewController {
     
-    weak var delegatePost: PostDelegate?
+    weak var delegatePost: MessagePostDelegate?
     
     private let spinnerViewForPost: UIActivityIndicatorView = {
         let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .whiteLarge)
@@ -102,18 +102,18 @@ class PostViewController: UIViewController {
     }
     
     @objc func apendPhotoInPost() {
-        delegatePost?.presentAlertImagePicker2()
+        delegatePost?.presentPostImagePicker()
     }
     
     @objc func pushPost() {
-        delegatePost?.pushPost2()
+        delegatePost?.pushPostDelegate()
         sendPostButton.setTitle("", for: .normal)
         sendPostButton.setImage(UIImage(), for: .normal)
         waitingSpinnerPostEnable(true)
     }
     
     @objc func closedPost() {
-        delegatePost?.closedPost2()
+        delegatePost?.closedPostPostDelegate()
     }
     
     func layout() {
