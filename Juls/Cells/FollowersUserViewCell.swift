@@ -1,13 +1,14 @@
 //
-//  CellIdTableViewCell.swift
+//  FollowersUserViewCell.swift
 //  Juls
 //
-//  Created by Fanil_Jr on 06.01.2023.
+//  Created by Fanil_Jr on 30.01.2023.
 //
 
+import Foundation
 import UIKit
 
-class CellIdTableViewCell: UITableViewCell {
+class FollowersUserViewCell: UITableViewCell {
     
     let profileImageView: CustomImageView = {
         let pi = CustomImageView()

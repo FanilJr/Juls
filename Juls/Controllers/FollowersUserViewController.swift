@@ -1,19 +1,19 @@
 //
-//  SearchController.swift
+//  FollowersUserViewController.swift
 //  Juls
 //
-//  Created by Fanil_Jr on 06.01.2023.
+//  Created by Fanil_Jr on 30.01.2023.
 //
 
 import Foundation
 import UIKit
-import Firebase
 
-class SearchViewController: UIViewController {
+class FollowersUserViewController: UIViewController {
     
-    var filteredUsers = [User]()
-    var users = [User]()
-    var post = [Post]()
+//    var filteredUsers = [User]()
+    var usersArray = [User]()
+//    var users = [User]()
+//    var post = [Post]()
     let juls = JulsView()
     var refreshControler = UIRefreshControl()
     
@@ -35,83 +35,49 @@ class SearchViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
         tableView.refreshControl = refreshControler
-        tableView.register(CellIdTableViewCell.self, forCellReuseIdentifier: "CellIdTableViewCell")
+        tableView.register(FollowersUserViewCell.self, forCellReuseIdentifier: "FollowersUserViewCell")
         return tableView
     }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.titleView = juls
-        navigationItem.searchController = searchController
         layout()
         refreshControler.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
         refreshControler.attributedTitle = NSAttributedString(string: "Обновление")
+        navigationItem.searchController = searchController
         searchController.searchBar.delegate = self
         tableView.delegate = self
         tableView.dataSource = self
         tableView.alwaysBounceVertical = true
         tableView.keyboardDismissMode = .onDrag
-        self.fetchUsers()
+        navigationController?.navigationBar.isHidden = false
+        print(usersArray)
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-//        self.users.removeAll()
-//        self.fetchUsers()
-        navigationController?.navigationBar.isHidden = false
+        navigationController?.setNavigationBarHidden(false, animated: animated)
         searchController.searchBar.isHidden = false
     }
     
-    @objc func didTapRefresh() {
-        self.users.removeAll()
-        self.filteredUsers.removeAll()
-        self.fetchUsers()
-    }
-
-    func fetchUsers() {
-        let ref = Database.database().reference().child("users")
-        ref.observeSingleEvent(of: .value, with: { snapshot in
-            self.tableView.refreshControl?.endRefreshing()
-            guard let dictionaries = snapshot.value as? [String: Any] else { return }
-            
-            dictionaries.forEach { key, value in
-                if key == Auth.auth().currentUser?.uid {
-                    return
-                }
-                guard let userDictionary = value as? [String: Any] else { return }
-                
-                let user = User(uid: key, dictionary: userDictionary)
-                self.users.append(user)
-            }
-            self.filteredUsers = self.users
-            self.tableView.reloadData()
-        }) { err in
-            print("Failed to fetch users", err)
-        }
+    override func viewDidDisappear(_ animated: Bool) {
+        navigationController?.setNavigationBarHidden(false, animated: animated)
     }
     
-    func fetchPostsWithUser(user: User) {
-        
-        let ref = Database.database().reference().child("posts").child(user.uid)
-        
-        ref.observeSingleEvent(of: .value, with: { snapshot in
-            guard let dictionaries = snapshot.value as? [String: Any] else { return }
-            
-            dictionaries.forEach { key, value in
-                guard let dictionary = value as? [String: Any] else { return }
-                let post = Post(user: user, dictionary: dictionary)
-                self.post.append(post)
-            }
-            self.post.sort { p1, p2 in
-                return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-            }
-            self.tableView.reloadData()
-            print("Перезагрузка в ProfileFriendsViewController fetchPostWithUser")
-        }) { error in
-            print("Failed to fetch posts:", error)
-            return
-        }
+    static func show(_ viewController: UIViewController, users: [User]) {
+        let ac = FollowersUserViewController()
+        ac.usersArray = users
+        viewController.navigationController?.pushViewController(ac, animated: true)
     }
+    
+    @objc func didTapRefresh() {
+//        self.users.removeAll()
+//        self.filteredUsers.removeAll()
+        self.refreshControler.endRefreshing()
+//        self.fetchUsers()
+    }
+    
     func layout() {
         [background, tableView].forEach { view.addSubview($0) }
         
@@ -129,47 +95,48 @@ class SearchViewController: UIViewController {
     }
 }
 
-extension SearchViewController: UITableViewDataSource {
+extension FollowersUserViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableView.automaticDimension
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return filteredUsers.count
+        return usersArray.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CellIdTableViewCell", for: indexPath) as! CellIdTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "FollowersUserViewCell", for: indexPath) as! FollowersUserViewCell
         cell.backgroundColor = .clear
-        cell.configureTable(user: filteredUsers[indexPath.row])
+        cell.configureTable(user: usersArray[indexPath.row])
         cell.selectionStyle = UITableViewCell.SelectionStyle.none
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let user = filteredUsers[indexPath.item]
+//        let user = usersArray[indexPath.item]
+        let user = usersArray[indexPath.row]
         ProfileFriendsViewController.show(self, user: user)
         searchController.searchBar.isHidden = true
         searchController.searchBar.resignFirstResponder()
     }
 }
 
-extension SearchViewController: UITableViewDelegate {
+extension FollowersUserViewController: UITableViewDelegate {
     
 }
 
-extension SearchViewController: UISearchBarDelegate {
+extension FollowersUserViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         
-        if searchText.isEmpty {
-            filteredUsers = users
-        } else {
-            self.filteredUsers = self.users.filter { user -> Bool in
-                return user.username.lowercased().contains(searchText.lowercased())
-            }
-        }
-        self.tableView.reloadData()
+//        if searchText.isEmpty {
+//            usersArray = users
+//        } else {
+//            self.usersArray = self.users.filter { user -> Bool in
+//                return user.username.lowercased().contains(searchText.lowercased())
+//            }
+//        }
+//        self.tableView.reloadData()
     }
 }
 

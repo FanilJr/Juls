@@ -7,15 +7,17 @@
 
 import UIKit
 
-
 class PhotosCollectionViewCell: UICollectionViewCell {
     
-    var post: Post? {
-        didSet {
-            guard let imageURL = post?.imageUrl else { return }
-            image.loadImage(urlString: imageURL)
-        }
-    }
+    lazy var blureForCell: UIVisualEffectView = {
+        let bluereEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
+        let blure = UIVisualEffectView()
+        blure.effect = bluereEffect
+        blure.translatesAutoresizingMaskIntoConstraints = false
+        blure.clipsToBounds = true
+        blure.layer.cornerRadius = 14
+        return blure
+    }()
     
     let image: CustomImageView = {
         let image = CustomImageView()
@@ -27,7 +29,6 @@ class PhotosCollectionViewCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupCell()
-        
     }
     
     required init?(coder: NSCoder) {
@@ -36,9 +37,14 @@ class PhotosCollectionViewCell: UICollectionViewCell {
     
     private func setupCell() {
         
-        addSubview(image)
+        [blureForCell, image].forEach { addSubview($0) }
         
         NSLayoutConstraint.activate([
+            blureForCell.topAnchor.constraint(equalTo: topAnchor),
+            blureForCell.leadingAnchor.constraint(equalTo: leadingAnchor),
+            blureForCell.trailingAnchor.constraint(equalTo: trailingAnchor),
+            blureForCell.bottomAnchor.constraint(equalTo: bottomAnchor),
+            
             image.topAnchor.constraint(equalTo: topAnchor),
             image.leadingAnchor.constraint(equalTo: leadingAnchor),
             image.trailingAnchor.constraint(equalTo: trailingAnchor),
@@ -47,6 +53,9 @@ class PhotosCollectionViewCell: UICollectionViewCell {
         layer.cornerRadius = 14
         clipsToBounds = true
     }
- 
-
+    
+    func configureCell(post: Post?) {
+        guard let imageURL = post?.imageUrl else { return }
+        image.loadImage(urlString: imageURL)
+    }
 }

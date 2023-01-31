@@ -1,25 +1,14 @@
 //
-//  PostTableViewCell.swift
+//  PostViewCell.swift
 //  Juls
 //
-//  Created by Fanil_Jr on 04.01.2023.
+//  Created by Fanil_Jr on 28.01.2023.
 //
 
 import Foundation
 import UIKit
 
 class PostTableViewCell: UITableViewCell {
-    
-    var post: Post? {
-        didSet {
-            descriptionText.text = post?.message
-            guard let imageUrl = post?.imageUrl else { return }
-            postImage.loadImage(urlString: imageUrl)
-            guard let authorImageUrl = post?.user.picture else { return }
-            authorImage.loadImage(urlString: authorImageUrl)
-            nameAuthor.text = post?.user.username
-        }
-    }
     
     lazy var authorImage: CustomImageView = {
         let imageView = CustomImageView()
@@ -28,30 +17,6 @@ class PostTableViewCell: UITableViewCell {
         imageView.layer.cornerRadius = 50/2
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
-    }()
-    
-    var blure: UIVisualEffectView = {
-        let bluereEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
-        let blure = UIVisualEffectView()
-        blure.effect = bluereEffect
-        blure.translatesAutoresizingMaskIntoConstraints = false
-        blure.clipsToBounds = true
-        return blure
-    }()
-    
-    lazy var nameAuthor: UILabel = {
-        let name = UILabel()
-        name.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
-        name.translatesAutoresizingMaskIntoConstraints = false
-        return name
-    }()
-    
-    lazy var descriptionText: UILabel = {
-        let name = UILabel()
-        name.font = UIFont.systemFont(ofSize: 15.0, weight: .semibold)
-        name.numberOfLines = 0
-        name.translatesAutoresizingMaskIntoConstraints = false
-        return name
     }()
     
     lazy var postImage: CustomImageView = {
@@ -63,24 +28,44 @@ class PostTableViewCell: UITableViewCell {
         return imageView
     }()
     
+    lazy var nameAuthor: UILabel = {
+        let name = UILabel()
+        name.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
+        name.translatesAutoresizingMaskIntoConstraints = false
+        name.backgroundColor = .clear
+        return name
+    }()
+    
+    lazy var descriptionText: UILabel = {
+        let name = UILabel()
+        name.font = UIFont.systemFont(ofSize: 14, weight: .light)
+        name.numberOfLines = 0
+        name.translatesAutoresizingMaskIntoConstraints = false
+        return name
+    }()
+    
+    lazy var datePost: UILabel = {
+        let name = UILabel()
+        name.font = UIFont.systemFont(ofSize: 12, weight: .light)
+        name.translatesAutoresizingMaskIntoConstraints = false
+        name.textColor = .gray
+        name.backgroundColor = .clear
+        return name
+    }()
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        layout()
+        constraints()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func layout() {
-        [blure, authorImage, nameAuthor, postImage, descriptionText].forEach { contentView.addSubview($0) }
+    func constraints() {
+        [authorImage, nameAuthor, postImage, descriptionText, datePost].forEach { contentView.addSubview($0) }
         
         NSLayoutConstraint.activate([
-            blure.topAnchor.constraint(equalTo: contentView.topAnchor),
-            blure.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            blure.heightAnchor.constraint(equalToConstant: 70),
-            blure.widthAnchor.constraint(equalTo: contentView.widthAnchor),
-            
             authorImage.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10),
             authorImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
             authorImage.heightAnchor.constraint(equalToConstant: 50),
@@ -96,7 +81,24 @@ class PostTableViewCell: UITableViewCell {
             descriptionText.topAnchor.constraint(equalTo: postImage.bottomAnchor,constant: 20),
             descriptionText.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
             descriptionText.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            descriptionText.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -20)
+            
+            datePost.topAnchor.constraint(equalTo: descriptionText.bottomAnchor,constant: 10),
+            datePost.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
+            datePost.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
         ])
+    }
+    
+    func configureTable(post: Post?) {
+        guard let authorImageUrl = post?.user.picture else { return }
+        authorImage.loadImage(urlString: authorImageUrl)
+        guard let postImageUrl = post?.imageUrl else { return }
+        postImage.loadImage(urlString: postImageUrl)
+        nameAuthor.text = post?.user.username
+        datePost.text = post?.creationDate.timeAgoDisplay()
+        let attributedText = NSMutableAttributedString(string: post?.user.username ?? "")
+        attributedText.addAttribute(.font, value: UIFont.systemFont(ofSize: 14, weight: .bold), range: NSRange(location: 0, length: post?.user.username.count ?? 0))
+        let attributeComment = NSAttributedString(string: "  \(post?.message ?? "")")
+        attributedText.append(attributeComment)
+        descriptionText.attributedText = attributedText
     }
 }

@@ -7,7 +7,6 @@
 
 import UIKit
 import Firebase
-import FirebaseDatabase
 
 class HomeViewController: UIViewController {
 
@@ -17,14 +16,14 @@ class HomeViewController: UIViewController {
     
     let background: UIImageView = {
         let back = UIImageView()
-        back.image = UIImage(named: "sunset")
+        back.image = UIImage(named: "back")
         back.clipsToBounds = true
         back.translatesAutoresizingMaskIntoConstraints = false
         return back
     }()
     
     private lazy var tableView: UITableView = {
-        let tableView = UITableView(frame: .zero, style: .grouped)
+        let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
         tableView.refreshControl = refreshControler
@@ -46,12 +45,12 @@ class HomeViewController: UIViewController {
     }
     
     @objc func didTapRefresh() {
+        self.posts.removeAll()
         self.tableView.refreshControl?.endRefreshing()
         self.fetchAllPosts()
     }
     
     fileprivate func fetchAllPosts() {
-        self.posts.removeAll()
         fetchFollowingUserUids()
         fetchPosts()
         tableView.reloadData()
@@ -103,7 +102,6 @@ extension HomeViewController: UITableViewDelegate {
 extension HomeViewController {
     
     func fetchPosts() {
-        
         guard let uid = Auth.auth().currentUser?.uid else { return }
         
         Database.fetchUserWithUID(uid: uid) { user in

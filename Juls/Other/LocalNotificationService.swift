@@ -15,7 +15,7 @@ class LocalNotificationService {
         let userNotificationCenter = UNUserNotificationCenter.current()
         
         let content = UNMutableNotificationContent()
-        content.title = "Вышла новая версия приложения"
+        content.title = "Опана"
         content.body = "Посмотрите последнее обновление!"
         content.badge = 1
 

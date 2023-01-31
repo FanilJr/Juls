@@ -7,7 +7,6 @@
 
 import Foundation
 import UIKit
-import FirebaseAuth
 import Firebase
 
 final class AppCoordinator: BaseCoordinator, Coordinator {

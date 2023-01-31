@@ -16,7 +16,7 @@ class PhotosViewController: UIViewController {
     let background: UIImageView = {
         let back = UIImageView()
         back.clipsToBounds = true
-        back.image = UIImage(named: "sunset")
+        back.image = UIImage(named: "back")
         back.translatesAutoresizingMaskIntoConstraints = false
         return back
     }()
@@ -75,7 +75,7 @@ extension PhotosViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotosCollectionViewCell", for: indexPath) as! PhotosCollectionViewCell
-        cell.post = posts[indexPath.row]
+        cell.configureCell(post: posts[indexPath.item])
         cell.backgroundColor = .white
         return cell
     }
@@ -112,13 +112,13 @@ extension PhotosViewController {
             self.user = user
             self.collectionView.reloadData()
             self.fetchPostsWithUser(user: user)
-            print("Перезагрузка в ProfileViewController fetchUser")
+            print("Перезагрузка в PhotosViewController fetchUser")
         }
     }
     
     func fetchPostsWithUser(user: User) {
         
-    let ref = Database.database().reference().child("posts").child(user.uid)
+        let ref = Database.database().reference().child("posts").child(user.uid)
         
         ref.observeSingleEvent(of: .value, with: { snapshot in
         guard let dictionaries = snapshot.value as? [String: Any] else { return }
@@ -132,6 +132,7 @@ extension PhotosViewController {
             return p1.creationDate.compare(p2.creationDate) == .orderedDescending
         }
         self.collectionView.reloadData()
+        print("Перезагрузка в PhotosViewController fetchPostWithUser")
         }) { error in
             print("Failed to fetch posts:", error)
             return

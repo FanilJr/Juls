@@ -12,11 +12,12 @@ class ArticleViewController: UIViewController {
     var webVC = WebViewController()
     var articles: Article!
     var downloadManager = DownloadManager()
+    let juls = JulsView()
 
     let background: UIImageView = {
         let back = UIImageView()
         back.clipsToBounds = true
-        back.image = UIImage(named: "sunset")
+        back.image = UIImage(named: "back")
         back.translatesAutoresizingMaskIntoConstraints = false
         return back
     }()
@@ -32,7 +33,7 @@ class ArticleViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "news.post".localized
+        navigationItem.titleView = juls
         layout()
         tableView.dataSource = self
         tableView.delegate = self

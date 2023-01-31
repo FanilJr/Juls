@@ -25,13 +25,10 @@ class MessagePostViewController: UIViewController {
         return activityView
     }()
     
-    let background: UIView = {
-        let background = UIView()
-        background.layer.cornerRadius = 14
-        background.backgroundColor = .systemGray6
-        background.clipsToBounds = true
-        background.layer.borderColor = UIColor.lightGray.cgColor
-        background.layer.borderWidth = 0.5
+    let background: UIImageView = {
+        let background = UIImageView()
+        background.image = UIImage(named: "back")
+//        background.clipsToBounds = true
         background.translatesAutoresizingMaskIntoConstraints = false
         return background
     }()
@@ -50,6 +47,7 @@ class MessagePostViewController: UIViewController {
         let image = UIImageView()
         image.translatesAutoresizingMaskIntoConstraints = false
         image.contentMode = .scaleAspectFill
+        image.layer.cornerRadius = 14
         image.clipsToBounds = true
         return image
     }()
@@ -72,7 +70,6 @@ class MessagePostViewController: UIViewController {
         button.setImage(UIImage(systemName: "paperplane.fill"), for: .normal)
         button.tintColor = .systemBlue
         button.setTitleColor(.createColor(light: .black, dark: .white), for: .normal)
-        button.backgroundColor = .systemCyan
         button.clipsToBounds = true
         button.layer.cornerRadius = 10
         return button
@@ -117,7 +114,7 @@ class MessagePostViewController: UIViewController {
     }
     
     func layout() {
-        [background,customTextfield,customImage,customAddPhotoButton,sendPostButton,spinnerViewForPost,cancelButton].forEach { view.addSubview($0) }
+        [background,cancelButton,sendPostButton,customTextfield,customImage,customAddPhotoButton,spinnerViewForPost].forEach { view.addSubview($0) }
         
         NSLayoutConstraint.activate([
             background.topAnchor.constraint(equalTo: view.topAnchor),
@@ -125,29 +122,31 @@ class MessagePostViewController: UIViewController {
             background.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             background.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            customTextfield.topAnchor.constraint(equalTo: background.topAnchor,constant: 40),
+            cancelButton.topAnchor.constraint(equalTo: background.topAnchor,constant: 20),
+            cancelButton.leadingAnchor.constraint(equalTo: background.leadingAnchor,constant: 20),
+            
+            sendPostButton.centerYAnchor.constraint(equalTo: cancelButton.centerYAnchor),
+            sendPostButton.trailingAnchor.constraint(equalTo: background.trailingAnchor,constant: -20),
+            sendPostButton.heightAnchor.constraint(equalToConstant: 40),
+            sendPostButton.widthAnchor.constraint(equalToConstant: 120),
+            
+            customTextfield.topAnchor.constraint(equalTo: cancelButton.bottomAnchor,constant: 20),
             customTextfield.leadingAnchor.constraint(equalTo: background.leadingAnchor,constant: 20),
             customTextfield.trailingAnchor.constraint(equalTo: background.trailingAnchor,constant: -20),
             customTextfield.heightAnchor.constraint(equalToConstant: 40),
             
-            customImage.topAnchor.constraint(equalTo: customTextfield.bottomAnchor,constant: 10),
+            customImage.topAnchor.constraint(equalTo: customTextfield.bottomAnchor,constant: 20),
             customImage.centerXAnchor.constraint(equalTo: background.centerXAnchor),
-            customImage.heightAnchor.constraint(equalToConstant: 300),
-            customImage.widthAnchor.constraint(equalToConstant: 160),
-            
-            sendPostButton.centerXAnchor.constraint(equalTo: background.centerXAnchor),
-            sendPostButton.topAnchor.constraint(equalTo: customImage.bottomAnchor,constant: 10),
-            sendPostButton.heightAnchor.constraint(equalToConstant: 40),
-            sendPostButton.widthAnchor.constraint(equalToConstant: 150),
+            customImage.heightAnchor.constraint(equalToConstant: 280),
+            customImage.widthAnchor.constraint(equalToConstant: 150),
             
             spinnerViewForPost.centerXAnchor.constraint(equalTo: sendPostButton.centerXAnchor),
             spinnerViewForPost.centerYAnchor.constraint(equalTo: sendPostButton.centerYAnchor),
   
-            customAddPhotoButton.centerYAnchor.constraint(equalTo: sendPostButton.centerYAnchor),
-            customAddPhotoButton.leadingAnchor.constraint(equalTo: background.leadingAnchor,constant: 25),
+            customAddPhotoButton.topAnchor.constraint(equalTo: customTextfield.bottomAnchor,constant: 20),
+            customAddPhotoButton.leadingAnchor.constraint(equalTo: background.leadingAnchor,constant: 20)
             
-            cancelButton.centerYAnchor.constraint(equalTo: sendPostButton.centerYAnchor),
-            cancelButton.trailingAnchor.constraint(equalTo: background.trailingAnchor,constant: -25),
+            
         ])
     }
 }

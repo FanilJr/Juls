@@ -15,12 +15,11 @@ class SettingsViewController: UIViewController {
     var user: User?
     var juls = JulsView()
     var saveView = SaveView()
-    var header = ProfileHeaderView()
     private let imagePicker = UIImagePickerController()
     
     let background: UIImageView = {
         let back = UIImageView()
-        back.image = UIImage(named: "sunset")
+        back.image = UIImage(named: "back")
         back.clipsToBounds = true
         back.translatesAutoresizingMaskIntoConstraints = false
         return back
@@ -110,8 +109,8 @@ extension SettingsViewController {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         Database.fetchUserWithUID(uid: uid) { user in
             self.user = user
-            guard let avatarImageUrl = user.picture else { return }
-            self.avatarImageView.loadImage(urlString: avatarImageUrl)
+//            guard let avatarImageUrl = user.picture else { return }
+            self.avatarImageView.loadImage(urlString: user.picture)
         }
     }
     

@@ -19,7 +19,7 @@ class NewsListController: UIViewController {
     let background: UIImageView = {
         let back = UIImageView()
         back.clipsToBounds = true
-        back.image = UIImage(named: "sunset")
+        back.image = UIImage(named: "back")
         back.translatesAutoresizingMaskIntoConstraints = false
         return back
     }()

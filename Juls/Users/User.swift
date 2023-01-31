@@ -14,10 +14,10 @@ struct User {
     let picture: String
     let status: String
     let name: String
+    let secondName: String
     let age: String
     let lifeStatus: String
     let height: String
-    let secondName: String
     
     init(uid: String, dictionary: [String: Any]) {
         self.uid = uid

@@ -8,32 +8,29 @@
 import UIKit
 import Firebase
 import FirebaseStorage
-import FirebaseDatabase
 import AVFoundation
 
 class ProfileViewController: UIViewController {
     
     var user: User?
     var userId: String?
+    var usersId = [User]()
+    var experementUser = [User]()
     var posts = [Post]()
     var postsKeyArray = [String]()
+    var usersString = [String]()
+    private var refreshController = UIRefreshControl()
     private let messagePostViewController = MessagePostViewController()
     private let viewModel: ProfileViewModel
-    private let settingsView = SettingsViewController()
-    private let mapView = MapView()
     private let saveView = SaveView()
-    private let numbersSection = [PhotosTableViewCell(), MainTableViewCell(), PostTableViewCell()]
-    private let header = ProfileHeaderView()
-    private let photosTable = PhotosTableViewCell()
-    private let profileImageView = ProfileImageView()
     private let infoView = InfoView()
     private let imagePicker = UIImagePickerController()
     private var currentImage: UIImageView?
+    private let headerCollection = StretchyCollectionHeaderView()
+    private var header: StretchyCollectionHeaderView?
     
     let systemSoundID: SystemSoundID = 1016
     let systemSoundID2: SystemSoundID = 1018
-    var lastRowDisplay = 0
-    private var cellIndex = 0
     
     private let spinnerView: UIActivityIndicatorView = {
         let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .whiteLarge)
@@ -61,21 +58,29 @@ class ProfileViewController: UIViewController {
     
     let background: UIImageView = {
         let back = UIImageView()
-        back.image = UIImage(named: "sunset")
+        back.image = UIImage(named: "back")
         back.clipsToBounds = true
         back.translatesAutoresizingMaskIntoConstraints = false
         return back
     }()
-
-    private lazy var tableView: UITableView = {
-        let tableView = UITableView(frame: .zero, style: .grouped)
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.backgroundColor = .clear
-        tableView.separatorStyle = .none
-        tableView.register(MainTableViewCell.self, forCellReuseIdentifier: "MainTableViewCell")
-        tableView.register(PostTableViewCell.self, forCellReuseIdentifier: "PostTableViewCell")
-        tableView.register(PhotosTableViewCell.self, forCellReuseIdentifier: "PhotosTableViewCell")
-        return tableView
+    
+    private lazy var collectionView: UICollectionView = {
+        let flowLayout = CollectionViewFlowLayout()
+        flowLayout.scrollDirection = .vertical
+        flowLayout.itemSize = CGSize(width: 100, height: 100)
+        flowLayout.minimumLineSpacing = 1.0
+        flowLayout.minimumInteritemSpacing = 1.0
+        
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: flowLayout)
+        collectionView.dataSource = self
+        collectionView.delegate = self
+        collectionView.backgroundColor = .clear
+        collectionView.refreshControl = refreshController
+        collectionView.register(StretchyCollectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "StretchyCollectionHeaderView")
+        collectionView.register(MainCollectionViewCell.self, forCellWithReuseIdentifier: "MainCollectionViewCell")
+        collectionView.register(PhotosCollectionViewCell.self, forCellWithReuseIdentifier: "PhotosCollectionViewCell")
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        return collectionView
     }()
     
     init(viewModel: ProfileViewModel) {
@@ -95,16 +100,26 @@ class ProfileViewController: UIViewController {
         title = "Профиль"
         setupTableView()
         imagePicker.delegate = self
-        header.delegate = self
         messagePostViewController.delegatePost = self
-        tableView.dataSource = self
-        tableView.delegate = self
         fetchUser()
+        refreshController.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
+
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: animated)
+    }
+    
+    @objc func didTapRefresh() {
+        self.posts.removeAll()
+        self.fetchUser()
+        self.collectionView.reloadData()
+        self.refreshController.endRefreshing()
+    }
+    
+    func showFollowes() {
+        FollowersUserViewController.show(self, users: usersId)
     }
     
     func waitingSpinnerEnable(_ active: Bool) {
@@ -116,8 +131,7 @@ class ProfileViewController: UIViewController {
     }
         
     func setupTableView() {
-        profileImageView.translatesAutoresizingMaskIntoConstraints = false
-        [background, tableView, spinnerView].forEach({ view.addSubview($0) })
+        [background, collectionView, spinnerView].forEach({ view.addSubview($0) })
             
         NSLayoutConstraint.activate([
             background.topAnchor.constraint(equalTo: view.topAnchor),
@@ -125,172 +139,102 @@ class ProfileViewController: UIViewController {
             background.rightAnchor.constraint(equalTo: view.rightAnchor),
             background.bottomAnchor.constraint(equalTo: view.bottomAnchor),
                 
-            tableView.topAnchor.constraint(equalTo: background.topAnchor),
-            tableView.leadingAnchor.constraint(equalTo: background.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: background.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: background.bottomAnchor),
+            collectionView.topAnchor.constraint(equalTo: background.topAnchor),
+            collectionView.leftAnchor.constraint(equalTo: background.leftAnchor),
+            collectionView.rightAnchor.constraint(equalTo: background.rightAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: background.bottomAnchor),
             
-            spinnerView.topAnchor.constraint(equalTo: tableView.topAnchor,constant: 300),
+            spinnerView.topAnchor.constraint(equalTo: collectionView.topAnchor,constant: 300),
             spinnerView.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
     }
 }
 
-extension ProfileViewController: UITableViewDataSource {
+extension ProfileViewController: UICollectionViewDelegate {
+}
+
+extension ProfileViewController: UICollectionViewDataSource {
     
-    func numberOfSections(in tableView: UITableView) -> Int {
-//        return numbersSection.count
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 2
     }
-        
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-            
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         switch section {
         case 0:
             return 1
         case 1:
-            return 1
-//        case 2:
-//            return posts.count
+            return posts.count
         default:
             return 0
         }
     }
-        
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         switch indexPath.section {
             
         case 0:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "MainTableViewCell", for: indexPath) as!
-            MainTableViewCell
-            cell.backgroundColor = .clear
-            cell.delegate = self
-            cell.selectionStyle = UITableViewCell.SelectionStyle.none
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainCollectionViewCell", for: indexPath) as! MainCollectionViewCell
             cell.configureMain(user: self.user)
-            return cell
-            
-        case 1:
-            let cell = tableView.dequeueReusableCell(withIdentifier: "PhotosTableViewCell", for: indexPath) as! PhotosTableViewCell
-            cell.photosDelegate = self
+            cell.checkIFollowing(user: self.user)
+            cell.checkFollowMe(user: self.user)
+//            cell.loadFollowUsers(user: self.user)
+            cell.delegate = self
             cell.backgroundColor = .clear
-            cell.configureFetchUser(user: self.user)
-            cell.selectionStyle = UITableViewCell.SelectionStyle.none
             return cell
             
-//        case 2:
-//            let cell = tableView.dequeueReusableCell(withIdentifier: "PostTableViewCell", for: indexPath) as! PostTableViewCell
-//            cell.selectionStyle = UITableViewCell.SelectionStyle.none
-//            cell.backgroundColor = .clear
-//            cell.post = posts[indexPath.row]
-//            return cell
-
-        default:
-            return UITableViewCell()
-        }
-    }
-
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-        if indexPath.section == 1 {
-            viewModel.send(.showPhotosVc)
-        }
-        if indexPath.section == 2 {
-            self.cellIndex = indexPath.row
-        }
-    }
-    
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        header.scrollViewDidScroll(scrollView: tableView)
-    }
-}
-    
-extension ProfileViewController: UITableViewDelegate {
-  
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        switch indexPath.section {
-        case 0:
-            return UITableView.automaticDimension
         case 1:
-            if posts.count == 3 {
-                return 150
-            } else if posts.count == 1 {
-                return 150
-            }else if posts.count == 2 {
-                return 150
-            } else if posts.count > 3 && posts.count < 7 {
-                return 280
-            } else if posts.count > 6 && posts.count < 10 {
-                return 410
-            } else if posts.count > 9 && posts.count < 13 {
-                return 540
-            } else if posts.count > 12 && posts.count < 16 {
-                return 670
-            } else if posts.count > 16 {
-                return 800
-            }
-        default:
-            return 300
-        }
-        return 800
-    }
-        
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        
-        switch section {
-        case 0:
-            return header
-        case 1:
-            return nil
-//        case 2:
-//            return nil
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotosCollectionViewCell", for: indexPath) as! PhotosCollectionViewCell
+            cell.configureCell(post: posts[indexPath.item])
+            return cell
             
         default:
-            return nil
+            return UICollectionViewCell()
         }
     }
     
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-    
-        switch section {
-        case 0:
-            return UITableView.automaticDimension
-        case 1:
-            return 0
-//        case 2:
-//            return 0
-            
-        default:
-            return 0
-        }
-    }
-    
-    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         switch indexPath.section {
-        case 2:
+        case 0:
+            header = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "StretchyCollectionHeaderView", for: indexPath) as? StretchyCollectionHeaderView
+            header?.delegate = self
+            return header!
+        default:
+            return UICollectionReusableView()
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        switch indexPath.section {
+        case 1:
+            PostTableViewController.showPostTableViewController(self, post: posts[indexPath.row])
+        default:
+            print(indexPath.section)
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+
+        switch indexPath.section {
+        case 1:
             let configuration = UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
-            
-                let share = UIAction(title: "Поделится", image: UIImage(systemName:"square.and.arrow.up.circle")) { _ in
+                
+                let _ = UIAction(title: "Поделится", image: UIImage(systemName:"square.and.arrow.up.circle")) { _ in
                 }
-                let remove = UIAction(title: "Удалить", image: UIImage(systemName: "trash.circle"), attributes: .destructive) { _ in
-    
-                    let alert = UIAlertController(title: "Удаление поста", message: "Вы уверены?", preferredStyle: .alert)
-                    let alertOK = UIAlertAction(title: "удалить", style: .destructive)  { [self] _ in
-                        guard let uid = Auth.auth().currentUser?.uid else { return }
-                        self.getAllKays()
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
-                            Database.database().reference().child("posts").child(uid).child(self.postsKeyArray[indexPath.row]).removeValue()
-                            self.posts.remove(at: indexPath.row)
-                            self.tableView.deleteRows(at: [indexPath], with: .automatic)
-                            self.postsKeyArray = []
-                            self.tableView.reloadData()
-                        })
-                    }
-                    let alertCancel = UIAlertAction(title: "Отмена", style: .default)
-                    [alertOK,alertCancel].forEach { alert.addAction($0) }
-                    self.present(alert, animated: true)
+                let remove = UIAction(title: "Удалить", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                    
+                    guard let uid = self.user?.uid else { return }
+                    self.getAllKaysPost()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
+                        Database.database().reference().child("posts").child(uid).child(self.postsKeyArray[indexPath.item]).removeValue()
+                        self.posts.remove(at: indexPath.item)
+                        self.collectionView.deleteItems(at: [indexPath])
+                        self.postsKeyArray = []
+                        self.collectionView.reloadData()
+                    })
                 }
-                let menu = UIMenu(title: "", children: [share, remove])
+                let menu = UIMenu(title: "", children: [remove])
                 return menu
             })
             return configuration
@@ -299,7 +243,7 @@ extension ProfileViewController: UITableViewDelegate {
         }
     }
     
-    func getAllKays() {
+    func getAllKaysPost() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         Database.database().reference().child("posts").child(uid).observeSingleEvent(of: .value, with: { snapshot in
             
@@ -310,8 +254,85 @@ extension ProfileViewController: UITableViewDelegate {
             }
         })
     }
-}
     
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let contentOffsetY = scrollView.contentOffset.y
+//        print(contentOffsetY)
+        if contentOffsetY == 200 {
+            
+        }
+    }
+}
+
+extension ProfileViewController: UICollectionViewDelegateFlowLayout {
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+        switch section {
+        case 0:
+            return CGSize(width: self.collectionView.frame.size.width, height: 570)
+        case 1:
+            return CGSize()
+        default:
+            return CGSize()
+        }
+    }
+    
+    private var interSpace: CGFloat { return 8 }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        
+        switch indexPath.section {
+            
+        case 0:
+            let width = collectionView.bounds.width
+            let height = CGFloat(220)
+            return CGSize(width: width, height: height)
+            
+        case 1:
+            let width = (collectionView.bounds.width - interSpace * 4) / 3
+            return CGSize(width: width, height: width)
+            
+        default:
+            return CGSize()
+        }
+    }
+    
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        
+        switch section {
+        case 0:
+            return CGFloat()
+        case 1:
+            return interSpace
+        default:
+            return CGFloat()
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        switch section {
+        case 0:
+            return UIEdgeInsets()
+        case 1:
+            return UIEdgeInsets(top: interSpace, left: interSpace, bottom: interSpace, right: interSpace)
+        default:
+            return UIEdgeInsets()
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        switch section {
+        case 0:
+            return CGFloat()
+        case 1:
+            return interSpace
+        default:
+            return CGFloat()
+        }
+    }
+}
+
 extension ProfileViewController: UIImagePickerControllerDelegate & UINavigationControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         guard let pickedImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage else { return }
@@ -325,7 +346,7 @@ extension ProfileViewController: UIImagePickerControllerDelegate & UINavigationC
             }
             present(messagePostViewController, animated: true)
             
-        } else if currentImage == header.avatarImageView {
+        } else if currentImage == header?.userImage {
             currentImage?.image = pickedImage
             waitingSpinnerEnable(true)
             dismiss(animated: true)
@@ -342,9 +363,18 @@ extension ProfileViewController {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         Database.fetchUserWithUID(uid: uid) { user in
             self.user = user
-            self.header.user = user
+            self.header?.user = user
             self.fetchPostsWithUser(user: user)
             print("Перезагрузка в ProfileViewController fetchUser")
+        }
+    }
+    
+    func fetchUserWithReload() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        Database.fetchUserWithUID(uid: uid) { user in
+            self.user = user
+            self.header?.user = user
+            self.collectionView.reloadData()
         }
     }
     
@@ -363,7 +393,7 @@ extension ProfileViewController {
             self.posts.sort { p1, p2 in
                 return p1.creationDate.compare(p2.creationDate) == .orderedDescending
             }
-            self.tableView.reloadData()
+            self.collectionView.reloadData()
             print("Перезагрузка в ProfileViewController fetchPostsWithUser")
             
             }) { error in
@@ -376,7 +406,7 @@ extension ProfileViewController {
         let imageName = NSUUID().uuidString
         let storedImage = Storage.storage().reference().child("profile_image").child(imageName)
 
-        if let uploadData = header.avatarImageView.image?.jpegData(compressionQuality: 0.3) {
+        if let uploadData = header?.userImage.image?.jpegData(compressionQuality: 0.3) {
             storedImage.putData(uploadData, metadata: nil) { metadata, error in
                 if let error {
                     print("error upload", error)
@@ -396,8 +426,10 @@ extension ProfileViewController {
                             print("succes download Photo in Firebase Library")
                             self.waitingSpinnerEnable(false)
                             self.view.addSubview(self.saveView)
+                            self.posts.removeAll()
+                            self.fetchUser()
                             NSLayoutConstraint.activate([
-                                self.saveView.topAnchor.constraint(equalTo: self.tableView.topAnchor,constant: 300),
+                                self.saveView.topAnchor.constraint(equalTo: self.collectionView.topAnchor,constant: 300),
                                 self.saveView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
                                 self.saveView.heightAnchor.constraint(equalToConstant: 150),
                                 self.saveView.widthAnchor.constraint(equalToConstant: 150)
@@ -408,6 +440,7 @@ extension ProfileViewController {
                             DispatchQueue.main.asyncAfter(deadline: .now()+1.1) {
                                 UIView.animate(withDuration: 1) {
                                     self.saveView.alpha = 0
+                                    
                                 }
                             }
                         }
@@ -415,7 +448,6 @@ extension ProfileViewController {
                 })
             }
         }
-        self.tableView.reloadData()
     }
     //MARK: Отправка поста
     func saveToDatabaseWithImageUrl(imageUrl: String) {
@@ -463,7 +495,6 @@ extension ProfileViewController: InfoDelegate {
     
     func cancelSave() {
         UIView.animate(withDuration: 0.8, animations: {
-            self.header.avatarImageView.alpha = 1
             self.infoView.transform = CGAffineTransform(translationX: 0, y: -790)
             self.blure.alpha = 0
         })
@@ -471,7 +502,7 @@ extension ProfileViewController: InfoDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
             self.infoView.removeFromSuperview()
             self.blure.removeFromSuperview()
-            self.tableView.reloadData()
+            self.collectionView.reloadData()
         }
     }
     
@@ -525,7 +556,6 @@ extension ProfileViewController: InfoDelegate {
         }
         
         UIView.animate(withDuration: 0.8, animations: {
-            self.header.avatarImageView.alpha = 1
             self.infoView.transform = CGAffineTransform(translationX: 0, y: -790)
             self.blure.alpha = 0
         })
@@ -536,129 +566,6 @@ extension ProfileViewController: InfoDelegate {
             self.posts.removeAll()
             self.fetchUser()
         }
-    }
-}
-
-//MARK: Открытие меню редактирования
-extension ProfileViewController: MainEditDelegate {
-    
-    func tapEditInfo() {
-        view.addSubview(blure)
-        view.addSubview(infoView)
-        infoView.delegateInfo = self
-            
-        NSLayoutConstraint.activate([
-            blure.topAnchor.constraint(equalTo: view.topAnchor),
-            blure.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            blure.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            blure.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-                
-            infoView.topAnchor.constraint(equalTo: view.topAnchor,constant: -680),
-            infoView.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 50),
-            infoView.trailingAnchor.constraint(equalTo: view.trailingAnchor,constant: -50),
-            infoView.heightAnchor.constraint(equalToConstant: 680),
-        ])
-        
-        UIView.animate(withDuration: 0.8, animations: {
-            self.header.avatarImageView.alpha = 0.0
-            self.infoView.transform = CGAffineTransform(translationX: 0, y: 790)
-            self.infoView.alpha = 1
-            self.blure.alpha = 1
-        })
-        tabBarController?.tabBar.isHidden = true
-    }
-
-    func tapEditingStatusLife() {
-        print("tap Status Life")
-    }
-    
-    func tapOpenEditInfo() {
-        print("Hello edit")
-    }
-}
-
-//MARK: Расширение перехода к Фотоальбому
-extension ProfileViewController: PhotosTableDelegate {
-
-    func tuchUp() {
-        print("tuch по кнопке delegate из ProfileViewController")
-        viewModel.send(.showPhotosVc)
-    }
-}
-
-//MARK: Расширение HEADERView
-extension ProfileViewController: HeaderDelegate {
-    
-    func presentMenuAvatar() {
-        print("tap in Avatar")
-    }
-    
-    func addPhoto() {
-        print("Photo")
-    }
-    
-    func quitAccaunt() {
-        print("Выход из аккаунта")
-        let alert = UIAlertController(title: "Выход из аккаунта", message: "Вы уверены?", preferredStyle: .alert)
-        let alertOK = UIAlertAction(title: "Выйти", style: .destructive)  { [self] _ in
-            do {
-                try Auth.auth().signOut()
-                viewModel.send(.showLoginVc)
-            } catch {
-                print("error")
-            }
-        }
-        let alertCancel = UIAlertAction(title: "Отмена", style: .default)
-        [alertOK,alertCancel].forEach { alert.addAction($0) }
-        present(alert, animated: true)
-    }
-    
-    func changeStatus() {
-        let alert = UIAlertController(title: "Введите статус", message: "", preferredStyle: .alert)
-        let alertOK = UIAlertAction(title: "Ok", style: .default)  { [self] _ in
-            let text = alert.textFields?.first?.text
-            header.statusLabel.text = text
-            AudioServicesPlaySystemSound(self.systemSoundID)
-            tableView.reloadData()
-             
-            if let urlText = header.statusLabel.text {
-                Database.database().reference().child("users").child(Auth.auth().currentUser?.uid ?? "").updateChildValues(["status" : urlText]) { error, ref in
-                    if let error {
-                        print(error)
-                        return
-                    }
-                    print("succes download Status in Firebase Library")
-                }
-            }
-        }
-        let alertCancel = UIAlertAction(title: "Cancel", style: .destructive)
-        alert.addTextField()
-        [alertOK,alertCancel].forEach { alert.addAction($0) }
-        present(alert, animated: true)
-    }
-    
-    func imagePresentPicker() {
-        print("Проверка presentImage")
-        currentImage = header.avatarImageView
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
-            self.present(self.imagePicker, animated: true)
-        })
-    }
-    
-    func postCountsPresent() {
-        viewModel.send(.showPhotosVc)
-    }
-    
-    func presentSettings() {
-        viewModel.send(.showImageSettingsVc)
-    }
-    
-    func addPost() {
-        if let sheet = messagePostViewController.sheetPresentationController {
-            sheet.detents = [.medium()]
-            sheet.prefersGrabberVisible = true
-        }
-        present(messagePostViewController, animated: true)
     }
 }
 
@@ -700,27 +607,134 @@ extension ProfileViewController: MessagePostDelegate {
                 })
             }
         }
-        self.tableView.reloadData()
+        self.collectionView.reloadData()
     }
 }
 
-//MARK: Меню аватара (убрано)
-extension ProfileViewController: ProfileImageViewDelegate {
+extension ProfileViewController: StretchyDelegate {
     
-    func openSetting() {
-        viewModel.send(.showImageSettingsVc)
+    func showAlbum() {
+        viewModel.send(.showPhotosVc)
     }
     
-    func tapClosed() {
-        UIView.animate(withDuration: 0.8, animations: {
-            self.header.avatarImageView.alpha = 1
-            self.profileImageView.transform = CGAffineTransform(translationX: 0, y: -790)
-            self.blure.alpha = 0
-        })
-        tabBarController?.tabBar.isHidden = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            self.profileImageView.removeFromSuperview()
-            self.blure.removeFromSuperview()
+    func addStatus() {
+        let alert = UIAlertController(title: "Введите статус", message: "", preferredStyle: .alert)
+        let alertOK = UIAlertAction(title: "Ok", style: .default)  { [self] _ in
+            let text = alert.textFields?.first?.text
+            header?.statusLabel.text = text
+            AudioServicesPlaySystemSound(self.systemSoundID)
+            
+            if let urlText = header?.statusLabel.text {
+                Database.database().reference().child("users").child(Auth.auth().currentUser?.uid ?? "").updateChildValues(["status" : urlText]) { error, ref in
+                    if let error {
+                        print(error)
+                        return
+                    }
+                    print("succes download Status in Firebase Library")
+                }
+            }
         }
+        let alertCancel = UIAlertAction(title: "Cancel", style: .destructive)
+        alert.addTextField()
+        [alertOK,alertCancel].forEach { alert.addAction($0) }
+        present(alert, animated: true)
+
     }
+    
+    
+    func presentImagePickerForUser() {
+        print("Проверка presentImage")
+        currentImage = header?.userImage
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
+            self.present(self.imagePicker, animated: true)
+        })
+    }
+    
+    func logOut() {
+        print("Выход из аккаунта")
+        let alert = UIAlertController(title: "Выход из аккаунта", message: "Вы уверены?", preferredStyle: .alert)
+        let alertOK = UIAlertAction(title: "Выйти", style: .destructive)  { [self] _ in
+            do {
+                try Auth.auth().signOut()
+                viewModel.send(.showLoginVc)
+            } catch {
+                print("error")
+            }
+        }
+        let alertCancel = UIAlertAction(title: "Отмена", style: .default)
+        [alertOK,alertCancel].forEach { alert.addAction($0) }
+        present(alert, animated: true)
+    }
+    
+    func addPostInCollection() {
+        if let sheet = messagePostViewController.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(messagePostViewController, animated: true)
+    }
+}
+
+extension ProfileViewController: MainCollectionDelegate {
+    
+    func getUsersFollowMe(users: [String]) {
+        print(users)
+        let arrayUsers = Set(Array(users))
+        for i in arrayUsers {
+            let ref = Database.database().reference().child("users")
+            ref.observeSingleEvent(of: .value, with: { snapshot in
+            
+                guard let dictionaries = snapshot.value as? [String: Any] else { return }
+            
+                dictionaries.forEach { key, value in
+                    if key == i {
+                        guard let userDictionary = value as? [String: Any] else { return }
+                        let user = User(uid: key, dictionary: userDictionary)
+
+                        if self.usersId.count >= arrayUsers.count {
+//                            self.userId?.removeAll()
+                            print(arrayUsers)
+                            print("Users много")
+                        } else {
+                            self.usersId.append(user)
+                        }
+                    }
+                }
+            }) { err in
+                print("Failed to fetch users", err)
+            }
+        }
+        print(self.userId?.count as Any)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
+
+            self.showFollowes()
+        })
+    }
+    
+    func editInfo() {
+        view.addSubview(blure)
+        view.addSubview(infoView)
+        infoView.delegateInfo = self
+            
+        NSLayoutConstraint.activate([
+            blure.topAnchor.constraint(equalTo: view.topAnchor),
+            blure.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            blure.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            blure.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                
+            infoView.topAnchor.constraint(equalTo: view.topAnchor,constant: -680),
+            infoView.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 50),
+            infoView.trailingAnchor.constraint(equalTo: view.trailingAnchor,constant: -50),
+            infoView.heightAnchor.constraint(equalToConstant: 680),
+        ])
+        
+        UIView.animate(withDuration: 0.8, animations: {
+            self.infoView.transform = CGAffineTransform(translationX: 0, y: 790)
+            self.infoView.alpha = 1
+            self.blure.alpha = 1
+        })
+        tabBarController?.tabBar.isHidden = true
+    }
+    
+    
 }

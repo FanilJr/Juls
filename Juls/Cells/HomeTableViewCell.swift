@@ -17,8 +17,13 @@ class HomeTableViewCell: UITableViewCell {
             guard let authorImageUrl = post?.user.picture else { return }
             authorImage.loadImage(urlString: authorImageUrl)
             nameAuthor.text = post?.user.username
-            descriptionText.text = post?.message
-            nameAuthorForComment.text = (post?.user.username)! + ":"
+            datePost.text = post?.creationDate.timeAgoDisplay()
+            
+            let attributedText = NSMutableAttributedString(string: post?.user.username ?? "")
+            attributedText.addAttribute(.font, value: UIFont.systemFont(ofSize: 14, weight: .bold), range: NSRange(location: 0, length: post?.user.username.count ?? 0))
+            let attributeComment = NSAttributedString(string: "  \(post?.message ?? "")")
+            attributedText.append(attributeComment)
+            descriptionText.attributedText = attributedText
         }
     }
     
@@ -29,6 +34,15 @@ class HomeTableViewCell: UITableViewCell {
         imageView.layer.cornerRadius = 50/2
         imageView.backgroundColor = .gray
         imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
+    lazy var postImage: CustomImageView = {
+        let imageView = CustomImageView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.backgroundColor = .white
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.clipsToBounds = true
         return imageView
     }()
     
@@ -48,13 +62,6 @@ class HomeTableViewCell: UITableViewCell {
         return name
     }()
     
-    lazy var nameAuthorForComment: UILabel = {
-        let name = UILabel()
-        name.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
-        name.translatesAutoresizingMaskIntoConstraints = false
-        return name
-    }()
-    
     lazy var descriptionText: UILabel = {
         let name = UILabel()
         name.font = UIFont.systemFont(ofSize: 14, weight: .light)
@@ -62,13 +69,13 @@ class HomeTableViewCell: UITableViewCell {
         return name
     }()
     
-    lazy var postImage: CustomImageView = {
-        let imageView = CustomImageView()
-        imageView.contentMode = .scaleAspectFill
-        imageView.backgroundColor = .white
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.clipsToBounds = true
-        return imageView
+    lazy var datePost: UILabel = {
+        let name = UILabel()
+        name.font = UIFont.systemFont(ofSize: 12, weight: .light)
+        name.translatesAutoresizingMaskIntoConstraints = false
+        name.textColor = .gray
+        name.backgroundColor = .clear
+        return name
     }()
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -81,14 +88,9 @@ class HomeTableViewCell: UITableViewCell {
     }
     
     func layout() {
-        [blure, authorImage, nameAuthor, postImage, nameAuthorForComment, descriptionText].forEach { contentView.addSubview($0) }
+        [authorImage, nameAuthor, postImage, descriptionText, datePost].forEach { contentView.addSubview($0) }
         
         NSLayoutConstraint.activate([
-            blure.topAnchor.constraint(equalTo: contentView.topAnchor),
-            blure.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            blure.heightAnchor.constraint(equalToConstant: 70),
-            blure.widthAnchor.constraint(equalTo: contentView.widthAnchor),
-            
             authorImage.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10),
             authorImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
             authorImage.heightAnchor.constraint(equalToConstant: 50),
@@ -101,15 +103,13 @@ class HomeTableViewCell: UITableViewCell {
             postImage.heightAnchor.constraint(equalTo: contentView.widthAnchor,constant: 100),
             postImage.widthAnchor.constraint(equalTo: contentView.widthAnchor),
             
-            nameAuthorForComment.topAnchor.constraint(equalTo: postImage.bottomAnchor,constant: 20),
-            nameAuthorForComment.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
-            nameAuthorForComment.widthAnchor.constraint(equalToConstant: 90),
-            nameAuthorForComment.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -20),
-            
             descriptionText.topAnchor.constraint(equalTo: postImage.bottomAnchor,constant: 20),
-            descriptionText.leadingAnchor.constraint(equalTo: nameAuthorForComment.trailingAnchor,constant: 10),
-            descriptionText.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -10),
-            descriptionText.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -20)
+            descriptionText.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
+            descriptionText.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            
+            datePost.topAnchor.constraint(equalTo: descriptionText.bottomAnchor,constant: 10),
+            datePost.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
+            datePost.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -20)
         ])
     }
 }
