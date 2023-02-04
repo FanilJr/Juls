@@ -23,6 +23,7 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
         static let searchImageName: String = "magnifyingglass.circle"
         static let ribbonImageName: String = "house.circle"
         static let settingsImageName: String = "gearshape.circle"
+        static let infoImageName: String = "info.circle"
     }
     
     private enum ConstantsSelect {
@@ -33,6 +34,7 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
         static let searchImageName: String = "magnifyingglass.circle.fill"
         static let ribbonImageName: String = "house.circle.fill"
         static let settingsImageName: String = "gearshape.circle.fill"
+        static let infoImageName: String = "info.circle.fill"
     }
 
     init(scene: UIWindowScene, viewControllerFactory: ViewControllersFactoryProtocol) {
@@ -76,20 +78,20 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
         let homeCoordinator = HomeCoordinator(navigationController: navHomeVC, viewControllerFactory: viewControllerFactory)
         
         //MARK: SETTINGS
-//        let settingsVC = viewControllerFactory.viewController(for: .settings)
-//        let navSettingsVC = createNavController(for: settingsVC, title: String("Настройки"), image: UIImage(systemName: Constants.settingsImageName)!, selectImage: UIImage(systemName: ConstantsSelect.settingsImageName) ?? UIImage())
-//        let settingsCoordinator = SettingsCoordinator(navigationController: navSettingsVC, viewControllerFactory: viewControllerFactory)
+        let infoVC = viewControllerFactory.viewController(for: .info)
+        let navInfoVC = createNavController(for: infoVC, title: String("Информация"), image: UIImage(systemName: Constants.infoImageName)!, selectImage: UIImage(systemName: ConstantsSelect.infoImageName) ?? UIImage())
+        let infoCoordinator = InfoCoordinator(navigationController: navInfoVC, viewControllerFactory: viewControllerFactory)
 
 
         addDependency(searchCoordinator)
         addDependency(homeCoordinator)
         addDependency(newsCoordinator)
-//        addDependency(settingsCoordinator)
+        addDependency(infoCoordinator)
 
         searchCoordinator.start()
         homeCoordinator.start()
         newsCoordinator.start()
-//        settingsCoordinator.start()
+        infoCoordinator.start()
         
         if Auth.auth().currentUser == nil {
             let loginViewModel = LoginViewModel()
@@ -102,7 +104,7 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
             let logInCoordinator = LogInCoordinator(navigationController: navLogInVc, viewControllerFactory: viewControllerFactory)
             addDependency(logInCoordinator)
             logInCoordinator.start()
-            return [navNewsVC, navSearchVC, navHomeVC, navLogInVc]
+            return [navNewsVC, navSearchVC, navHomeVC, navLogInVc, navInfoVC]
         }
         
         let profileViewModel = ProfileViewModel()
@@ -115,7 +117,7 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
         
         addDependency(profileCoordinator)
         profileCoordinator.start()
-        return [navNewsVC, navSearchVC, navHomeVC, navProfileInVc]
+        return [navNewsVC, navSearchVC, navHomeVC, navProfileInVc, navInfoVC]
     }
     
     private func createNavController(for rootViewController: UIViewController, title: String, image: UIImage, selectImage: UIImage) -> UINavigationController {
