@@ -11,7 +11,8 @@ import Firebase
 
 protocol MainCollectionDelegate: AnyObject {
     func editInfo()
-    func getUsersFollowMe(users: [String])
+    func getUsersIFollow()
+    func getUsersFollowMe()
 }
 
 class MainCollectionViewCell: UICollectionViewCell {
@@ -147,7 +148,7 @@ class MainCollectionViewCell: UICollectionViewCell {
         button.setTitle("-", for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .bold)
         button.setTitleColor(.black, for: .normal)
-        button.addTarget(self, action: #selector(getUsersFollowMe), for: .touchUpInside)
+        button.addTarget(self, action: #selector(getUsersIFollow), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.showsMenuAsPrimaryAction = true
         return button
@@ -158,6 +159,7 @@ class MainCollectionViewCell: UICollectionViewCell {
         button.setTitle("-", for: .normal)
         button.setTitleColor(.black, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .bold)
+        button.addTarget(self, action: #selector(getUsersFollowMe), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.showsMenuAsPrimaryAction = true
         return button
@@ -173,7 +175,11 @@ class MainCollectionViewCell: UICollectionViewCell {
     }
     
     @objc func getUsersFollowMe() {
-            delegate?.getUsersFollowMe(users: iFollowWithUser)
+        delegate?.getUsersFollowMe()
+    }
+    
+    @objc func getUsersIFollow() {
+        delegate?.getUsersIFollow()
     }
     
     private func addMenuItems() -> UIMenu {
@@ -251,14 +257,12 @@ class MainCollectionViewCell: UICollectionViewCell {
         ageUser.text = user?.age
         statusLife.text = user?.lifeStatus
         heightUser.text = user?.height
-//        checkIFollowing(user: user)
     }
 }
 
 extension MainCollectionViewCell {
     
     func checkIFollowing(user: User?) {
-//        self.checkFollowMe(user: user)
         guard let userId = user?.uid else { return }
         
         let ref = Database.database().reference().child("following").child(userId)
@@ -279,9 +283,6 @@ extension MainCollectionViewCell {
             iFollowUsers.forEach { key, value in
                 if key != userId {
                     self.usersFollowMe.append(key)
-//                    let setusersFollowMe = Set(Array(self.usersFollowMe))
-                    
-//                    print(setusersFollowMe.count, "количество людей, кто вобще подписывался на кого либо, но без меня")
                 }
             }
             self.loadFollowUsers(user: user)
@@ -299,7 +300,6 @@ extension MainCollectionViewCell {
                         self.countUser.append(uidUsers)
                         
                         let setCountUser = Set(Array(self.countUser))
-//                        print(setCountUser, "кто и сколько на меня подписок", setCountUser.count)
                         self.followMeButton.setTitle("\(setCountUser.count)", for: .normal)
                     }
                 }

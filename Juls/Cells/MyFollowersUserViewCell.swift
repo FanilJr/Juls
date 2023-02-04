@@ -1,13 +1,14 @@
 //
-//  CellIdTableViewCell.swift
+//  FollowersUserViewCell.swift
 //  Juls
 //
-//  Created by Fanil_Jr on 06.01.2023.
+//  Created by Fanil_Jr on 30.01.2023.
 //
 
+import Foundation
 import UIKit
 
-class CellIdTableViewCell: UITableViewCell {
+class MyFollowersUserViewCell: UITableViewCell {
     
     let profileImageView: CustomImageView = {
         let pi = CustomImageView()
@@ -49,7 +50,6 @@ class CellIdTableViewCell: UITableViewCell {
             usernameLabel.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor,constant: 10),
             usernameLabel.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor),
             usernameLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -42)
-            
         ])
     }
     

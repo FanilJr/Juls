@@ -13,13 +13,14 @@ class SearchViewController: UIViewController {
     
     var filteredUsers = [User]()
     var users = [User]()
+    var experimentUser = [User]()
     var post = [Post]()
     let juls = JulsView()
     var refreshControler = UIRefreshControl()
     
     var searchController: UISearchController = {
         let search = UISearchController(searchResultsController: nil)
-        search.searchBar.placeholder = "Enter username"
+        search.searchBar.placeholder = "search people"
         return search
     }()
     
@@ -41,6 +42,7 @@ class SearchViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = .white
         navigationItem.titleView = juls
         navigationItem.searchController = searchController
         layout()
@@ -65,6 +67,7 @@ class SearchViewController: UIViewController {
     @objc func didTapRefresh() {
         self.users.removeAll()
         self.filteredUsers.removeAll()
+        self.experimentUser.removeAll()
         self.fetchUsers()
     }
 
@@ -136,19 +139,19 @@ extension SearchViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return filteredUsers.count
+        return experimentUser.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CellIdTableViewCell", for: indexPath) as! CellIdTableViewCell
         cell.backgroundColor = .clear
-        cell.configureTable(user: filteredUsers[indexPath.row])
+        cell.configureTable(user: experimentUser[indexPath.row])
         cell.selectionStyle = UITableViewCell.SelectionStyle.none
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let user = filteredUsers[indexPath.item]
+        let user = experimentUser[indexPath.item]
         ProfileFriendsViewController.show(self, user: user)
         searchController.searchBar.isHidden = true
         searchController.searchBar.resignFirstResponder()
@@ -163,9 +166,10 @@ extension SearchViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         
         if searchText.isEmpty {
-            filteredUsers = users
+            experimentUser = []
         } else {
-            self.filteredUsers = self.users.filter { user -> Bool in
+            self.experimentUser = self.users
+            self.experimentUser = self.users.filter { user -> Bool in
                 return user.username.lowercased().contains(searchText.lowercased())
             }
         }

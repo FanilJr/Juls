@@ -33,7 +33,7 @@ class HomeViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .clear
+        view.backgroundColor = .white
         navigationItem.titleView = juls
 
         tableView.delegate = self
@@ -45,12 +45,12 @@ class HomeViewController: UIViewController {
     }
     
     @objc func didTapRefresh() {
-        self.posts.removeAll()
         self.tableView.refreshControl?.endRefreshing()
         self.fetchAllPosts()
     }
     
     fileprivate func fetchAllPosts() {
+        self.posts = []
         fetchFollowingUserUids()
         fetchPosts()
         tableView.reloadData()
@@ -102,6 +102,7 @@ extension HomeViewController: UITableViewDelegate {
 extension HomeViewController {
     
     func fetchPosts() {
+        
         guard let uid = Auth.auth().currentUser?.uid else { return }
         
         Database.fetchUserWithUID(uid: uid) { user in
@@ -111,7 +112,7 @@ extension HomeViewController {
     
     func fetchPostsWithUser(user: User) {
         
-    let ref = Database.database().reference().child("posts").child(user.uid)
+        let ref = Database.database().reference().child("posts").child(user.uid)
         
         ref.observeSingleEvent(of: .value, with: { snapshot in
             guard let dictionaries = snapshot.value as? [String: Any] else { return }
@@ -132,6 +133,7 @@ extension HomeViewController {
     }
     
     func fetchFollowingUserUids() {
+        
         guard let uid = Auth.auth().currentUser?.uid else { return }
         Database.database().reference().child("following").child(uid).observeSingleEvent(of: .value, with: { snapshot in
             

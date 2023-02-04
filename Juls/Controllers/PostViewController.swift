@@ -36,6 +36,7 @@ class PostTableViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = .white
         navigationItem.titleView = juls
         navigationController?.navigationBar.isHidden = false
         refreshController.attributedTitle = NSAttributedString(string: "Обновление")
@@ -47,7 +48,9 @@ class PostTableViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        navigationController?.setNavigationBarHidden(false, animated: animated)
+//        navigationController?.setNavigationBarHidden(false, animated: animated)
+        self.navigationController?.navigationBar.isHidden = false
+        
     }
     
     @objc func didTapRefresh() {

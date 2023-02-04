@@ -74,8 +74,10 @@
 		84B3C17729848EFA0044EE9C /* MainFriendsCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B3C17629848EFA0044EE9C /* MainFriendsCollectionViewCell.swift */; };
 		84B3C1792984CF750044EE9C /* PostTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B3C1782984CF750044EE9C /* PostTableViewCell.swift */; };
 		84B3C17B298635DB0044EE9C /* ExtensionDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B3C17A298635DB0044EE9C /* ExtensionDate.swift */; };
-		84BB3CED298784D1003795C3 /* FollowersUserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BB3CEC298784D1003795C3 /* FollowersUserViewController.swift */; };
-		84BB3CEF2987854A003795C3 /* FollowersUserViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BB3CEE2987854A003795C3 /* FollowersUserViewCell.swift */; };
+		84BB3CED298784D1003795C3 /* MyFollowersUserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BB3CEC298784D1003795C3 /* MyFollowersUserViewController.swift */; };
+		84BB3CEF2987854A003795C3 /* MyFollowersUserViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BB3CEE2987854A003795C3 /* MyFollowersUserViewCell.swift */; };
+		84BB3CF1298A15EE003795C3 /* FollowersUsersWithMeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BB3CF0298A15EE003795C3 /* FollowersUsersWithMeController.swift */; };
+		84BB3CF3298A1657003795C3 /* FollowersUserWithMeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BB3CF2298A1657003795C3 /* FollowersUserWithMeCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -144,8 +146,10 @@
 		84B3C17629848EFA0044EE9C /* MainFriendsCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainFriendsCollectionViewCell.swift; sourceTree = "<group>"; };
 		84B3C1782984CF750044EE9C /* PostTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostTableViewCell.swift; sourceTree = "<group>"; };
 		84B3C17A298635DB0044EE9C /* ExtensionDate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionDate.swift; sourceTree = "<group>"; };
-		84BB3CEC298784D1003795C3 /* FollowersUserViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowersUserViewController.swift; sourceTree = "<group>"; };
-		84BB3CEE2987854A003795C3 /* FollowersUserViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowersUserViewCell.swift; sourceTree = "<group>"; };
+		84BB3CEC298784D1003795C3 /* MyFollowersUserViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyFollowersUserViewController.swift; sourceTree = "<group>"; };
+		84BB3CEE2987854A003795C3 /* MyFollowersUserViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyFollowersUserViewCell.swift; sourceTree = "<group>"; };
+		84BB3CF0298A15EE003795C3 /* FollowersUsersWithMeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowersUsersWithMeController.swift; sourceTree = "<group>"; };
+		84BB3CF2298A1657003795C3 /* FollowersUserWithMeCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowersUserWithMeCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -230,7 +234,8 @@
 				84B3C17229847D5B0044EE9C /* PhotosFriendsCollectionViewCell.swift */,
 				84B3C17629848EFA0044EE9C /* MainFriendsCollectionViewCell.swift */,
 				84B3C1782984CF750044EE9C /* PostTableViewCell.swift */,
-				84BB3CEE2987854A003795C3 /* FollowersUserViewCell.swift */,
+				84BB3CEE2987854A003795C3 /* MyFollowersUserViewCell.swift */,
+				84BB3CF2298A1657003795C3 /* FollowersUserWithMeCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -244,7 +249,8 @@
 				848881E62964D022006BE6A1 /* SettingsViewController.swift */,
 				84A42BF929786439001FD432 /* MessagePostViewController.swift */,
 				84B3C16A2981F5AE0044EE9C /* PostViewController.swift */,
-				84BB3CEC298784D1003795C3 /* FollowersUserViewController.swift */,
+				84BB3CEC298784D1003795C3 /* MyFollowersUserViewController.swift */,
+				84BB3CF0298A15EE003795C3 /* FollowersUsersWithMeController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -452,7 +458,8 @@
 				848882732964DB48006BE6A1 /* SettingsCoordinator.swift in Sources */,
 				848882772966555E006BE6A1 /* User.swift in Sources */,
 				84B3C17329847D5B0044EE9C /* PhotosFriendsCollectionViewCell.swift in Sources */,
-				84BB3CED298784D1003795C3 /* FollowersUserViewController.swift in Sources */,
+				84BB3CF1298A15EE003795C3 /* FollowersUsersWithMeController.swift in Sources */,
+				84BB3CED298784D1003795C3 /* MyFollowersUserViewController.swift in Sources */,
 				848882482964D806006BE6A1 /* NewsListController.swift in Sources */,
 				8488827B29678494006BE6A1 /* SearchController.swift in Sources */,
 				8488821A2964D4D5006BE6A1 /* ColorMode.swift in Sources */,
@@ -469,13 +476,14 @@
 				84B3C1792984CF750044EE9C /* PostTableViewCell.swift in Sources */,
 				848881F82964D16D006BE6A1 /* ProfileCoordinator.swift in Sources */,
 				8488826E2964DA55006BE6A1 /* LocalAuthorizationService.swift in Sources */,
+				84BB3CF3298A1657003795C3 /* FollowersUserWithMeCell.swift in Sources */,
 				8488827F29678F5F006BE6A1 /* CellIdTableViewCell.swift in Sources */,
 				848882182964D4BE006BE6A1 /* String+Extension.swift in Sources */,
 				848882162964D4A5006BE6A1 /* LocalizedExtension.swift in Sources */,
 				84B3C16B2981F5AE0044EE9C /* PostViewController.swift in Sources */,
 				848881E72964D022006BE6A1 /* SettingsViewController.swift in Sources */,
 				848882832967DB2B006BE6A1 /* Firebase+Extension.swift in Sources */,
-				84BB3CEF2987854A003795C3 /* FollowersUserViewCell.swift in Sources */,
+				84BB3CEF2987854A003795C3 /* MyFollowersUserViewCell.swift in Sources */,
 				848881F22964D105006BE6A1 /* NewsCoordinator.swift in Sources */,
 				8488821E2964D514006BE6A1 /* CommonAlert.swift in Sources */,
 				848882852967F54B006BE6A1 /* ProfileFriendsViewController.swift in Sources */,

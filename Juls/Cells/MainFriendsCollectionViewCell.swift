@@ -9,8 +9,14 @@ import Foundation
 import UIKit
 import Firebase
 
+protocol MainFriendsDelegate: AnyObject {
+    func getUsersIFollow()
+    func getUsersFollowMe()
+}
+
 class MainFriendsCollectionViewCell: UICollectionViewCell {
     
+    weak var delegate: MainFriendsDelegate?
     var usersFollowMe = [String]()
     var countUser = [String]()
     
@@ -122,15 +128,17 @@ class MainFriendsCollectionViewCell: UICollectionViewCell {
         button.setTitle("-", for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .bold)
         button.setTitleColor(.black, for: .normal)
+        button.addTarget(self, action: #selector(getUsersIFollow), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.showsMenuAsPrimaryAction = true
         return button
     }()
     
-    private lazy var followMeButton: UIButton = {
+    lazy var followMeButton: UIButton = {
         let button = UIButton()
         button.setTitle("-", for: .normal)
         button.setTitleColor(.black, for: .normal)
+        button.addTarget(self, action: #selector(getUsersFollowMe), for: .touchUpInside)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .bold)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.showsMenuAsPrimaryAction = true
@@ -202,6 +210,14 @@ class MainFriendsCollectionViewCell: UICollectionViewCell {
         ])
     }
     
+    @objc func getUsersFollowMe() {
+        delegate?.getUsersFollowMe()
+    }
+    
+    @objc func getUsersIFollow() {
+        delegate?.getUsersIFollow()
+    }
+    
     func configureMain(user: User?) {
         name.text = user?.name
         ageUser.text = user?.age
@@ -218,40 +234,35 @@ extension MainFriendsCollectionViewCell {
         let ref = Database.database().reference().child("following").child(userId)
         ref.observeSingleEvent(of: .value, with: { snapshot in
             guard let iFollowUsers = snapshot.value as? [String: Any] else { return }
-//            print(iFollowUsers.count, "кол-во моих подписок")
             self.iFollowButton.setTitle("\(iFollowUsers.count)", for: .normal)
         })
     }
     
-    func checkFollowMe(user: User?) {
+    func checkFollowMe(user: User?, completion: @escaping ([String]) -> ()) {
         guard let userId = user?.uid else { return }
         let ref = Database.database().reference().child("following")
         ref.observeSingleEvent(of: .value, with: { snapshot in
             guard let iFollowUsers = snapshot.value as? [String: Any] else { return }
             iFollowUsers.forEach { key, value in
-//                print(key)
                 if key != userId {
                     self.usersFollowMe.append(key)
-//                    print(self.usersFollowMe.count, self.usersFollowMe, "количество людей, кто вобще подписывался на кого либо, но без меня")
+                    completion(self.usersFollowMe)
                 }
             }
-//            self.loadFollowUsers(user: user)
         })
     }
     
-    func loadFollowUsers(user: User?) {
-        for i in usersFollowMe {
-            let uidUsers = i
-            let ref = Database.database().reference().child("following").child(uidUsers)
+    func loadFollowUsers(user: User?, item: [String], completion: @escaping (Int) -> ()) {
+        for i in item {
+            let ref = Database.database().reference().child("following").child(i)
             ref.observeSingleEvent(of: .value, with: { snapshot in
                 guard let followMeUsers = snapshot.value as? [String: Any] else { return }
                 followMeUsers.forEach { key, value in
                     if key == user?.uid {
-                        self.countUser.append(uidUsers)
+                        self.countUser.append(i)
                         
                         let setCountUser = Set(Array(self.countUser))
-//                        print(setCountUser, "кто и сколько на меня подписок", setCountUser.count)
-                        self.followMeButton.setTitle("\(setCountUser.count)", for: .normal)
+                        completion(setCountUser.count)
                     }
                 }
             })

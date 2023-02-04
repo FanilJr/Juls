@@ -76,20 +76,20 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
         let homeCoordinator = HomeCoordinator(navigationController: navHomeVC, viewControllerFactory: viewControllerFactory)
         
         //MARK: SETTINGS
-        let settingsVC = viewControllerFactory.viewController(for: .settings)
-        let navSettingsVC = createNavController(for: settingsVC, title: String("Настройки"), image: UIImage(systemName: Constants.settingsImageName)!, selectImage: UIImage(systemName: ConstantsSelect.settingsImageName) ?? UIImage())
-        let settingsCoordinator = SettingsCoordinator(navigationController: navSettingsVC, viewControllerFactory: viewControllerFactory)
+//        let settingsVC = viewControllerFactory.viewController(for: .settings)
+//        let navSettingsVC = createNavController(for: settingsVC, title: String("Настройки"), image: UIImage(systemName: Constants.settingsImageName)!, selectImage: UIImage(systemName: ConstantsSelect.settingsImageName) ?? UIImage())
+//        let settingsCoordinator = SettingsCoordinator(navigationController: navSettingsVC, viewControllerFactory: viewControllerFactory)
 
 
         addDependency(searchCoordinator)
         addDependency(homeCoordinator)
         addDependency(newsCoordinator)
-        addDependency(settingsCoordinator)
+//        addDependency(settingsCoordinator)
 
         searchCoordinator.start()
         homeCoordinator.start()
         newsCoordinator.start()
-        settingsCoordinator.start()
+//        settingsCoordinator.start()
         
         if Auth.auth().currentUser == nil {
             let loginViewModel = LoginViewModel()
@@ -102,7 +102,7 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
             let logInCoordinator = LogInCoordinator(navigationController: navLogInVc, viewControllerFactory: viewControllerFactory)
             addDependency(logInCoordinator)
             logInCoordinator.start()
-            return [navNewsVC, navSearchVC, navHomeVC, navLogInVc, navSettingsVC]
+            return [navNewsVC, navSearchVC, navHomeVC, navLogInVc]
         }
         
         let profileViewModel = ProfileViewModel()
@@ -115,7 +115,7 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
         
         addDependency(profileCoordinator)
         profileCoordinator.start()
-        return [navNewsVC, navSearchVC, navHomeVC, navProfileInVc, navSettingsVC]
+        return [navNewsVC, navSearchVC, navHomeVC, navProfileInVc]
     }
     
     private func createNavController(for rootViewController: UIViewController, title: String, image: UIImage, selectImage: UIImage) -> UINavigationController {

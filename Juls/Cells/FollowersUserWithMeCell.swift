@@ -1,14 +1,14 @@
 //
-//  FollowersUserViewCell.swift
+//  FollowersUserWithMeCell.swift
 //  Juls
 //
-//  Created by Fanil_Jr on 30.01.2023.
+//  Created by Fanil_Jr on 01.02.2023.
 //
 
 import Foundation
 import UIKit
 
-class FollowersUserViewCell: UITableViewCell {
+class FollowersUserWithMeCell: UITableViewCell {
     
     let profileImageView: CustomImageView = {
         let pi = CustomImageView()
@@ -45,10 +45,11 @@ class FollowersUserViewCell: UITableViewCell {
             profileImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
             profileImageView.heightAnchor.constraint(equalToConstant: 80),
             profileImageView.widthAnchor.constraint(equalToConstant: 80),
-            profileImageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -10),
+//            profileImageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -10),
             
             usernameLabel.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor,constant: 10),
             usernameLabel.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor),
+            usernameLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -42)
         ])
     }
     

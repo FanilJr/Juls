@@ -32,12 +32,12 @@ class InfoView: UIView {
         return viewAccaunt
     }()
     
-    private lazy var imageAccaunt: UIImageView = {
+    lazy var imageAccaunt: UIImageView = {
         let image = UIImageView()
         image.translatesAutoresizingMaskIntoConstraints = false
         image.contentMode = .scaleAspectFill
-        image.image = UIImage(systemName: "person.text.rectangle")
-        image.layer.cornerRadius = 14
+        image.image = UIImage(named: "1")
+        image.layer.cornerRadius = 150/2
         image.layer.borderColor = UIColor.white.cgColor
         image.layer.borderWidth = 1
         image.layer.shadowColor = UIColor.black.cgColor
@@ -48,7 +48,7 @@ class InfoView: UIView {
     
     let stackTextField: UIStackView = {
         let stack = UIStackView()
-        stack.spacing = 5
+        stack.spacing = 0
         stack.axis = .vertical
         stack.distribution = .fillEqually
         stack.alignment = .leading
@@ -222,44 +222,38 @@ class InfoView: UIView {
     }
     
     func layoutView() {
-        [nameTextField, secondNameTextField, ageTextField, statusLifeTextField, heightTextField,otherTextField, viewAccaunt, saveButton, cancelButton].forEach { addSubview($0) }
+        [nameTextField, secondNameTextField, ageTextField, statusLifeTextField, heightTextField, viewAccaunt, saveButton, cancelButton].forEach { addSubview($0) }
         
-        [imageAccaunt, name, secondName, age, statusLife, height, other].forEach { viewAccaunt.addSubview($0) }
+        [name, secondName, age, statusLife, height].forEach { viewAccaunt.addSubview($0) }
         
         NSLayoutConstraint.activate([
             nameTextField.topAnchor.constraint(equalTo: topAnchor),
             nameTextField.centerXAnchor.constraint(equalTo: centerXAnchor),
             nameTextField.heightAnchor.constraint(equalToConstant: 40),
-            nameTextField.widthAnchor.constraint(equalToConstant: 200),
+            nameTextField.widthAnchor.constraint(equalTo: widthAnchor),
             
             secondNameTextField.topAnchor.constraint(equalTo: nameTextField.bottomAnchor,constant: 10),
             secondNameTextField.centerXAnchor.constraint(equalTo: centerXAnchor),
             secondNameTextField.heightAnchor.constraint(equalToConstant: 40),
-            secondNameTextField.widthAnchor.constraint(equalToConstant: 200),
+            secondNameTextField.widthAnchor.constraint(equalTo: widthAnchor),
             
             ageTextField.topAnchor.constraint(equalTo: secondNameTextField.bottomAnchor,constant: 10),
             ageTextField.centerXAnchor.constraint(equalTo: centerXAnchor),
             ageTextField.heightAnchor.constraint(equalToConstant: 40),
-            ageTextField.widthAnchor.constraint(equalToConstant: 200),
+            ageTextField.widthAnchor.constraint(equalTo: widthAnchor),
             
             statusLifeTextField.topAnchor.constraint(equalTo: ageTextField.bottomAnchor,constant: 10),
             statusLifeTextField.centerXAnchor.constraint(equalTo: centerXAnchor),
             statusLifeTextField.heightAnchor.constraint(equalToConstant: 40),
-            statusLifeTextField.widthAnchor.constraint(equalToConstant: 200),
+            statusLifeTextField.widthAnchor.constraint(equalTo: widthAnchor),
             
             heightTextField.topAnchor.constraint(equalTo: statusLifeTextField.bottomAnchor,constant: 10),
             heightTextField.centerXAnchor.constraint(equalTo: centerXAnchor),
             heightTextField.heightAnchor.constraint(equalToConstant: 40),
-            heightTextField.widthAnchor.constraint(equalToConstant: 200),
+            heightTextField.widthAnchor.constraint(equalTo: widthAnchor),
             
-            otherTextField.topAnchor.constraint(equalTo: heightTextField.bottomAnchor,constant: 10),
-            otherTextField.centerXAnchor.constraint(equalTo: centerXAnchor),
-            otherTextField.heightAnchor.constraint(equalToConstant: 40),
-            otherTextField.widthAnchor.constraint(equalToConstant: 200),
-            
-            viewAccaunt.topAnchor.constraint(equalTo: otherTextField.bottomAnchor,constant: 20),
-            viewAccaunt.leadingAnchor.constraint(equalTo: leadingAnchor),
-            viewAccaunt.trailingAnchor.constraint(equalTo: trailingAnchor),
+            viewAccaunt.topAnchor.constraint(equalTo: heightTextField.bottomAnchor,constant: 20),
+            viewAccaunt.widthAnchor.constraint(equalTo: widthAnchor),
             viewAccaunt.heightAnchor.constraint(equalToConstant: 200),
             
             name.topAnchor.constraint(equalTo: viewAccaunt.topAnchor,constant: 20),
@@ -277,18 +271,15 @@ class InfoView: UIView {
             height.topAnchor.constraint(equalTo: statusLife.bottomAnchor,constant: 10),
             height.trailingAnchor.constraint(equalTo: viewAccaunt.trailingAnchor,constant: -10),
             
-            other.topAnchor.constraint(equalTo: height.bottomAnchor,constant: 10),
-            other.trailingAnchor.constraint(equalTo: viewAccaunt.trailingAnchor,constant: -10),
-            
             saveButton.topAnchor.constraint(equalTo: viewAccaunt.bottomAnchor,constant: 30),
             saveButton.centerXAnchor.constraint(equalTo: centerXAnchor),
             saveButton.heightAnchor.constraint(equalToConstant: 40),
-            saveButton.widthAnchor.constraint(equalToConstant: 300),
+            saveButton.widthAnchor.constraint(equalTo: widthAnchor),
             
             cancelButton.topAnchor.constraint(equalTo: saveButton.bottomAnchor,constant: 15),
             cancelButton.centerXAnchor.constraint(equalTo: centerXAnchor),
             cancelButton.heightAnchor.constraint(equalToConstant: 40),
-            cancelButton.widthAnchor.constraint(equalToConstant: 300),
+            cancelButton.widthAnchor.constraint(equalTo: widthAnchor),
         ])
     }
     

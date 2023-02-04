@@ -10,6 +10,8 @@ import Firebase
 
 protocol StretchyDelegate: AnyObject {
     func addPostInCollection()
+    func goMessage()
+    func goCall()
     func presentImagePickerForUser()
     func addStatus()
     func logOut()
@@ -86,6 +88,7 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
     
     lazy var phoneButton: UIButton = {
         let button = UIButton()
+        button.addTarget(self, action: #selector(goCall), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.clipsToBounds = true
         return button
@@ -94,6 +97,7 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
     
     lazy var messageButton: UIButton = {
         let button = UIButton()
+        button.addTarget(self, action: #selector(goMessage), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.clipsToBounds = true
         return button
@@ -182,6 +186,14 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         ])
     }
     
+    @objc func goMessage() {
+        delegate?.goMessage()
+    }
+    
+    @objc func goCall() {
+        delegate?.goCall()
+    }
+    
     @objc func showAlbumController() {
         delegate?.showAlbum()
     }
@@ -191,10 +203,6 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
             self.delegate?.addPostInCollection()
         }
         
-        let addPhoto = UIAction(title: "Добавить фото", image: UIImage(systemName: "plus.viewfinder")) { _ in
-            print("add Photo")
-        }
-            
         let menu = UIMenu(title: "Выберите действие", children: [addPost])
         return menu
     }
@@ -206,6 +214,10 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         
         let changeStatus = UIAction(title: "Изменить статус", image: UIImage(systemName: "heart.text.square.fill")) { _ in
             self.delegate?.addStatus()
+        }
+        
+        let settings = UIAction(title: "Настройки", image: UIImage(systemName: "gear")) { _ in
+//            self.delegate?.showSettings()
         }
         
         let quit = UIAction(title: "Выйти из аккаунта", image: UIImage(systemName: "hands.sparkles.fill"), attributes: .destructive) { _ in

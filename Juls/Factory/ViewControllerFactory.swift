@@ -15,7 +15,7 @@ enum TypeOfViewController {
     case photosView
     case home
     case news
-    case settings
+//    case settings
     case search
 }
 
@@ -34,8 +34,8 @@ extension TypeOfViewController {
             return HomeViewController()
         case .news:
             return NewsListController()
-        case .settings:
-            return SettingsViewController()
+//        case .settings:
+//            return SettingsViewController()
         case .search:
             return SearchViewController()
         }

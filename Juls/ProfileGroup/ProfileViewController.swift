@@ -21,6 +21,7 @@ class ProfileViewController: UIViewController {
     var usersString = [String]()
     private var refreshController = UIRefreshControl()
     private let messagePostViewController = MessagePostViewController()
+    private let settingsViewController = SettingsViewController()
     private let viewModel: ProfileViewModel
     private let saveView = SaveView()
     private let infoView = InfoView()
@@ -96,7 +97,6 @@ class ProfileViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         tabBarController?.tabBar.isHidden = false
-        
         title = "Профиль"
         setupTableView()
         imagePicker.delegate = self
@@ -108,18 +108,19 @@ class ProfileViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        navigationController?.setNavigationBarHidden(true, animated: animated)
+        self.navigationController?.navigationBar.isHidden = true
     }
     
     @objc func didTapRefresh() {
         self.posts.removeAll()
+        self.usersId.removeAll()
         self.fetchUser()
         self.collectionView.reloadData()
         self.refreshController.endRefreshing()
     }
     
     func showFollowes() {
-        FollowersUserViewController.show(self, users: usersId)
+        MyFollowersUserViewController.show(self, users: usersId)
     }
     
     func waitingSpinnerEnable(_ active: Bool) {
@@ -179,7 +180,7 @@ extension ProfileViewController: UICollectionViewDataSource {
             cell.configureMain(user: self.user)
             cell.checkIFollowing(user: self.user)
             cell.checkFollowMe(user: self.user)
-//            cell.loadFollowUsers(user: self.user)
+
             cell.delegate = self
             cell.backgroundColor = .clear
             return cell
@@ -362,10 +363,12 @@ extension ProfileViewController {
     func fetchUser() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         Database.fetchUserWithUID(uid: uid) { user in
-            self.user = user
-            self.header?.user = user
-            self.fetchPostsWithUser(user: user)
-            print("Перезагрузка в ProfileViewController fetchUser")
+            DispatchQueue.main.async {
+                self.user = user
+                self.header?.user = user
+                self.fetchPostsWithUser(user: user)
+                print("Перезагрузка в ProfileViewController fetchUser")
+            }
         }
     }
     
@@ -479,7 +482,7 @@ extension ProfileViewController {
         tabBarController?.tabBar.isHidden = false
         
         UIView.animate(withDuration: 0.5, animations: {
-            self.posts.removeAll()
+            self.posts = []
             self.fetchUser()
         })
         
@@ -613,6 +616,21 @@ extension ProfileViewController: MessagePostDelegate {
 
 extension ProfileViewController: StretchyDelegate {
     
+    func goMessage() {
+        let alert = UIAlertController(title: "В разработке.... Sorry ;(", message: "", preferredStyle: .alert)
+        let alertOK = UIAlertAction(title: "ок", style: .default)
+        [alertOK].forEach { alert.addAction($0) }
+        present(alert, animated: true)
+    }
+    
+    func goCall() {
+        let alert = UIAlertController(title: "В разработке.... Sorry ;(", message: "", preferredStyle: .alert)
+        let alertOK = UIAlertAction(title: "ок", style: .default)
+        [alertOK].forEach { alert.addAction($0) }
+        present(alert, animated: true)
+    }
+    
+    
     func showAlbum() {
         viewModel.send(.showPhotosVc)
     }
@@ -641,7 +659,6 @@ extension ProfileViewController: StretchyDelegate {
 
     }
     
-    
     func presentImagePickerForUser() {
         print("Проверка presentImage")
         currentImage = header?.userImage
@@ -668,7 +685,9 @@ extension ProfileViewController: StretchyDelegate {
     
     func addPostInCollection() {
         if let sheet = messagePostViewController.sheetPresentationController {
-            sheet.detents = [.medium()]
+            sheet.detents = [.medium(), .large()]
+            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
+            sheet.largestUndimmedDetentIdentifier = .medium
             sheet.prefersGrabberVisible = true
         }
         present(messagePostViewController, animated: true)
@@ -677,38 +696,14 @@ extension ProfileViewController: StretchyDelegate {
 
 extension ProfileViewController: MainCollectionDelegate {
     
-    func getUsersFollowMe(users: [String]) {
-        print(users)
-        let arrayUsers = Set(Array(users))
-        for i in arrayUsers {
-            let ref = Database.database().reference().child("users")
-            ref.observeSingleEvent(of: .value, with: { snapshot in
-            
-                guard let dictionaries = snapshot.value as? [String: Any] else { return }
-            
-                dictionaries.forEach { key, value in
-                    if key == i {
-                        guard let userDictionary = value as? [String: Any] else { return }
-                        let user = User(uid: key, dictionary: userDictionary)
-
-                        if self.usersId.count >= arrayUsers.count {
-//                            self.userId?.removeAll()
-                            print(arrayUsers)
-                            print("Users много")
-                        } else {
-                            self.usersId.append(user)
-                        }
-                    }
-                }
-            }) { err in
-                print("Failed to fetch users", err)
-            }
-        }
-        print(self.userId?.count as Any)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
-
-            self.showFollowes()
-        })
+    func getUsersFollowMe() {
+        guard let user = user else { return }
+        FollowersUsersWithMeController.showUsers(self, user: user)
+    }
+    
+    func getUsersIFollow() {
+        guard let user = user else { return }
+        MyFollowersUserViewController.showUsers(self, user: user)
     }
     
     func editInfo() {
@@ -735,6 +730,4 @@ extension ProfileViewController: MainCollectionDelegate {
         })
         tabBarController?.tabBar.isHidden = true
     }
-    
-    
 }

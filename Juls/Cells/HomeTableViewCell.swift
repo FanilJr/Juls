@@ -65,6 +65,7 @@ class HomeTableViewCell: UITableViewCell {
     lazy var descriptionText: UILabel = {
         let name = UILabel()
         name.font = UIFont.systemFont(ofSize: 14, weight: .light)
+        name.numberOfLines = 0
         name.translatesAutoresizingMaskIntoConstraints = false
         return name
     }()
@@ -100,7 +101,7 @@ class HomeTableViewCell: UITableViewCell {
             nameAuthor.leadingAnchor.constraint(equalTo: authorImage.trailingAnchor,constant: 10),
             
             postImage.topAnchor.constraint(equalTo: authorImage.bottomAnchor,constant: 10),
-            postImage.heightAnchor.constraint(equalTo: contentView.widthAnchor,constant: 100),
+            postImage.heightAnchor.constraint(equalTo: contentView.widthAnchor,constant: 150),
             postImage.widthAnchor.constraint(equalTo: contentView.widthAnchor),
             
             descriptionText.topAnchor.constraint(equalTo: postImage.bottomAnchor,constant: 20),

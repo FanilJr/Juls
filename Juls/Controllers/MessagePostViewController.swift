@@ -33,13 +33,17 @@ class MessagePostViewController: UIViewController {
         return background
     }()
     
-    lazy var customTextfield: CustomTextField = {
-        let textField = CustomTextField(placeholder: "Подумайте о хорошем.. ", textColor: .createColor(light: .black, dark: .white), font: UIFont.systemFont(ofSize: 16))
+    lazy var customTextfield: UITextView = {
+        let textField = UITextView()
+        textField.font = UIFont.systemFont(ofSize: 18, weight: .light)
         textField.backgroundColor = .systemGray6
         textField.tintColor = UIColor(named: "#4885CC")
         textField.returnKeyType = .done
         textField.layer.borderWidth = 0.5
-        textField.layer.cornerRadius = 14
+        textField.layer.cornerRadius = 12
+        textField.addDoneButton(title: "Done", target: self, selector: #selector(tapDone))
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.delegate = self
         return textField
     }()
     
@@ -90,6 +94,10 @@ class MessagePostViewController: UIViewController {
         layout()
     }
     
+    @objc func tapDone() {
+        self.view.endEditing(true)
+    }
+    
     func waitingSpinnerPostEnable(_ active: Bool) {
         if active {
             spinnerViewForPost.startAnimating()
@@ -133,7 +141,7 @@ class MessagePostViewController: UIViewController {
             customTextfield.topAnchor.constraint(equalTo: cancelButton.bottomAnchor,constant: 20),
             customTextfield.leadingAnchor.constraint(equalTo: background.leadingAnchor,constant: 20),
             customTextfield.trailingAnchor.constraint(equalTo: background.trailingAnchor,constant: -20),
-            customTextfield.heightAnchor.constraint(equalToConstant: 40),
+            customTextfield.heightAnchor.constraint(equalToConstant: 44),
             
             customImage.topAnchor.constraint(equalTo: customTextfield.bottomAnchor,constant: 20),
             customImage.centerXAnchor.constraint(equalTo: background.centerXAnchor),
@@ -145,8 +153,29 @@ class MessagePostViewController: UIViewController {
   
             customAddPhotoButton.topAnchor.constraint(equalTo: customTextfield.bottomAnchor,constant: 20),
             customAddPhotoButton.leadingAnchor.constraint(equalTo: background.leadingAnchor,constant: 20)
-            
-            
         ])
+    }
+}
+
+extension MessagePostViewController: UITextViewDelegate {
+    func textViewDidChange(_ textView: UITextView) {
+        let size = CGSize(width: view.frame.width, height: .infinity)
+        let estimatedSize = textView.sizeThatFits(size)
+        
+        textView.constraints.forEach { constraint in
+            if constraint.firstAttribute == .height {
+                constraint.constant = estimatedSize.height
+            }
+        }
+    }
+}
+
+extension UITextView {
+    func addDoneButton(title: String, target: Any, selector: Selector) {
+        let toolBar = UIToolbar(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.size.width, height: 44.0))
+        let flexible = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let barButton = UIBarButtonItem(title: title, style: .plain, target: target, action: selector)
+        toolBar.setItems([.flexibleSpace(), barButton], animated: false)
+        self.inputAccessoryView = toolBar
     }
 }

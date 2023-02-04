@@ -47,7 +47,6 @@ class ProfileFriendsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        view.backgroundColor = .white
         title = user?.username
         layout()
         fetchUser()
@@ -61,6 +60,10 @@ class ProfileFriendsViewController: UIViewController {
 //        self.posts.removeAll()
 //        fetchUser()
         print("reload friendscontroller из-за этого вылетает когда посты не прогрузились")
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        navigationController?.navigationBar.isHidden = false
     }
     
     @objc func didTapRefresh() {
@@ -161,13 +164,16 @@ extension ProfileFriendsViewController: UICollectionViewDataSource {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainFriendsCollectionViewCell", for: indexPath) as! MainFriendsCollectionViewCell
             cell.configureMain(user: self.user)
             cell.checkIFollowing(user: self.user)
-            cell.checkFollowMe(user: self.user)
-            cell.loadFollowUsers(user: self.user)
+            cell.checkFollowMe(user: self.user) { massive in
+                cell.loadFollowUsers(user: self.user, item: massive) { count in
+                    cell.followMeButton.setTitle("\(count)", for: .normal)
+                }
+            }
+            cell.delegate = self
             return cell
             
         case 1:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotosFriendsCollectionViewCell", for: indexPath) as! PhotosFriendsCollectionViewCell
-//            cell.post = posts[indexPath.item]
             cell.post = posts[indexPath.item]
             return cell
         default:
@@ -270,4 +276,20 @@ extension ProfileFriendsViewController: StretchyFriendsDelegate {
     func back() {
         navigationController?.popViewController(animated: true)
     }
+}
+
+extension ProfileFriendsViewController: MainFriendsDelegate {
+    
+    func getUsersIFollow() {
+        guard let user = user else { return }
+        MyFollowersUserViewController.showUsers(self, user: user)
+    }
+    
+    func getUsersFollowMe() {
+        guard let user = user else { return }
+        print("Чёто не работает нормально")
+        FollowersUsersWithMeController.showUsers(self, user: user)
+    }
+    
+    
 }
