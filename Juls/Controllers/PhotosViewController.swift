@@ -117,7 +117,7 @@ extension PhotosViewController {
     }
     
     func fetchPostsWithUser(user: User) {
-        
+        DispatchQueue.main.async {
         let ref = Database.database().reference().child("posts").child(user.uid)
         
         ref.observeSingleEvent(of: .value, with: { snapshot in
@@ -136,6 +136,7 @@ extension PhotosViewController {
         }) { error in
             print("Failed to fetch posts:", error)
             return
+        }
         }
     }
 }

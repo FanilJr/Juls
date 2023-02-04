@@ -180,11 +180,9 @@ extension ProfileViewController: UICollectionViewDataSource {
             cell.configureMain(user: self.user)
             cell.checkIFollowing(user: self.user)
             cell.checkFollowMe(user: self.user)
-
             cell.delegate = self
             cell.backgroundColor = .clear
             return cell
-            
         case 1:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotosCollectionViewCell", for: indexPath) as! PhotosCollectionViewCell
             cell.configureCell(post: posts[indexPath.item])
@@ -384,24 +382,25 @@ extension ProfileViewController {
     func fetchPostsWithUser(user: User) {
         
         let ref = Database.database().reference().child("posts").child(user.uid)
+        DispatchQueue.main.async {
+            ref.observeSingleEvent(of: .value, with: { snapshot in
+                guard let dictionaries = snapshot.value as? [String: Any] else { return }
         
-        ref.observeSingleEvent(of: .value, with: { snapshot in
-            guard let dictionaries = snapshot.value as? [String: Any] else { return }
-        
-            dictionaries.forEach { key, value in
-                guard let dictionary = value as? [String: Any] else { return }
-                let post = Post(user: user, dictionary: dictionary)
-                self.posts.append(post)
-            }
-            self.posts.sort { p1, p2 in
-                return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-            }
-            self.collectionView.reloadData()
-            print("Перезагрузка в ProfileViewController fetchPostsWithUser")
+                dictionaries.forEach { key, value in
+                    guard let dictionary = value as? [String: Any] else { return }
+                    let post = Post(user: user, dictionary: dictionary)
+                    self.posts.append(post)
+                }
+                self.posts.sort { p1, p2 in
+                    return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+                }
+                self.collectionView.reloadData()
+                print("Перезагрузка в ProfileViewController fetchPostsWithUser")
             
             }) { error in
-            print("Failed to fetch posts:", error)
-            return
+                print("Failed to fetch posts:", error)
+                return
+            }
         }
     }
     

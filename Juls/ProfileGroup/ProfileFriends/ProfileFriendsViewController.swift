@@ -114,25 +114,26 @@ extension ProfileFriendsViewController {
         }
     }
     func fetchPostsWithUser(user: User) {
-        
-    let ref = Database.database().reference().child("posts").child(user.uid)
+        DispatchQueue.main.async {
+            let ref = Database.database().reference().child("posts").child(user.uid)
 
-        ref.observeSingleEvent(of: .value, with: { snapshot in
-        guard let dictionaries = snapshot.value as? [String: Any] else { return }
+            ref.observeSingleEvent(of: .value, with: { snapshot in
+                guard let dictionaries = snapshot.value as? [String: Any] else { return }
         
-        dictionaries.forEach { key, value in
-            guard let dictionary = value as? [String: Any] else { return }
-            let post = Post(user: user, dictionary: dictionary)
-            self.posts.append(post)
-        }
-            self.posts.sort { p1, p2 in
-                return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+                dictionaries.forEach { key, value in
+                    guard let dictionary = value as? [String: Any] else { return }
+                    let post = Post(user: user, dictionary: dictionary)
+                    self.posts.append(post)
+                }
+                self.posts.sort { p1, p2 in
+                    return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+                }
+                self.collectionView.reloadData()
+                print("Перезагрузка в ProfileFriendsViewController fetchPostWithUser")
+            }) { error in
+                print("Failed to fetch posts:", error)
+                return
             }
-        self.collectionView.reloadData()
-            print("Перезагрузка в ProfileFriendsViewController fetchPostWithUser")
-        }) { error in
-            print("Failed to fetch posts:", error)
-            return
         }
     }
 }

@@ -109,7 +109,7 @@ extension HomeViewController {
     }
     
     func fetchPostsWithUser(user: User) {
-        
+        DispatchQueue.main.async {
         let ref = Database.database().reference().child("posts").child(user.uid)
         ref.observeSingleEvent(of: .value, with: { snapshot in
             guard let dictionaries = snapshot.value as? [String: Any] else { return }
@@ -127,9 +127,11 @@ extension HomeViewController {
             print("Failed to fetch posts:", error)
             return
         }
+        }
     }
     
     func fetchFollowingUserUids() {
+        DispatchQueue.main.async {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         Database.database().reference().child("following").child(uid).observeSingleEvent(of: .value, with: { snapshot in
             
@@ -141,6 +143,7 @@ extension HomeViewController {
             }
         }) { error in
             print("error")
+        }
         }
     }
 }

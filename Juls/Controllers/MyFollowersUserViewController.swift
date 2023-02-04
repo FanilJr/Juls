@@ -156,41 +156,45 @@ extension MyFollowersUserViewController: UISearchBarDelegate {
 extension MyFollowersUserViewController {
     
     func getKeyIFollowUser(user: User, completion: @escaping ([String]) -> ()) {
-        let ref = Database.database().reference().child("following").child(user.uid)
-        ref.observeSingleEvent(of: .value, with: { snapshot in
-            self.tableView.refreshControl?.endRefreshing()
-            guard let dictionaries = snapshot.value as? [String: Any] else { return }
-            
-            dictionaries.forEach { key, value in
-                if key == user.uid {
-                    return
+        DispatchQueue.main.async {
+            let ref = Database.database().reference().child("following").child(user.uid)
+            ref.observeSingleEvent(of: .value, with: { snapshot in
+                self.tableView.refreshControl?.endRefreshing()
+                guard let dictionaries = snapshot.value as? [String: Any] else { return }
+                
+                dictionaries.forEach { key, value in
+                    if key == user.uid {
+                        return
+                    }
+                    var massiveKey = [String]()
+                    massiveKey.append(key)
+                    completion(massiveKey)
                 }
-                var massiveKey = [String]()
-                massiveKey.append(key)
-                completion(massiveKey)
-            }
-        })
+            })
+        }
     }
     
     func getUsersIFollow(keys: [String]) {
         for i in keys {
-            let ref = Database.database().reference().child("users")
-            ref.observeSingleEvent(of: .value, with: { snapshot in
-                
-                guard let dictionaries = snapshot.value as? [String: Any] else { return }
-                
-                dictionaries.forEach { key, value in
+            DispatchQueue.main.async {
+                let ref = Database.database().reference().child("users")
+                ref.observeSingleEvent(of: .value, with: { snapshot in
                     
-                    if key == i {
-                        guard let userDictionary = value as? [String: Any] else { return }
+                    guard let dictionaries = snapshot.value as? [String: Any] else { return }
+                    
+                    dictionaries.forEach { key, value in
                         
-                        let user = User(uid: key, dictionary: userDictionary)
-                        self.users.append(user)
+                        if key == i {
+                            guard let userDictionary = value as? [String: Any] else { return }
+                            
+                            let user = User(uid: key, dictionary: userDictionary)
+                            self.users.append(user)
+                        }
+                        self.filteredUsers = self.users
+                        self.tableView.reloadData()
                     }
-                    self.filteredUsers = self.users
-                    self.tableView.reloadData()
-                }
-            })
+                })
+            }
         }
     }
 }
