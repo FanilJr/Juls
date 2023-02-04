@@ -33,7 +33,7 @@ class LogInViewController: UIViewController {
     
     let background: UIImageView = {
         let back = UIImageView()
-        back.image = UIImage(named: "tekstura")
+        back.image = UIImage(named: "back")
         back.translatesAutoresizingMaskIntoConstraints = false
         return back
     }()
