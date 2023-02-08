@@ -38,7 +38,8 @@ class SettingsViewController: UIViewController {
     }()
     
     private let spinnerView: UIActivityIndicatorView = {
-        let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .whiteLarge)
+        let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .large)
+        activityView.color = .white
         activityView.hidesWhenStopped = true
         activityView.translatesAutoresizingMaskIntoConstraints = false
         return activityView
@@ -59,7 +60,7 @@ class SettingsViewController: UIViewController {
     private let avatarChangeButton: UIButton = {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.addTarget(self, action: #selector(changeAvatar), for: .touchUpInside)
+        button.addTarget(SettingsViewController.self, action: #selector(changeAvatar), for: .touchUpInside)
         button.setTitle("Редактировать", for: .normal)
         return button
     }()
@@ -404,7 +405,6 @@ extension SettingsViewController: UIImagePickerControllerDelegate & UINavigation
 extension SettingsViewController: UITextFieldDelegate {
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-//        guard !statusText.isEmpty else {
       
         self.name.text = textField.text
             self.name.text = self.nameTextField.text
@@ -418,7 +418,6 @@ extension SettingsViewController: UITextFieldDelegate {
             textField.endEditing(true)
             return true
         }
-//        return true
     }
 
 

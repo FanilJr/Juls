@@ -18,7 +18,7 @@ protocol MainCollectionDelegate: AnyObject {
 class MainCollectionViewCell: UICollectionViewCell {
     
     var usersFollowMe = [String]()
-    var iFollowWithUser = [String]()
+//    var iFollowWithUser = [String]()
     var countUser = [String]()
     var countFollowWithUser = [String]()
     
@@ -252,6 +252,7 @@ class MainCollectionViewCell: UICollectionViewCell {
         ])
     }
     
+    
     func configureMain(user: User?) {
         name.text = user?.name
         ageUser.text = user?.age
@@ -269,9 +270,9 @@ extension MainCollectionViewCell {
         ref.observeSingleEvent(of: .value, with: { snapshot in
             guard let iFollowUsers = snapshot.value as? [String: Any] else { return }
             self.iFollowButton.setTitle("\(iFollowUsers.count)", for: .normal)
-            iFollowUsers.forEach { key, value in
-                self.iFollowWithUser.append(key)
-            }
+//            iFollowUsers.forEach { key, value in
+//                self.iFollowWithUser.append(key)
+//            }
         })
     }
     

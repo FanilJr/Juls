@@ -174,7 +174,7 @@ class InfoView: UIView {
         return fullNameLabel
     }()
     
-    let saveButton: UIButton = {
+    lazy var saveButton: UIButton = {
         let settings = UIButton()
         settings.setTitle("Сохранить", for: .normal)
         settings.setTitleColor(.white, for: .normal)
@@ -187,7 +187,7 @@ class InfoView: UIView {
         return settings
     }()
     
-    let cancelButton: UIButton = {
+    lazy var cancelButton: UIButton = {
         let settings = UIButton()
         settings.setTitle("Отменить", for: .normal)
         settings.setTitleColor(.white, for: .normal)

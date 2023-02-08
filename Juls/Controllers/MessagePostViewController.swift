@@ -19,7 +19,8 @@ class MessagePostViewController: UIViewController {
     weak var delegatePost: MessagePostDelegate?
     
     private let spinnerViewForPost: UIActivityIndicatorView = {
-        let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .whiteLarge)
+        let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .large)
+        activityView.color = .white
         activityView.hidesWhenStopped = true
         activityView.translatesAutoresizingMaskIntoConstraints = false
         return activityView

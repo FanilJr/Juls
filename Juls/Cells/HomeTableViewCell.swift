@@ -101,7 +101,7 @@ class HomeTableViewCell: UITableViewCell {
             nameAuthor.leadingAnchor.constraint(equalTo: authorImage.trailingAnchor,constant: 10),
             
             postImage.topAnchor.constraint(equalTo: authorImage.bottomAnchor,constant: 10),
-            postImage.heightAnchor.constraint(equalTo: contentView.widthAnchor,constant: 150),
+            postImage.heightAnchor.constraint(equalTo: contentView.widthAnchor,constant: 100),
             postImage.widthAnchor.constraint(equalTo: contentView.widthAnchor),
             
             descriptionText.topAnchor.constraint(equalTo: postImage.bottomAnchor,constant: 20),

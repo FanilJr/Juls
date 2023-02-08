@@ -17,7 +17,6 @@ class StretchyCollectionFriendsHeaderView: UICollectionReusableView {
     
     var user: User? {
         didSet {
-//            setupAuth()
             guard let userImageUrl = user?.picture else { return }
             self.userImage.loadImage(urlString: userImageUrl)
             self.nickNameLabel.text = user?.username
@@ -128,7 +127,7 @@ class StretchyCollectionFriendsHeaderView: UICollectionReusableView {
     
     func layout() {
         [nickNameLabel, statusLabel].forEach { stackViewVertical.addArrangedSubview($0) }
-        [userImage,backButton,stackViewVertical,messageButton,phoneButton,followButton].forEach { addSubview($0) }
+        [userImage,backButton,stackViewVertical,followButton].forEach { addSubview($0) }
         
         NSLayoutConstraint.activate([
             userImage.topAnchor.constraint(equalTo: topAnchor),
@@ -144,22 +143,12 @@ class StretchyCollectionFriendsHeaderView: UICollectionReusableView {
             stackViewVertical.leadingAnchor.constraint(equalTo: leadingAnchor,constant: 10),
             stackViewVertical.heightAnchor.constraint(equalToConstant: 120),
             stackViewVertical.trailingAnchor.constraint(equalTo: trailingAnchor),
-            stackViewVertical.bottomAnchor.constraint(equalTo: messageButton.topAnchor,constant: -20),
+            stackViewVertical.bottomAnchor.constraint(equalTo: followButton.topAnchor,constant: -20),
             
-            phoneButton.centerXAnchor.constraint(equalTo: centerXAnchor),
-            phoneButton.heightAnchor.constraint(equalToConstant: 50),
-            phoneButton.widthAnchor.constraint(equalToConstant: 50),
-            phoneButton.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -30),
-            
-            messageButton.trailingAnchor.constraint(equalTo: phoneButton.leadingAnchor,constant: -50),
-            messageButton.heightAnchor.constraint(equalToConstant: 50),
-            messageButton.widthAnchor.constraint(equalToConstant: 50),
-            messageButton.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -30),
-            
-            followButton.leadingAnchor.constraint(equalTo: phoneButton.trailingAnchor,constant: 50),
-            followButton.heightAnchor.constraint(equalToConstant: 50),
-            followButton.widthAnchor.constraint(equalToConstant: 50),
-            followButton.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -30)
+            followButton.centerXAnchor.constraint(equalTo: centerXAnchor),
+            followButton.heightAnchor.constraint(equalToConstant: 70),
+            followButton.widthAnchor.constraint(equalToConstant: 70),
+            followButton.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -30),
         ])
     }
     

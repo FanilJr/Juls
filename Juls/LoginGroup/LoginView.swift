@@ -13,8 +13,18 @@ class LoginView: UIView {
 
     weak var delegate: LogInViewControllerDelegate?
     weak var checkerDelegate: LogInViewControllerCheckerDelegate?
+
     private let nc = NotificationCenter.default
 
+    private let logo: UIImageView = {
+        let logo = UIImageView()
+        logo.image = UIImage(named: "logo")
+        logo.translatesAutoresizingMaskIntoConstraints = false
+        logo.clipsToBounds = true
+        logo.layer.cornerRadius = 30
+        return logo
+    }()
+    
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -73,6 +83,43 @@ class LoginView: UIView {
         textField.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
         return textField
     }()
+    
+    private lazy var emailTextField: CustomTextField = {
+        let textField = CustomTextField(placeholder: "Введите email", textColor: .createColor(light: .black, dark: .white), font: UIFont.systemFont(ofSize: 16))
+        textField.backgroundColor = .systemGray6
+        textField.tintColor = UIColor(named: "#4885CC")
+        textField.keyboardType = .emailAddress
+        textField.layer.borderWidth = 0.5
+        textField.layer.cornerRadius = 10
+        textField.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        return textField
+    }()
+    
+    private lazy var passRegisterTextField: UITextField = {
+        let textField = UITextField()
+        textField.placeholder = "Придумайте пароль"
+        textField.textColor = UIColor.createColor(light: .black, dark: .white)
+        textField.font = UIFont.systemFont(ofSize: 16)
+        textField.backgroundColor = .systemGray6
+        textField.tintColor = UIColor(named: "#4885CC")
+        textField.keyboardType = .emailAddress
+        textField.layer.borderWidth = 0.5
+        textField.leftViewMode = UITextField.ViewMode.always
+        textField.leftView = UIView(frame:CGRect(x:0, y:0, width:10, height:self.frame.height))
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        return textField
+    }()
+    
+    private lazy var nickNameTextField: CustomTextField = {
+        let textField = CustomTextField(placeholder: "Придумайте никнейм", textColor: .createColor(light: .black, dark: .white), font: UIFont.systemFont(ofSize: 16))
+        textField.backgroundColor = .systemGray6
+        textField.tintColor = UIColor(named: "#4885CC")
+        textField.keyboardType = .emailAddress
+        textField.layer.borderWidth = 0.5
+        textField.layer.cornerRadius = 10
+        textField.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        return textField
+    }()
 
     lazy var logInButton: CustomButton = {
         logInButton = CustomButton(title: "Вход", titleColor: .white, onTap: { [weak self] in
@@ -83,6 +130,17 @@ class LoginView: UIView {
         logInButton.clipsToBounds = true
         logInButton.translatesAutoresizingMaskIntoConstraints = false
         return logInButton
+    }()
+    
+    lazy var registerButton: CustomButton = {
+        registerButton = CustomButton(title: "Зарегистрироваться", titleColor: .white, onTap: { [weak self] in
+                self?.tappedRegister()
+            })
+        registerButton.backgroundColor = #colorLiteral(red: 0.2745098174, green: 0.4862745106, blue: 0.1411764771, alpha: 1)
+        registerButton.layer.cornerRadius = 10
+        registerButton.clipsToBounds = true
+        registerButton.translatesAutoresizingMaskIntoConstraints = false
+        return registerButton
     }()
     
     private lazy var registrationButton: CustomButton = {
@@ -96,20 +154,20 @@ class LoginView: UIView {
         return registrationButton
     }()
     
-    private lazy var biometryButton: UIButton = {
-        let button = UIButton()
-        button.backgroundColor = #colorLiteral(red: 0.337697003, green: 0.2437653602, blue: 0.3948322499, alpha: 1)
-        button.setTitle("Вход через FaceID", for: .normal)
-        button.addTarget(self, action: #selector(biometryTapped), for: .touchUpInside)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.clipsToBounds = true
-        button.layer.cornerRadius = 10
-        return button
+    private lazy var backButton: CustomButton = {
+        backButton = CustomButton(title: "", titleColor: .white, onTap: { [weak self] in
+                self?.backUpButton()
+            })
+        backButton.setBackgroundImage(UIImage(systemName: "arrow.backward.circle.fill"), for: .normal)
+        backButton.layer.cornerRadius = 10
+        backButton.clipsToBounds = true
+        backButton.translatesAutoresizingMaskIntoConstraints = false
+        return backButton
     }()
-
     
     private let spinnerView: UIActivityIndicatorView = {
-        let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .whiteLarge)
+        let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .large)
+        activityView.color = .white
         activityView.hidesWhenStopped = true
         activityView.translatesAutoresizingMaskIntoConstraints = false
         return activityView
@@ -156,6 +214,78 @@ class LoginView: UIView {
         scrollView.contentInset.bottom = .zero
         scrollView.verticalScrollIndicatorInsets = .zero
     }
+    
+    private func tappedRegister() {
+        guard let vc = self.window?.rootViewController else { return }
+        
+        guard let mailText = emailTextField.text, !mailText.isEmpty else {
+            CommonAlertError.present(vc: vc, with: "Input correct email")
+            return
+        }
+        guard let passwordRegText = passRegisterTextField.text, !passwordRegText.isEmpty else {
+            CommonAlertError.present(vc: vc, with: "Input correct password")
+            return
+        }
+        guard let nicknameText = nickNameTextField.text, !nicknameText.isEmpty else {
+            CommonAlertError.present(vc: vc, with: "Input correct nickname")
+            return
+        }
+            
+        Auth.auth().createUser(withEmail: mailText, password: passwordRegText) { user, error in
+            if let error {
+                print("Failed create", error)
+                return
+            }
+            print("Succes create", user?.user.uid as Any)
+            self.registerButton.backgroundColor = .systemGray6
+            self.registerButton.isEnabled = true
+            guard let uid = user?.user.uid else { return }
+            
+            let allValues = ["username": nicknameText, "name": "","secondName": "","picture": "", "years": "", "status": "", "life status": "", "height": ""]
+            let values = [uid: allValues]
+            
+            Database.database().reference().child("users").updateChildValues(values) { error, ref in
+                if let error {
+                    print("failed ooooops", error)
+                }
+                print("succes update user info")
+                
+                
+    //____________________________________________________________________________________________________________\\
+                
+                Auth.auth().signIn(withEmail: mailText, password: passwordRegText) { user, error in
+                    if let error {
+                        CommonAlertError.present(vc: vc, with: error.localizedDescription)
+                        print("suda zashli")
+                        return
+                    }
+                    guard let userId = user?.user.uid else { return }
+                    print("succes Login", userId as Any)
+                    
+                    let ref = Database.database().reference().child("users").child(userId)
+                    ref.observeSingleEvent(of: .value, with: { snapshot in
+                        guard let dictionaries = snapshot.value as? [String: Any] else { return }
+                        dictionaries.forEach { key, value in
+                            switch key {
+                            case "username":
+                                UserDefaults.standard.set(value, forKey: "username")
+                                print(value)
+                            case "status":
+                                UserDefaults.standard.set(value, forKey: "status")
+                                print(value)
+                            default:
+                                return
+                            }
+                        }
+                    })
+                    self.registerButton.isEnabled = false
+                    self.registerButton.backgroundColor = #colorLiteral(red: 0.2745098174, green: 0.4862745106, blue: 0.1411764771, alpha: 1)
+                    self.backUpButton()
+                    self.delegate?.tappedRegister()
+                }
+            }
+        }
+    }
 
     private func tappedButton() {
         guard let vc = self.window?.rootViewController else { return }
@@ -175,27 +305,61 @@ class LoginView: UIView {
                 print("suda zashli")
                 return
             }
-            print("succes Login", user?.user.uid as Any)
+            guard let userId = user?.user.uid else { return }
+            print("succes Login", userId as Any)
+            
+            let ref = Database.database().reference().child("users").child(userId)
+            ref.observeSingleEvent(of: .value, with: { snapshot in
+                guard let dictionaries = snapshot.value as? [String: Any] else { return }
+                dictionaries.forEach { key, value in
+                    switch key {
+                    case "username":
+                        UserDefaults.standard.set(value, forKey: "username")
+                        print(value)
+                    case "status":
+                        UserDefaults.standard.set(value, forKey: "status")
+                        print(value)
+                    default:
+                        return
+                    }
+                }
+            })
             self.delegate?.tappedButton()
         }
     }
 
     
     private func signUpTapped() {
-        delegate?.pushSignUp()
+        UIView.animate(withDuration: 0.3, animations: {
+            self.loginTextField.transform = CGAffineTransform(translationX: -400, y: 0)
+            self.passwordTextField.transform = CGAffineTransform(translationX: -400, y: 0)
+            self.logInButton.transform = CGAffineTransform(translationX: -400, y: 0)
+            self.registrationButton.transform = CGAffineTransform(translationX: -400, y: 0)
+            
+            self.emailTextField.transform = CGAffineTransform(translationX: -380, y: 0)
+            self.passRegisterTextField.transform = CGAffineTransform(translationX: -380, y: 0)
+            self.nickNameTextField.transform = CGAffineTransform(translationX: -380, y: 0)
+            self.registerButton.transform = CGAffineTransform(translationX: -380, y: 0)
+            
+            self.backButton.transform = CGAffineTransform(translationX: 50, y: 0)
+        })
     }
     
-    @objc private func biometryTapped() {
-        guard let vc = self.window?.rootViewController else { return }
-
-        let local = LocalAuthorizationService()
-        local.authorizeIfPossible { [weak self] flag in
-            if flag {
-                self?.delegate?.tappedButton()
-            } else {
-                CommonAlertError.present(vc: vc, with: "Error in biometry authorized!")
-            }
-        }
+    private func backUpButton() {
+        UIView.animate(withDuration: 0.3, animations: {
+            self.backButton.transform = CGAffineTransform(translationX: 0, y: 0)
+            
+            self.emailTextField.transform = CGAffineTransform(translationX: 0, y: 0)
+            self.passRegisterTextField.transform = CGAffineTransform(translationX: 0, y: 0)
+            self.nickNameTextField.transform = CGAffineTransform(translationX: 0, y: 0)
+            self.registerButton.transform = CGAffineTransform(translationX: 0, y: 0)
+            
+            self.loginTextField.transform = CGAffineTransform(translationX: 0, y: 0)
+            self.passwordTextField.transform = CGAffineTransform(translationX: 0, y: 0)
+            self.logInButton.transform = CGAffineTransform(translationX: 0, y: 0)
+            self.registrationButton.transform = CGAffineTransform(translationX: 0, y: 0)
+            
+        })
     }
     
     func waitingSpinnerEnable(_ active: Bool) {
@@ -208,8 +372,7 @@ class LoginView: UIView {
 
     private func layout() {
         
-        [loginTextField, passwordTextField, logInButton, labelOR, registrationButton, biometryButton].forEach { contentView.addSubview($0) }
-        biometryButton.addSubview(faceidImage)
+        [logo, loginTextField, passwordTextField, logInButton, registrationButton, emailTextField, passRegisterTextField, nickNameTextField, registerButton, backButton].forEach { contentView.addSubview($0) }
         scrollView.addSubview(contentView)
         addSubview(scrollView)
         
@@ -225,39 +388,56 @@ class LoginView: UIView {
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             
-            loginTextField.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 340),
-            loginTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 16),
-            loginTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -16),
+            logo.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 120),
+            logo.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            logo.heightAnchor.constraint(equalToConstant: 150),
+            logo.widthAnchor.constraint(equalToConstant: 150),
+
+            loginTextField.topAnchor.constraint(equalTo: logo.bottomAnchor,constant: 90),
+            loginTextField.widthAnchor.constraint(equalToConstant: 350),
+            loginTextField.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             loginTextField.heightAnchor.constraint(equalToConstant: 45),
             
             passwordTextField.topAnchor.constraint(equalTo: loginTextField.bottomAnchor),
-            passwordTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 16),
-            passwordTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -16),
+            passwordTextField.widthAnchor.constraint(equalToConstant: 350),
+            passwordTextField.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             passwordTextField.heightAnchor.constraint(equalToConstant: 45),
             
             logInButton.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor,constant: 16),
-            logInButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 16),
-            logInButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -16),
+            logInButton.widthAnchor.constraint(equalToConstant: 350),
+            logInButton.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             logInButton.heightAnchor.constraint(equalToConstant: 45),
             
-            labelOR.topAnchor.constraint(equalTo: logInButton.bottomAnchor,constant: 16),
-            labelOR.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-
-            biometryButton.topAnchor.constraint(equalTo: labelOR.bottomAnchor,constant: 16),
-            biometryButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 16),
-            biometryButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -16),
-            biometryButton.heightAnchor.constraint(equalToConstant: 45),
-            
-            faceidImage.centerYAnchor.constraint(equalTo: biometryButton.centerYAnchor),
-            faceidImage.leadingAnchor.constraint(equalTo: biometryButton.leadingAnchor,constant: 5),
-            faceidImage.heightAnchor.constraint(equalToConstant: 35),
-            faceidImage.widthAnchor.constraint(equalToConstant: 35),
-
-            registrationButton.topAnchor.constraint(equalTo: biometryButton.bottomAnchor,constant: 160),
-            registrationButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 16),
-            registrationButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -16),
+            registrationButton.topAnchor.constraint(equalTo: logInButton.bottomAnchor,constant: 277),
+            registrationButton.widthAnchor.constraint(equalToConstant: 350),
+            registrationButton.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             registrationButton.heightAnchor.constraint(equalToConstant: 45),
-            registrationButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+            registrationButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            
+            backButton.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 60),
+            backButton.trailingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            backButton.widthAnchor.constraint(equalToConstant: 40),
+            backButton.heightAnchor.constraint(equalToConstant: 40),
+            
+            emailTextField.topAnchor.constraint(equalTo: logo.bottomAnchor,constant: 90),
+            emailTextField.leadingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            emailTextField.widthAnchor.constraint(equalToConstant: 350),
+            emailTextField.heightAnchor.constraint(equalToConstant: 45),
+            
+            passRegisterTextField.topAnchor.constraint(equalTo: emailTextField.bottomAnchor),
+            passRegisterTextField.leadingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            passRegisterTextField.widthAnchor.constraint(equalToConstant: 350),
+            passRegisterTextField.heightAnchor.constraint(equalToConstant: 45),
+            
+            nickNameTextField.topAnchor.constraint(equalTo: passRegisterTextField.bottomAnchor),
+            nickNameTextField.leadingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            nickNameTextField.widthAnchor.constraint(equalToConstant: 350),
+            nickNameTextField.heightAnchor.constraint(equalToConstant: 45),
+            
+            registerButton.topAnchor.constraint(equalTo: nickNameTextField.bottomAnchor,constant: 100),
+            registerButton.leadingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            registerButton.widthAnchor.constraint(equalToConstant: 350),
+            registerButton.heightAnchor.constraint(equalToConstant: 45)
         ])
     }
 }
@@ -280,4 +460,3 @@ extension LoginView {
         endEditing(true)
     }
 }
-

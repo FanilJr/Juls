@@ -12,7 +12,7 @@ class JulsView: UIView {
     
     var julsImageView: UIImageView = {
         let image = UIImageView()
-        image.image = UIImage(named: "Juls5")
+        image.image = UIImage(named: "rete")
         image.contentMode = .scaleAspectFill
         image.translatesAutoresizingMaskIntoConstraints = false
         return image

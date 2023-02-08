@@ -42,7 +42,7 @@ func downloadNews(completion: ((_ item: [Article]?) -> Void)?) {
             return
         }
         if (responce as? HTTPURLResponse)?.statusCode != 200 {
-            print("statusCode = \((responce as? HTTPURLResponse)?.statusCode)")
+            print("statusCode = \((responce as? HTTPURLResponse)?.statusCode ?? 0)")
             return
         }
         
@@ -77,7 +77,6 @@ func downloadNewsList(searchString: String? = nil, completion: ((_ articles: [Ar
         do {
             let answer = try JSONDecoder().decode(Answer.self, from: data)
             completion?(answer.articles)
-//            print("ЭТО ANSWER--------------------------------\(answer)")
         } catch {
             print(error)
             print("сюда заходим")
@@ -98,7 +97,7 @@ func downloadData(url: URL, completion: ((_ data: Data?) -> Void)?) {
         }
         
         if (responce as? HTTPURLResponse)?.statusCode != 200 {
-            print("StatusCode = \((responce as? HTTPURLResponse)?.statusCode)")
+            print("StatusCode = \((responce as? HTTPURLResponse)?.statusCode ?? 0)")
             return
         }
         

@@ -11,7 +11,7 @@ typealias Handler = (Result<String, Error>) -> Void
 
 protocol LogInViewControllerDelegate: AnyObject {
     func tappedButton()
-    func pushSignUp()
+    func tappedRegister()
 }
 protocol LogInViewControllerCheckerDelegate: AnyObject {
     func login(inputLogin: String, inputPassword: String, completion: @escaping Handler)
@@ -84,12 +84,17 @@ class LogInViewController: UIViewController {
 
 // MARK: - LoginViewDelegate
 extension LogInViewController: LogInViewControllerDelegate {
-    func tappedButton() {
-        viewModel.send(.showProfileVc)
+    func tappedRegister() {
+        let alertController = UIAlertController(title: "Браво 👏", message: "Вы успешно прошли регистрацию!", preferredStyle: .alert)
+        let alertAction = UIAlertAction(title: "Ok", style: .default) { _ in
+            self.viewModel.send(.showProfileVc)
+        }
+        alertController.addAction(alertAction)
+        present(alertController, animated: true)
+        
     }
     
-    func pushSignUp() {
-        let registrationVC = RegistratonViewController()
-        navigationController?.pushViewController(registrationVC, animated: true)
+    func tappedButton() {
+        viewModel.send(.showProfileVc)
     }
 }

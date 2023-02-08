@@ -10,12 +10,13 @@ import Firebase
 
 protocol StretchyDelegate: AnyObject {
     func addPostInCollection()
-    func goMessage()
-    func goCall()
+//    func goMessage()
+//    func goCall()
     func presentImagePickerForUser()
     func addStatus()
     func logOut()
     func showAlbum()
+    func setupSettings()
 }
 
 class StretchyCollectionHeaderView: UICollectionReusableView {
@@ -29,8 +30,6 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
             
             self.addButton.setBackgroundImage(UIImage(systemName: "plus"), for: .normal)
             self.editButton.setBackgroundImage(UIImage(systemName: "ellipsis.circle"), for: .normal)
-            self.messageButton.setBackgroundImage(UIImage(named: "message.circle.fill@100x"), for: .normal)
-            self.phoneButton.setBackgroundImage(UIImage(named: "phone.circle.fill@100x"), for: .normal)
             self.albumButton.setBackgroundImage(UIImage(named: "photo.circle.fill@100x"), for: .normal)
         }
     }
@@ -86,23 +85,6 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         return statusTextField
     }()
     
-    lazy var phoneButton: UIButton = {
-        let button = UIButton()
-        button.addTarget(self, action: #selector(goCall), for: .touchUpInside)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.clipsToBounds = true
-        return button
-    }()
-
-    
-    lazy var messageButton: UIButton = {
-        let button = UIButton()
-        button.addTarget(self, action: #selector(goMessage), for: .touchUpInside)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.clipsToBounds = true
-        return button
-    }()
-    
     lazy var albumButton: UIButton = {
         let button = UIButton()
         button.addTarget(self, action: #selector(showAlbumController), for: .touchUpInside)
@@ -146,7 +128,7 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
     
     func layout() {
         [nickNameLabel, statusLabel].forEach { stackViewVertical.addArrangedSubview($0) }
-        [userImage,stackViewVertical,editButton,addButton,messageButton,phoneButton,albumButton].forEach { addSubview($0) }
+        [userImage,stackViewVertical,editButton,addButton].forEach { addSubview($0) }
         
         NSLayoutConstraint.activate([
             userImage.topAnchor.constraint(equalTo: topAnchor),
@@ -167,31 +149,8 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
             stackViewVertical.leadingAnchor.constraint(equalTo: leadingAnchor,constant: 10),
             stackViewVertical.heightAnchor.constraint(equalToConstant: 120),
             stackViewVertical.trailingAnchor.constraint(equalTo: trailingAnchor),
-            stackViewVertical.bottomAnchor.constraint(equalTo: messageButton.topAnchor,constant: -20),
-            
-            phoneButton.centerXAnchor.constraint(equalTo: centerXAnchor),
-            phoneButton.heightAnchor.constraint(equalToConstant: 50),
-            phoneButton.widthAnchor.constraint(equalToConstant: 50),
-            phoneButton.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -30),
-            
-            messageButton.trailingAnchor.constraint(equalTo: phoneButton.leadingAnchor,constant: -50),
-            messageButton.heightAnchor.constraint(equalToConstant: 50),
-            messageButton.widthAnchor.constraint(equalToConstant: 50),
-            messageButton.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -30),
-            
-            albumButton.leadingAnchor.constraint(equalTo: phoneButton.trailingAnchor,constant: 50),
-            albumButton.heightAnchor.constraint(equalToConstant: 50),
-            albumButton.widthAnchor.constraint(equalToConstant: 50),
-            albumButton.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -30)
+            stackViewVertical.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -100)
         ])
-    }
-    
-    @objc func goMessage() {
-        delegate?.goMessage()
-    }
-    
-    @objc func goCall() {
-        delegate?.goCall()
     }
     
     @objc func showAlbumController() {
@@ -216,8 +175,8 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
             self.delegate?.addStatus()
         }
         
-        let settings = UIAction(title: "Настройки", image: UIImage(systemName: "gear")) { _ in
-//            self.delegate?.showSettings()
+        let _ = UIAction(title: "Настройки", image: UIImage(systemName: "gear")) { _ in
+            self.delegate?.setupSettings()
         }
         
         let quit = UIAction(title: "Выйти из аккаунта", image: UIImage(systemName: "hands.sparkles.fill"), attributes: .destructive) { _ in

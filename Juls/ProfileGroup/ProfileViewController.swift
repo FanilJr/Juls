@@ -29,19 +29,22 @@ class ProfileViewController: UIViewController {
     private var currentImage: UIImageView?
     private let headerCollection = StretchyCollectionHeaderView()
     private var header: StretchyCollectionHeaderView?
+    let mainCollection = MainCollectionViewCell()
     
     let systemSoundID: SystemSoundID = 1016
     let systemSoundID2: SystemSoundID = 1018
     
     private let spinnerView: UIActivityIndicatorView = {
-        let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .whiteLarge)
+        let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .large)
+        activityView.color = .white
         activityView.hidesWhenStopped = true
         activityView.translatesAutoresizingMaskIntoConstraints = false
         return activityView
     }()
     
     private let spinnerViewForPost: UIActivityIndicatorView = {
-        let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .whiteLarge)
+        let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .large)
+        activityView.color = .white
         activityView.hidesWhenStopped = true
         activityView.translatesAutoresizingMaskIntoConstraints = false
         return activityView
@@ -109,6 +112,21 @@ class ProfileViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.navigationController?.navigationBar.isHidden = true
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        let status = UserDefaults.standard.object(forKey: "status") as? String
+        if let statusDisplay = status {
+            self.header?.statusLabel.text = statusDisplay
+        }
+        let username = UserDefaults.standard.object(forKey: "username") as? String
+        if let usernameDisplay = username {
+            self.header?.nickNameLabel.text = usernameDisplay
+        }
+        let name = UserDefaults.standard.object(forKey: "name") as? String
+        if let nameDisplay = name {
+            self.mainCollection.name.text = nameDisplay
+        }
     }
     
     @objc func didTapRefresh() {
@@ -442,7 +460,6 @@ extension ProfileViewController {
                             DispatchQueue.main.asyncAfter(deadline: .now()+1.1) {
                                 UIView.animate(withDuration: 1) {
                                     self.saveView.alpha = 0
-                                    
                                 }
                             }
                         }
@@ -614,21 +631,15 @@ extension ProfileViewController: MessagePostDelegate {
 }
 
 extension ProfileViewController: StretchyDelegate {
-    
-    func goMessage() {
-        let alert = UIAlertController(title: "В разработке.... Sorry ;(", message: "", preferredStyle: .alert)
-        let alertOK = UIAlertAction(title: "ок", style: .default)
-        [alertOK].forEach { alert.addAction($0) }
-        present(alert, animated: true)
+    func setupSettings() {
+        if let sheet = settingsViewController.sheetPresentationController {
+            sheet.detents = [.medium(), .large()]
+            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
+            sheet.largestUndimmedDetentIdentifier = .medium
+            sheet.prefersGrabberVisible = true
+        }
+        present(settingsViewController, animated: true)
     }
-    
-    func goCall() {
-        let alert = UIAlertController(title: "В разработке.... Sorry ;(", message: "", preferredStyle: .alert)
-        let alertOK = UIAlertAction(title: "ок", style: .default)
-        [alertOK].forEach { alert.addAction($0) }
-        present(alert, animated: true)
-    }
-    
     
     func showAlbum() {
         viewModel.send(.showPhotosVc)
@@ -640,8 +651,9 @@ extension ProfileViewController: StretchyDelegate {
             let text = alert.textFields?.first?.text
             header?.statusLabel.text = text
             AudioServicesPlaySystemSound(self.systemSoundID)
-            
+            UserDefaults.standard.set(header?.statusLabel.text, forKey: "status")
             if let urlText = header?.statusLabel.text {
+                
                 Database.database().reference().child("users").child(Auth.auth().currentUser?.uid ?? "").updateChildValues(["status" : urlText]) { error, ref in
                     if let error {
                         print(error)
@@ -672,6 +684,7 @@ extension ProfileViewController: StretchyDelegate {
         let alertOK = UIAlertAction(title: "Выйти", style: .destructive)  { [self] _ in
             do {
                 try Auth.auth().signOut()
+                ["username","status","age","life status","name","height"].forEach { UserDefaults.standard.removeObject(forKey: $0)}
                 viewModel.send(.showLoginVc)
             } catch {
                 print("error")
