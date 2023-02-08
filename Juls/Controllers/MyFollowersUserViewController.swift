@@ -44,7 +44,7 @@ class MyFollowersUserViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .white
         navigationController?.navigationBar.isHidden = false
-        navigationItem.titleView = juls
+        title = "Подписки"
         layout()
         refreshControler.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
         refreshControler.attributedTitle = NSAttributedString(string: "Обновление")
