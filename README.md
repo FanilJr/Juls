@@ -27,7 +27,7 @@ Coordinators, Delegate, Completion Block, Firebase (Database, Storage), UserDefa
 6. Поиск людей:
 <img src="https://ltdfoto.ru/images/2023/02/08/IMG_1175.jpg" border="0" height="430" width="200"/>
 
-7. Возможность подписаться на пользоваться нажав на сердце
+7. Возможность подписаться на пользователя нажав на сердце
 <img src="https://ltdfoto.ru/images/2023/02/08/SNIMOK-EKRANA-20230208-V-15.39.14.jpg" alt="SNIMOK-EKRANA-20230208-V-15.39.14.jpg" border="0" height="430" width="200"/>
 
 8. Лента постов на кого подписан:

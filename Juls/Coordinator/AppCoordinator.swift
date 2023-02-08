@@ -80,18 +80,18 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
         //MARK: SETTINGS
         let infoVC = viewControllerFactory.viewController(for: .info)
         let navInfoVC = createNavController(for: infoVC, title: String("Информация"), image: UIImage(systemName: Constants.infoImageName)!, selectImage: UIImage(systemName: ConstantsSelect.infoImageName) ?? UIImage())
-        let infoCoordinator = InfoCoordinator(navigationController: navInfoVC, viewControllerFactory: viewControllerFactory)
+        let _ = InfoCoordinator(navigationController: navInfoVC, viewControllerFactory: viewControllerFactory)
 
 
         addDependency(searchCoordinator)
         addDependency(homeCoordinator)
         addDependency(newsCoordinator)
-        addDependency(infoCoordinator)
+//        addDependency(infoCoordinator)
 
         searchCoordinator.start()
         homeCoordinator.start()
         newsCoordinator.start()
-        infoCoordinator.start()
+//        infoCoordinator.start()
         
         if Auth.auth().currentUser == nil {
             let loginViewModel = LoginViewModel()
@@ -104,7 +104,7 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
             let logInCoordinator = LogInCoordinator(navigationController: navLogInVc, viewControllerFactory: viewControllerFactory)
             addDependency(logInCoordinator)
             logInCoordinator.start()
-            return [navNewsVC, navSearchVC, navHomeVC, navLogInVc, navInfoVC]
+            return [navNewsVC, navSearchVC, navHomeVC, navLogInVc]
         }
         
         let profileViewModel = ProfileViewModel()
@@ -117,7 +117,7 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
         
         addDependency(profileCoordinator)
         profileCoordinator.start()
-        return [navNewsVC, navSearchVC, navHomeVC, navProfileInVc, navInfoVC]
+        return [navNewsVC, navSearchVC, navHomeVC, navProfileInVc]
     }
     
     private func createNavController(for rootViewController: UIViewController, title: String, image: UIImage, selectImage: UIImage) -> UINavigationController {
