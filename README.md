@@ -1,6 +1,6 @@
 ### Привет, Меня зовут Фаниль
 #### Я студент университета "Нетология"
-[<img src='https://ltdfoto.ru/images/2023/02/08/exkn8ppz_md.png' height='150' width='300'>]
+<img src='https://ltdfoto.ru/images/2023/02/08/exkn8ppz_md.png' height='170' width='300'>
 
 Это мой дипломный проект на базе VK(Navigation).
 
