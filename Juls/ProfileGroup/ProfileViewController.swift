@@ -111,7 +111,8 @@ class ProfileViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.navigationController?.navigationBar.isHidden = true
+        tabBarController?.tabBar.isHidden = false
+        navigationController?.navigationBar.isHidden = true
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -406,7 +407,8 @@ extension ProfileViewController {
         
                 dictionaries.forEach { key, value in
                     guard let dictionary = value as? [String: Any] else { return }
-                    let post = Post(user: user, dictionary: dictionary)
+                    var post = Post(user: user, dictionary: dictionary)
+                    post.id = key
                     self.posts.append(post)
                 }
                 self.posts.sort { p1, p2 in

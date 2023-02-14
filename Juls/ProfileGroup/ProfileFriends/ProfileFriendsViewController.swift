@@ -51,15 +51,12 @@ class ProfileFriendsViewController: UIViewController {
         layout()
         fetchUser()
         refreshController.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
-
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.navigationBar.isHidden = true
-//        self.posts.removeAll()
-//        fetchUser()
-        print("reload friendscontroller из-за этого вылетает когда посты не прогрузились")
+        tabBarController?.tabBar.isHidden = false
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -122,7 +119,8 @@ extension ProfileFriendsViewController {
         
                 dictionaries.forEach { key, value in
                     guard let dictionary = value as? [String: Any] else { return }
-                    let post = Post(user: user, dictionary: dictionary)
+                    var post = Post(user: user, dictionary: dictionary)
+                    post.id = key
                     self.posts.append(post)
                 }
                 self.posts.sort { p1, p2 in

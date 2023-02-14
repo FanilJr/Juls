@@ -48,9 +48,13 @@ class PostTableViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-//        navigationController?.setNavigationBarHidden(false, animated: animated)
-        self.navigationController?.navigationBar.isHidden = false
-        
+        navigationController?.navigationBar.isHidden = false
+        tabBarController?.tabBar.isHidden = true
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        tabBarController?.tabBar.isHidden = true
     }
     
     @objc func didTapRefresh() {
@@ -100,11 +104,18 @@ extension PostTableViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: "PostTableViewCell", for: indexPath) as! PostTableViewCell
         cell.selectionStyle = UITableViewCell.SelectionStyle.none
         cell.backgroundColor = .clear
+        cell.delegate = self
         cell.configureTable(post: self.post)
         return cell
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableView.automaticDimension
+    }
+}
+
+extension PostTableViewController: CommentDelegate {
+    func didTapComment() {
+        CommentViewController.showComment(self, post: post)
     }
 }

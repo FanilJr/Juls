@@ -79,6 +79,10 @@
 		84D0A3E02994241200B2DE8F /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 84D0A3DF2994241200B2DE8F /* FirebaseAuth */; };
 		84D0A3E22994241200B2DE8F /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 84D0A3E12994241200B2DE8F /* FirebaseDatabase */; };
 		84D0A3E42994241200B2DE8F /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 84D0A3E32994241200B2DE8F /* FirebaseStorage */; };
+		84D0A3E629973AF600B2DE8F /* CommentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D0A3E529973AF600B2DE8F /* CommentViewController.swift */; };
+		84D0A3E8299742B200B2DE8F /* CommentsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D0A3E7299742B100B2DE8F /* CommentsTableViewCell.swift */; };
+		84D0A3EA2997442300B2DE8F /* HeaderCommment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D0A3E92997442300B2DE8F /* HeaderCommment.swift */; };
+		84D0A3ED299786EE00B2DE8F /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D0A3EC299786EC00B2DE8F /* Comment.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -152,6 +156,10 @@
 		84BB3CF2298A1657003795C3 /* FollowersUserWithMeCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowersUserWithMeCell.swift; sourceTree = "<group>"; };
 		84BB3CF4298E52F3003795C3 /* InfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoViewController.swift; sourceTree = "<group>"; };
 		84BB3CF6298E54FC003795C3 /* InfoCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoCoordinator.swift; sourceTree = "<group>"; };
+		84D0A3E529973AF600B2DE8F /* CommentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentViewController.swift; sourceTree = "<group>"; };
+		84D0A3E7299742B100B2DE8F /* CommentsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsTableViewCell.swift; sourceTree = "<group>"; };
+		84D0A3E92997442300B2DE8F /* HeaderCommment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderCommment.swift; sourceTree = "<group>"; };
+		84D0A3EC299786EC00B2DE8F /* Comment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -188,6 +196,7 @@
 		848881AB2964C97D006BE6A1 /* Juls */ = {
 			isa = PBXGroup;
 			children = (
+				84D0A3EB299786CD00B2DE8F /* Comment */,
 				840C603B298EDC1400932714 /* Assets.xcassets */,
 				848881B72964C983006BE6A1 /* LaunchScreen.storyboard */,
 				848881BA2964C983006BE6A1 /* Info.plist */,
@@ -238,6 +247,7 @@
 				84B3C1782984CF750044EE9C /* PostTableViewCell.swift */,
 				84BB3CEE2987854A003795C3 /* MyFollowersUserViewCell.swift */,
 				84BB3CF2298A1657003795C3 /* FollowersUserWithMeCell.swift */,
+				84D0A3E7299742B100B2DE8F /* CommentsTableViewCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -254,6 +264,8 @@
 				84BB3CEC298784D1003795C3 /* MyFollowersUserViewController.swift */,
 				84BB3CF0298A15EE003795C3 /* FollowersUsersWithMeController.swift */,
 				84BB3CF4298E52F3003795C3 /* InfoViewController.swift */,
+				84D0A3E529973AF600B2DE8F /* CommentViewController.swift */,
+				84D0A3E92997442300B2DE8F /* HeaderCommment.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -365,6 +377,14 @@
 			path = Posts;
 			sourceTree = "<group>";
 		};
+		84D0A3EB299786CD00B2DE8F /* Comment */ = {
+			isa = PBXGroup;
+			children = (
+				84D0A3EC299786EC00B2DE8F /* Comment.swift */,
+			);
+			path = Comment;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -446,6 +466,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				848881EA2964D06C006BE6A1 /* Coordinator.swift in Sources */,
+				84D0A3ED299786EE00B2DE8F /* Comment.swift in Sources */,
 				848882142964D48B006BE6A1 /* MainTabBarController.swift in Sources */,
 				848882012964D374006BE6A1 /* CustomButton.swift in Sources */,
 				848881EC2964D0B3006BE6A1 /* AppCoordinator.swift in Sources */,
@@ -464,6 +485,7 @@
 				84BB3CF1298A15EE003795C3 /* FollowersUsersWithMeController.swift in Sources */,
 				84BB3CED298784D1003795C3 /* MyFollowersUserViewController.swift in Sources */,
 				848882482964D806006BE6A1 /* NewsListController.swift in Sources */,
+				84D0A3E8299742B200B2DE8F /* CommentsTableViewCell.swift in Sources */,
 				8488827B29678494006BE6A1 /* SearchController.swift in Sources */,
 				8488821A2964D4D5006BE6A1 /* ColorMode.swift in Sources */,
 				848881F42964D11A006BE6A1 /* LoginCoordinator.swift in Sources */,
@@ -472,11 +494,13 @@
 				84B3C17529847E3F0044EE9C /* StretchyCollectionFriendsHeaderView.swift in Sources */,
 				848882082964D3E2006BE6A1 /* WebViewController.swift in Sources */,
 				8482EC112972685000058A7D /* AppDelegate.swift in Sources */,
+				84D0A3EA2997442300B2DE8F /* HeaderCommment.swift in Sources */,
 				848881AF2964C97D006BE6A1 /* SceneDelegate.swift in Sources */,
 				848882342964D693006BE6A1 /* LoginView.swift in Sources */,
 				8488828C2968BC4B006BE6A1 /* HomeViewController.swift in Sources */,
 				848881D82964CE8C006BE6A1 /* PhotosCollectionViewCell.swift in Sources */,
 				84B3C1792984CF750044EE9C /* PostTableViewCell.swift in Sources */,
+				84D0A3E629973AF600B2DE8F /* CommentViewController.swift in Sources */,
 				848881F82964D16D006BE6A1 /* ProfileCoordinator.swift in Sources */,
 				8488826E2964DA55006BE6A1 /* LocalAuthorizationService.swift in Sources */,
 				84BB3CF3298A1657003795C3 /* FollowersUserWithMeCell.swift in Sources */,

@@ -33,7 +33,12 @@ Coordinators, Delegate, Completion Block, Firebase (Database, Storage), UserDefa
 8. Лента постов на кого подписан:
 <img src="https://ltdfoto.ru/images/2023/02/08/IMG_1174.jpg" border="0" height="430" width="200"/>
 
-В процессе на данный момент находятся коментарии для постов, личные сообщения - между пользователями, авторизация по номеру телефона, хранение понравившихся публикаций CoreData.
+9. Комментарии и лайки постов:
+<img src="https://ltdfoto.ru/images/2023/02/14/IMG_1334.jpg" border="0" height="430" width="200"/>
+<img src="https://ltdfoto.ru/images/2023/02/14/IMG_1335.jpg" border="0" height="430" width="200"/>
+
+
+В процессе на данный момент находятся коментарии личные сообщения - между пользователями, авторизация по номеру телефона, хранение понравившихся публикаций CoreData.
 
 
 
