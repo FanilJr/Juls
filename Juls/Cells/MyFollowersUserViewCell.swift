@@ -45,7 +45,6 @@ class MyFollowersUserViewCell: UITableViewCell {
             profileImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
             profileImageView.heightAnchor.constraint(equalToConstant: 80),
             profileImageView.widthAnchor.constraint(equalToConstant: 80),
-//            profileImageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -10),
             
             usernameLabel.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor,constant: 10),
             usernameLabel.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor),

@@ -18,7 +18,6 @@ protocol MainCollectionDelegate: AnyObject {
 class MainCollectionViewCell: UICollectionViewCell {
     
     var usersFollowMe = [String]()
-//    var iFollowWithUser = [String]()
     var countUser = [String]()
     var countFollowWithUser = [String]()
     
@@ -252,59 +251,10 @@ class MainCollectionViewCell: UICollectionViewCell {
         ])
     }
     
-    
     func configureMain(user: User?) {
         name.text = user?.name
         ageUser.text = user?.age
         statusLife.text = user?.lifeStatus
         heightUser.text = user?.height
-    }
-}
-
-extension MainCollectionViewCell {
-    
-    func checkIFollowing(user: User?) {
-        guard let userId = user?.uid else { return }
-        
-        let ref = Database.database().reference().child("following").child(userId)
-        ref.observeSingleEvent(of: .value, with: { snapshot in
-            guard let iFollowUsers = snapshot.value as? [String: Any] else { return }
-            self.iFollowButton.setTitle("\(iFollowUsers.count)", for: .normal)
-//            iFollowUsers.forEach { key, value in
-//                self.iFollowWithUser.append(key)
-//            }
-        })
-    }
-    
-    func checkFollowMe(user: User?) {
-        guard let userId = user?.uid else { return }
-        let ref = Database.database().reference().child("following")
-        ref.observeSingleEvent(of: .value, with: { snapshot in
-            guard let iFollowUsers = snapshot.value as? [String: Any] else { return }
-            iFollowUsers.forEach { key, value in
-                if key != userId {
-                    self.usersFollowMe.append(key)
-                }
-            }
-            self.loadFollowUsers(user: user)
-        })
-    }
-    
-    func loadFollowUsers(user: User?) {
-        for i in usersFollowMe {
-            let uidUsers = i
-            let ref = Database.database().reference().child("following").child(uidUsers)
-            ref.observeSingleEvent(of: .value, with: { snapshot in
-                guard let followMeUsers = snapshot.value as? [String: Any] else { return }
-                followMeUsers.forEach { key, value in
-                    if key == user?.uid {
-                        self.countUser.append(uidUsers)
-                        
-                        let setCountUser = Set(Array(self.countUser))
-                        self.followMeButton.setTitle("\(setCountUser.count)", for: .normal)
-                    }
-                }
-            })
-        }
     }
 }

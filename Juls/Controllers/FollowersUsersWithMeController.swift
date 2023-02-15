@@ -136,9 +136,16 @@ extension FollowersUsersWithMeController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let user = filteredUsers[indexPath.row]
-        ProfileFriendsViewController.show(self, user: user)
-        searchController.searchBar.isHidden = true
-        searchController.searchBar.resignFirstResponder()
+        guard let myUserId = Auth.auth().currentUser?.uid else { return }
+        if myUserId == user.uid {
+            print("hello myUser")
+        } else {
+            let profileVcUser = ProfileViewController(viewModel: ProfileViewModel())
+            profileVcUser.userId = user.uid
+            navigationController?.pushViewController(profileVcUser, animated: true)
+            searchController.searchBar.isHidden = true
+            searchController.searchBar.resignFirstResponder()
+        }
     }
 }
 

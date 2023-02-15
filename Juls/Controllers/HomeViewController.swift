@@ -51,12 +51,11 @@ class HomeViewController: UIViewController {
     }
     
     @objc func didTapRefresh() {
-        self.tableView.refreshControl?.endRefreshing()
+        posts.removeAll()
         self.fetchAllPosts()
     }
     
     fileprivate func fetchAllPosts() {
-        self.posts.removeAll()
         fetchPosts()
         fetchFollowingUserUids()
         self.tableView.reloadData()
@@ -121,16 +120,17 @@ extension HomeViewController {
     
     func fetchPostsWithUser(user: User) {
         let ref = Database.database().reference().child("posts").child(user.uid)
-        ref.observeSingleEvent(of: .value, with: { snapshot in
+        
+        ref.observeSingleEvent(of: .value, with: { (snapshot) in
+            self.tableView.refreshControl?.endRefreshing()
             guard let dictionaries = snapshot.value as? [String: Any] else { return }
         
-            dictionaries.forEach { key, value in
+            dictionaries.forEach ({ (key, value) in
                 guard let dictionary = value as? [String: Any] else { return }
                 var post = Post(user: user, dictionary: dictionary)
                 post.id = key
-                
                 guard let uid = Auth.auth().currentUser?.uid else { return }
-                Database.database().reference().child("likes").child(key).child(uid).observe(.value) { snapshot in
+                Database.database().reference().child("likes").child(key).child(uid).observeSingleEvent(of: .value, with: { (snapshot) in
                     if let value = snapshot.value as? Int, value == 1 {
                         post.hasLiked = true
                     } else {
@@ -141,8 +141,10 @@ extension HomeViewController {
                         return p1.creationDate.compare(p2.creationDate) == .orderedDescending
                     }
                     self.tableView.reloadData()
-                }
-            }
+                }, withCancel: { (error) in
+                    print(error)
+                })
+            })
         }) { error in
             print("Failed to fetch posts:", error)
         }
@@ -151,7 +153,6 @@ extension HomeViewController {
     func fetchFollowingUserUids() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         Database.database().reference().child("following").child(uid).observeSingleEvent(of: .value, with: { snapshot in
-            
             guard let userIdsDictionary = snapshot.value as? [String: Any] else { return }
             userIdsDictionary.forEach ({ (key, value) in
                 Database.fetchUserWithUID(uid: key, completion: { (user) in
@@ -165,11 +166,14 @@ extension HomeViewController {
 }
 
 extension HomeViewController: HomeTableDelegate {
+    func tapComment() {
+        print("comment")
+    }
+    
     func didLike(for cell: HomeTableViewCell) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
         
         var post = self.posts[indexPath.row]
-        print(post.message)
         
         guard let postId = post.id else { return }
         guard let uid = Auth.auth().currentUser?.uid else { return }
@@ -181,7 +185,6 @@ extension HomeViewController: HomeTableDelegate {
             }
             print("successfully liked post")
             post.hasLiked = !post.hasLiked
-            
             self.posts[indexPath.row] = post
             self.tableView.reloadRows(at: [indexPath], with: .fade)
         }

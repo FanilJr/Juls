@@ -18,7 +18,10 @@ class ProfileViewController: UIViewController {
     var experementUser = [User]()
     var posts = [Post]()
     var postsKeyArray = [String]()
+    var iFollowUsers = [String]()
     var usersString = [String]()
+    var usersFollowMe = [String]()
+    var countUser = [String]()
     private var refreshController = UIRefreshControl()
     private let messagePostViewController = MessagePostViewController()
     private let settingsViewController = SettingsViewController()
@@ -99,12 +102,12 @@ class ProfileViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        fetchUser()
         tabBarController?.tabBar.isHidden = false
         title = "Профиль"
         setupTableView()
         imagePicker.delegate = self
         messagePostViewController.delegatePost = self
-        fetchUser()
         refreshController.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
 
     }
@@ -115,24 +118,12 @@ class ProfileViewController: UIViewController {
         navigationController?.navigationBar.isHidden = true
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        let status = UserDefaults.standard.object(forKey: "status") as? String
-        if let statusDisplay = status {
-            self.header?.statusLabel.text = statusDisplay
-        }
-        let username = UserDefaults.standard.object(forKey: "username") as? String
-        if let usernameDisplay = username {
-            self.header?.nickNameLabel.text = usernameDisplay
-        }
-        let name = UserDefaults.standard.object(forKey: "name") as? String
-        if let nameDisplay = name {
-            self.mainCollection.name.text = nameDisplay
-        }
-    }
-    
     @objc func didTapRefresh() {
         self.posts.removeAll()
         self.usersId.removeAll()
+        self.usersFollowMe.removeAll()
+        self.countUser.removeAll()
+        self.iFollowUsers.removeAll()
         self.fetchUser()
         self.collectionView.reloadData()
         self.refreshController.endRefreshing()
@@ -197,8 +188,8 @@ extension ProfileViewController: UICollectionViewDataSource {
         case 0:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainCollectionViewCell", for: indexPath) as! MainCollectionViewCell
             cell.configureMain(user: self.user)
-            cell.checkIFollowing(user: self.user)
-            cell.checkFollowMe(user: self.user)
+            cell.iFollowButton.setTitle("\(iFollowUsers.count)", for: .normal)
+            cell.followMeButton.setTitle("\(countUser.count)", for: .normal)
             cell.delegate = self
             cell.backgroundColor = .clear
             return cell
@@ -216,6 +207,7 @@ extension ProfileViewController: UICollectionViewDataSource {
         switch indexPath.section {
         case 0:
             header = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "StretchyCollectionHeaderView", for: indexPath) as? StretchyCollectionHeaderView
+            header?.user = self.user
             header?.delegate = self
             return header!
         default:
@@ -378,12 +370,15 @@ extension ProfileViewController: UIImagePickerControllerDelegate & UINavigationC
 extension ProfileViewController {
     
     func fetchUser() {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
+        let uid = userId ?? (Auth.auth().currentUser?.uid ?? "")
         Database.fetchUserWithUID(uid: uid) { user in
             DispatchQueue.main.async {
                 self.user = user
-                self.header?.user = user
+//                self.header?.user = user
+                self.checkIFollowing(user: user)
+                self.checkFollowMe(user: user)
                 self.fetchPostsWithUser(user: user)
+                
                 print("Перезагрузка в ProfileViewController fetchUser")
             }
         }
@@ -404,22 +399,28 @@ extension ProfileViewController {
         DispatchQueue.main.async {
             ref.observeSingleEvent(of: .value, with: { snapshot in
                 guard let dictionaries = snapshot.value as? [String: Any] else { return }
-        
+                
                 dictionaries.forEach { key, value in
                     guard let dictionary = value as? [String: Any] else { return }
                     var post = Post(user: user, dictionary: dictionary)
                     post.id = key
-                    self.posts.append(post)
+                    guard let uid = Auth.auth().currentUser?.uid else { return }
+                    Database.database().reference().child("likes").child(key).child(uid).observeSingleEvent(of: .value, with: { snapshot in
+                        if let value = snapshot.value as? Int, value == 1 {
+                            post.hasLiked = true
+                        } else {
+                            post.hasLiked = false
+                        }
+                        self.posts.append(post)
+                        self.posts.sort { p1, p2 in
+                            return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+                        }
+                        self.collectionView.reloadData()
+                    })
                 }
-                self.posts.sort { p1, p2 in
-                    return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-                }
-                self.collectionView.reloadData()
                 print("Перезагрузка в ProfileViewController fetchPostsWithUser")
-            
             }) { error in
                 print("Failed to fetch posts:", error)
-                return
             }
         }
     }
@@ -468,6 +469,47 @@ extension ProfileViewController {
                     }
                 })
             }
+        }
+    }
+    
+    func checkIFollowing(user: User?) {
+        guard let userId = user?.uid else { return }
+        DispatchQueue.main.async {
+            let ref = Database.database().reference().child("following").child(userId)
+            ref.observeSingleEvent(of: .value, with: { snapshot in
+                guard let iFollowUsers = snapshot.value as? [String: Any] else { return }
+                iFollowUsers.forEach { key, value in
+                    self.iFollowUsers.append(key)
+                }
+                self.collectionView.reloadData()
+            })
+        }
+    }
+    
+    func checkFollowMe(user: User?) {
+        guard let userId = user?.uid else { return }
+        DispatchQueue.main.async {
+            let ref = Database.database().reference().child("following")
+            ref.observeSingleEvent(of: .value, with: { snapshot in
+                guard let iFollowUsers = snapshot.value as? [String: Any] else { return }
+                iFollowUsers.forEach { key, value in
+                    if key != userId {
+                        self.usersFollowMe.append(key)
+                    }
+                }
+                for i in self.usersFollowMe {
+                    let ref = Database.database().reference().child("following").child(i)
+                    ref.observeSingleEvent(of: .value, with: { snapshot in
+                        guard let followMeUsers = snapshot.value as? [String: Any] else { return }
+                        followMeUsers.forEach { key, value in
+                            if key == self.user?.uid {
+                                self.countUser.append(i)
+                            }
+                        }
+                        self.collectionView.reloadData()
+                    })
+                }
+            })
         }
     }
     //MARK: Отправка поста
@@ -633,6 +675,10 @@ extension ProfileViewController: MessagePostDelegate {
 }
 
 extension ProfileViewController: StretchyDelegate {
+    func backUp() {
+        navigationController?.popViewController(animated: true)
+    }
+    
     func setupSettings() {
         if let sheet = settingsViewController.sheetPresentationController {
             sheet.detents = [.medium(), .large()]
@@ -653,7 +699,7 @@ extension ProfileViewController: StretchyDelegate {
             let text = alert.textFields?.first?.text
             header?.statusLabel.text = text
             AudioServicesPlaySystemSound(self.systemSoundID)
-            UserDefaults.standard.set(header?.statusLabel.text, forKey: "status")
+//            UserDefaults.standard.set(header?.statusLabel.text, forKey: "status")
             if let urlText = header?.statusLabel.text {
                 
                 Database.database().reference().child("users").child(Auth.auth().currentUser?.uid ?? "").updateChildValues(["status" : urlText]) { error, ref in
@@ -686,7 +732,6 @@ extension ProfileViewController: StretchyDelegate {
         let alertOK = UIAlertAction(title: "Выйти", style: .destructive)  { [self] _ in
             do {
                 try Auth.auth().signOut()
-                ["username","status","age","life status","name","height"].forEach { UserDefaults.standard.removeObject(forKey: $0)}
                 viewModel.send(.showLoginVc)
             } catch {
                 print("error")

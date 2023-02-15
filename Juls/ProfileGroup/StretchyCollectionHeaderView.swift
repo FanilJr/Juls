@@ -10,13 +10,12 @@ import Firebase
 
 protocol StretchyDelegate: AnyObject {
     func addPostInCollection()
-//    func goMessage()
-//    func goCall()
     func presentImagePickerForUser()
     func addStatus()
     func logOut()
     func showAlbum()
     func setupSettings()
+    func backUp()
 }
 
 class StretchyCollectionHeaderView: UICollectionReusableView {
@@ -30,7 +29,8 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
             
             self.addButton.setBackgroundImage(UIImage(systemName: "plus"), for: .normal)
             self.editButton.setBackgroundImage(UIImage(systemName: "ellipsis.circle"), for: .normal)
-            self.albumButton.setBackgroundImage(UIImage(named: "photo.circle.fill@100x"), for: .normal)
+            setupEditFollowButton()
+            checkUserFollow()
         }
     }
     
@@ -85,6 +85,15 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         return statusTextField
     }()
     
+    lazy var followButton: UIButton = {
+        let button = UIButton()
+        button.addTarget(self, action: #selector(followFriend), for: .touchUpInside)
+        button.tintColor = .white
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.clipsToBounds = true
+        return button
+    }()
+    
     lazy var albumButton: UIButton = {
         let button = UIButton()
         button.addTarget(self, action: #selector(showAlbumController), for: .touchUpInside)
@@ -107,7 +116,6 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
     
     private lazy var addButton: UIButton = {
         let button = UIButton()
-        
         button.tintColor = UIColor.createColor(light: .white, dark: .white)
         button.backgroundColor = .clear
         button.menu = addMenuPlusButton()
@@ -116,6 +124,17 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         button.clipsToBounds = true
         return button
     }()
+    
+    private lazy var backButton: UIButton = {
+        let button = UIButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(backUp), for: .touchUpInside)
+        return button
+    }()
+    
+    @objc func backUp() {
+        delegate?.backUp()
+    }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -126,15 +145,94 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    fileprivate func setupEditFollowButton() {
+        guard let currentLoggetUserId = Auth.auth().currentUser?.uid else { return }
+        guard let userId = user?.uid else { return }
+        
+        if currentLoggetUserId == userId {
+            self.followButton.alpha = 0.0
+            self.followButton.isEnabled = false
+            self.backButton.alpha = 0.0
+            self.backButton.isEnabled = false
+            self.addButton.setBackgroundImage(UIImage(systemName: "plus"), for: .normal)
+            self.editButton.setBackgroundImage(UIImage(systemName: "ellipsis.circle"), for: .normal)
+        } else {
+            self.backButton.setBackgroundImage(UIImage(systemName: "arrow.backward.circle.fill"), for: .normal)
+            self.followButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100xWhite"), for: .normal)
+            self.addButton.alpha = 0.0
+            self.addButton.isEnabled = false
+            self.editButton.alpha = 0.0
+            self.editButton.isEnabled = false
+            self.backButton.alpha = 1
+            self.backButton.isEnabled = true
+            self.followButton.alpha = 1
+            self.followButton.isEnabled = true
+        }
+    }
+    
+    @objc func followFriend() {
+        guard let myId = Auth.auth().currentUser?.uid else { return }
+        guard let userId = user?.uid else { return }
+        
+        let ref = Database.database().reference().child("following").child(myId)
+        if self.followButton.backgroundImage(for: .normal) == UIImage(named: "heart.circle.fill@100xWhite") {
+            let values = [userId: 1]
+            ref.updateChildValues(values) { error, ref in
+                if let error {
+                    print("error", error)
+                    return
+                }
+                DispatchQueue.main.async {
+                    print("succes followed user: ", self.user?.username ?? "")
+                    self.followButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100x"), for: .normal)
+                    self.followButton.tintColor = .red
+                }
+            }
+        } else {
+            Database.database().reference().child("following").child(myId).child(userId).removeValue { error, ref in
+                if let error {
+                    print("error", error)
+                    return
+                }
+                DispatchQueue.main.async {
+                    print("succeful unfollow user: ", self.user?.username ?? "")
+                    self.followButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100xWhite"), for: .normal)
+                    self.followButton.tintColor = .white
+                }
+            }
+        }
+    }
+    
+    func checkUserFollow() {
+        guard let myId = Auth.auth().currentUser?.uid else { return }
+        guard let userId = user?.uid else { return }
+        
+        Database.database().reference().child("following").child(myId).child(userId).observe(.value) { snapshot in
+                
+            if let isFollowing = snapshot.value as? Int, isFollowing == 1 {
+                self.followButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100x"), for: .normal)
+                self.followButton.tintColor = .red
+            } else {
+                self.followButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100xWhite"), for: .normal)
+                self.followButton.tintColor = .white
+            }
+        }
+    }
+    
     func layout() {
         [nickNameLabel, statusLabel].forEach { stackViewVertical.addArrangedSubview($0) }
-        [userImage,stackViewVertical,editButton,addButton].forEach { addSubview($0) }
+        [userImage,backButton,stackViewVertical,followButton,editButton,addButton].forEach { addSubview($0) }
         
         NSLayoutConstraint.activate([
             userImage.topAnchor.constraint(equalTo: topAnchor),
             userImage.leadingAnchor.constraint(equalTo: leadingAnchor),
             userImage.trailingAnchor.constraint(equalTo: trailingAnchor),
             userImage.bottomAnchor.constraint(equalTo: bottomAnchor),
+            
+            backButton.topAnchor.constraint(equalTo: topAnchor,constant: 50),
+            backButton.leadingAnchor.constraint(equalTo: leadingAnchor,constant: 20),
+            backButton.widthAnchor.constraint(equalToConstant: 30),
+            backButton.heightAnchor.constraint(equalToConstant: 30),
             
             editButton.topAnchor.constraint(equalTo: topAnchor,constant: 50),
             editButton.trailingAnchor.constraint(equalTo: trailingAnchor,constant: -20),
@@ -149,7 +247,12 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
             stackViewVertical.leadingAnchor.constraint(equalTo: leadingAnchor,constant: 10),
             stackViewVertical.heightAnchor.constraint(equalToConstant: 120),
             stackViewVertical.trailingAnchor.constraint(equalTo: trailingAnchor),
-            stackViewVertical.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -100)
+            stackViewVertical.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -100),
+            
+            followButton.centerXAnchor.constraint(equalTo: centerXAnchor),
+            followButton.heightAnchor.constraint(equalToConstant: 70),
+            followButton.widthAnchor.constraint(equalToConstant: 70),
+            followButton.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -30),
         ])
     }
     

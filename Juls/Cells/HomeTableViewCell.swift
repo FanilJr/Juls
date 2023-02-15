@@ -10,21 +10,11 @@ import Firebase
 
 protocol HomeTableDelegate: AnyObject {
     func didLike(for cell: HomeTableViewCell)
+    func tapComment()
 }
 class HomeTableViewCell: UITableViewCell {
     
     weak var delegate: HomeTableDelegate?
-//    var post: Post? {
-//        didSet {
-//            
-//        }
-//    }
-//            if likeButton.backgroundImage(for: .normal) == UIImage(systemName: "heart.circle.fill") {
-//                likeButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100x"), for: .normal)
-//            } else {
-//                likeButton.setBackgroundImage(UIImage(systemName: "heart.circle.fill"), for: .normal)
-//            }
-//        }
     
     lazy var authorImage: CustomImageView = {
         let imageView = CustomImageView()
@@ -82,7 +72,7 @@ class HomeTableViewCell: UITableViewCell {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setBackgroundImage(UIImage(named: "bubble.right.circle.fill@100x"), for: .normal)
-//        button.addTarget(self, action: #selector(tapComment), for: .touchUpInside)
+        button.addTarget(self, action: #selector(tapComment), for: .touchUpInside)
         button.tintColor = .white
         return button
     }()
@@ -106,14 +96,19 @@ class HomeTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    @objc func tapComment() {
+        delegate?.tapComment()
+    }
+    
     @objc func tapLike() {
         delegate?.didLike(for: self)
     }
     
     func layout() {
-        [authorImage, nameAuthor, postImage, likeButton, descriptionText, datePost].forEach { contentView.addSubview($0) }
+        [authorImage, nameAuthor, postImage, commentButton, likeButton, descriptionText, datePost].forEach { contentView.addSubview($0) }
         
         NSLayoutConstraint.activate([
+            
             authorImage.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10),
             authorImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
             authorImage.heightAnchor.constraint(equalToConstant: 50),
@@ -126,8 +121,13 @@ class HomeTableViewCell: UITableViewCell {
             postImage.heightAnchor.constraint(equalTo: contentView.widthAnchor,constant: 100),
             postImage.widthAnchor.constraint(equalTo: contentView.widthAnchor),
             
+            commentButton.topAnchor.constraint(equalTo: postImage.bottomAnchor,constant: 10),
+            commentButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
+            commentButton.heightAnchor.constraint(equalToConstant: 30),
+            commentButton.widthAnchor.constraint(equalToConstant: 30),
+            
             likeButton.topAnchor.constraint(equalTo: postImage.bottomAnchor,constant: 10),
-            likeButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
+            likeButton.leadingAnchor.constraint(equalTo: commentButton.trailingAnchor,constant: 10),
             likeButton.heightAnchor.constraint(equalToConstant: 30),
             likeButton.widthAnchor.constraint(equalToConstant: 30),
             
@@ -157,5 +157,6 @@ class HomeTableViewCell: UITableViewCell {
         
         likeButton.setBackgroundImage(post?.hasLiked == true ? UIImage(named: "heart.circle.fill@100x") : UIImage(systemName: "heart.circle.fill"), for: .normal)
     }
+    
 }
 

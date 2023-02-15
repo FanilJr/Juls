@@ -13,8 +13,8 @@ class PostTableViewController: UIViewController {
     
     var post: Post?
     var juls = JulsView()
+    var commentArray = [String]()
     var refreshController = UIRefreshControl()
-    var postsKeyArray = [String]()
     
     let background: UIImageView = {
         let back = UIImageView()
@@ -42,6 +42,7 @@ class PostTableViewController: UIViewController {
         refreshController.attributedTitle = NSAttributedString(string: "Обновление")
         refreshController.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
         layout()
+        countComment(post: post)
         tableView.delegate = self
         tableView.dataSource = self
     }
@@ -72,7 +73,6 @@ class PostTableViewController: UIViewController {
         viewController.navigationController?.pushViewController(ac, animated: true)
     }
 
-    
     func layout() {
         [background,tableView].forEach { view.addSubview($0) }
         
@@ -105,6 +105,7 @@ extension PostTableViewController: UITableViewDataSource {
         cell.selectionStyle = UITableViewCell.SelectionStyle.none
         cell.backgroundColor = .clear
         cell.delegate = self
+        cell.commentCountLabel.text = "Комментарии (\(commentArray.count))"
         cell.configureTable(post: self.post)
         return cell
     }
@@ -115,7 +116,40 @@ extension PostTableViewController: UITableViewDataSource {
 }
 
 extension PostTableViewController: CommentDelegate {
+    
+    func didTapLike(for cell: PostTableViewCell) {
+        guard let indexPath = tableView.indexPath(for: cell) else { return }
+        guard let postId = post?.id else { return }
+        if var post = post {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        let values = [uid: post.hasLiked == true ? 0 : 1]
+            Database.database().reference().child("likes").child(postId).updateChildValues(values) { [self] error, _ in
+                if let error {
+                    print(error)
+                    return
+                }
+                print("successfully liked post")
+                post.hasLiked = !post.hasLiked
+                self.post = post
+                self.tableView.reloadRows(at: [indexPath], with: .fade)
+            }
+        }
+    }
+    
     func didTapComment() {
         CommentViewController.showComment(self, post: post)
     }
+    
+    func countComment(post: Post?) {
+        guard let uid = post?.id else { return }
+        Database.database().reference().child("comments").child(uid).observeSingleEvent(of: .value, with: { snapshot in
+            for child in snapshot.children {
+                let snap = child as! Firebase.DataSnapshot
+                let key = snap.key
+                self.commentArray.append(key)
+            }
+            self.tableView.reloadData()
+        })
+    }
+
 }

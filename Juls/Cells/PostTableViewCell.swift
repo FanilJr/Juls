@@ -11,15 +11,18 @@ import Firebase
 
 protocol CommentDelegate: AnyObject {
     func didTapComment()
+    func didTapLike(for cell: PostTableViewCell)
 }
 class PostTableViewCell: UITableViewCell {
     
     weak var delegate: CommentDelegate?
     var commentArray = [String]()
+    
     lazy var authorImage: CustomImageView = {
         let imageView = CustomImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
+        imageView.backgroundColor = .gray
         imageView.layer.cornerRadius = 50/2
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
@@ -102,11 +105,7 @@ class PostTableViewCell: UITableViewCell {
     }
     
     @objc func tapLike() {
-        if likeButton.backgroundImage(for: .normal) == UIImage(systemName: "heart.circle.fill") {
-            likeButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100x"), for: .normal)
-        } else {
-            likeButton.setBackgroundImage(UIImage(systemName: "heart.circle.fill"), for: .normal)
-        }
+        delegate?.didTapLike(for: self)
     }
     
     @objc func tapComment() {
@@ -114,7 +113,7 @@ class PostTableViewCell: UITableViewCell {
     }
     
     func constraints() {
-        [authorImage, nameAuthor, postImage, commentButton, likeButton, descriptionText, commentCountLabel, datePost].forEach { contentView.addSubview($0) }
+         [authorImage, nameAuthor, postImage, commentButton, likeButton, descriptionText, commentCountLabel, datePost].forEach { contentView.addSubview($0) }
         
         NSLayoutConstraint.activate([
             authorImage.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10),
@@ -168,17 +167,6 @@ class PostTableViewCell: UITableViewCell {
         descriptionText.attributedText = attributedText
         self.countComment(post: post)
         
-    }
-    
-    func countComment(post: Post?) {
-        guard let uid = post?.id else { return }
-        Database.database().reference().child("comments").child(uid).observeSingleEvent(of: .value, with: { snapshot in
-            for child in snapshot.children {
-                let snap = child as! Firebase.DataSnapshot
-                let key = snap.key
-                self.commentArray.insert(key, at: 0)
-            }
-            self.commentCountLabel.text = "Комментарии (\(self.commentArray.count))"
-        })
+        likeButton.setBackgroundImage(post?.hasLiked == true ? UIImage(named: "heart.circle.fill@100x") : UIImage(systemName: "heart.circle.fill"), for: .normal)
     }
 }
