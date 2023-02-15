@@ -67,11 +67,11 @@ class PostTableViewController: UIViewController {
         // added methode update post...
     }
     
-    static func showPostTableViewController(_ viewController: UIViewController, post: Post) {
-        let ac = PostTableViewController()
-        ac.post = post
-        viewController.navigationController?.pushViewController(ac, animated: true)
-    }
+//    static func showPostTableViewController(_ viewController: UIViewController, post: Post) {
+//        let ac = PostTableViewController()
+//        ac.post = post
+//        viewController.navigationController?.pushViewController(ac, animated: true)
+//    }
 
     func layout() {
         [background,tableView].forEach { view.addSubview($0) }
@@ -123,15 +123,17 @@ extension PostTableViewController: CommentDelegate {
         if var post = post {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         let values = [uid: post.hasLiked == true ? 0 : 1]
-            Database.database().reference().child("likes").child(postId).updateChildValues(values) { [self] error, _ in
-                if let error {
-                    print(error)
-                    return
+            DispatchQueue.main.async {
+                Database.database().reference().child("likes").child(postId).updateChildValues(values) { [self] error, _ in
+                    if let error {
+                        print(error)
+                        return
+                    }
+                    print("successfully liked post")
+                    post.hasLiked = !post.hasLiked
+                    self.post = post
+                    self.tableView.reloadRows(at: [indexPath], with: .fade)
                 }
-                print("successfully liked post")
-                post.hasLiked = !post.hasLiked
-                self.post = post
-                self.tableView.reloadRows(at: [indexPath], with: .fade)
             }
         }
     }
@@ -142,14 +144,15 @@ extension PostTableViewController: CommentDelegate {
     
     func countComment(post: Post?) {
         guard let uid = post?.id else { return }
-        Database.database().reference().child("comments").child(uid).observeSingleEvent(of: .value, with: { snapshot in
-            for child in snapshot.children {
-                let snap = child as! Firebase.DataSnapshot
-                let key = snap.key
-                self.commentArray.append(key)
-            }
-            self.tableView.reloadData()
-        })
+        DispatchQueue.main.async {
+            Database.database().reference().child("comments").child(uid).observeSingleEvent(of: .value, with: { snapshot in
+                for child in snapshot.children {
+                    let snap = child as! Firebase.DataSnapshot
+                    let key = snap.key
+                    self.commentArray.append(key)
+                }
+                self.tableView.reloadData()
+            })
+        }
     }
-
 }

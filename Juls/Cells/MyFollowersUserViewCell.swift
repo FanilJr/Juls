@@ -54,7 +54,11 @@ class MyFollowersUserViewCell: UITableViewCell {
     
     func configureTable(user: User?) {
         guard let profileImageUrl = user?.picture else { return }
-        profileImageView.loadImage(urlString: profileImageUrl)
+        if profileImageUrl == "" {
+            self.profileImageView.image = UIImage(named: "noimage")
+        } else {
+            profileImageView.loadImage(urlString: profileImageUrl)
+        }
         usernameLabel.text = user?.username
     }
 }

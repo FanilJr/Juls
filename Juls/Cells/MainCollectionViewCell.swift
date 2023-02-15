@@ -134,7 +134,6 @@ class MainCollectionViewCell: UICollectionViewCell {
     
     private lazy var editButton: UIButton = {
         let button = UIButton()
-        button.setBackgroundImage(UIImage(systemName: "pencil.circle"), for: .normal)
         button.tintColor = UIColor.createColor(light: .black, dark: .white)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.menu = addMenuItems()
@@ -252,6 +251,16 @@ class MainCollectionViewCell: UICollectionViewCell {
     }
     
     func configureMain(user: User?) {
+        guard let currentLoggetUserId = Auth.auth().currentUser?.uid else { return }
+        guard let userId = user?.uid else { return }
+        
+        if currentLoggetUserId != userId {
+            self.editButton.alpha = 0.0
+            self.editButton.isEnabled = true
+        } else {
+            self.editButton.setBackgroundImage(UIImage(systemName: "pencil.circle"), for: .normal)
+        }
+        
         name.text = user?.name
         ageUser.text = user?.age
         statusLife.text = user?.lifeStatus

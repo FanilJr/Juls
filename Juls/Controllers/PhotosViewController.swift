@@ -110,7 +110,6 @@ extension PhotosViewController {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         Database.fetchUserWithUID(uid: uid) { user in
             self.user = user
-            self.collectionView.reloadData()
             self.fetchPostsWithUser(user: user)
             print("Перезагрузка в PhotosViewController fetchUser")
         }
@@ -118,25 +117,25 @@ extension PhotosViewController {
     
     func fetchPostsWithUser(user: User) {
         DispatchQueue.main.async {
-        let ref = Database.database().reference().child("posts").child(user.uid)
+            let ref = Database.database().reference().child("posts").child(user.uid)
         
-        ref.observeSingleEvent(of: .value, with: { snapshot in
-        guard let dictionaries = snapshot.value as? [String: Any] else { return }
+            ref.observeSingleEvent(of: .value, with: { snapshot in
+                guard let dictionaries = snapshot.value as? [String: Any] else { return }
         
-        dictionaries.forEach { key, value in
-            guard let dictionary = value as? [String: Any] else { return }
-            let post = Post(user: user, dictionary: dictionary)
-            self.posts.append(post)
-        }
-        self.posts.sort { p1, p2 in
-            return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-        }
-        self.collectionView.reloadData()
-        print("Перезагрузка в PhotosViewController fetchPostWithUser")
-        }) { error in
-            print("Failed to fetch posts:", error)
-            return
-        }
+                dictionaries.forEach { key, value in
+                    guard let dictionary = value as? [String: Any] else { return }
+                    let post = Post(user: user, dictionary: dictionary)
+                    self.posts.append(post)
+                }
+                self.posts.sort { p1, p2 in
+                    return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+                }
+                self.collectionView.reloadData()
+                print("Перезагрузка в PhotosViewController fetchPostWithUser")
+            }) { error in
+                print("Failed to fetch posts:", error)
+                return
+            }
         }
     }
 }

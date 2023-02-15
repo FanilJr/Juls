@@ -104,7 +104,8 @@ class ProfileViewController: UIViewController {
         super.viewDidLoad()
         fetchUser()
         tabBarController?.tabBar.isHidden = false
-        title = "Профиль"
+        tabBarItem.title = "Профиль"
+        
         setupTableView()
         imagePicker.delegate = self
         messagePostViewController.delegatePost = self
@@ -127,10 +128,6 @@ class ProfileViewController: UIViewController {
         self.fetchUser()
         self.collectionView.reloadData()
         self.refreshController.endRefreshing()
-    }
-    
-    func showFollowes() {
-        MyFollowersUserViewController.show(self, users: usersId)
     }
     
     func waitingSpinnerEnable(_ active: Bool) {
@@ -218,7 +215,10 @@ extension ProfileViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         switch indexPath.section {
         case 1:
-            PostTableViewController.showPostTableViewController(self, post: posts[indexPath.row])
+//            PostTableViewController.showPostTableViewController(self, post: posts[indexPath.row])
+            let postVC = PostTableViewController()
+            postVC.post = posts[indexPath.row]
+            navigationController?.pushViewController(postVC, animated: true)
         default:
             print(indexPath.section)
         }
@@ -374,11 +374,10 @@ extension ProfileViewController {
         Database.fetchUserWithUID(uid: uid) { user in
             DispatchQueue.main.async {
                 self.user = user
-//                self.header?.user = user
                 self.checkIFollowing(user: user)
                 self.checkFollowMe(user: user)
                 self.fetchPostsWithUser(user: user)
-                
+                self.title = user.username
                 print("Перезагрузка в ProfileViewController fetchUser")
             }
         }
@@ -386,10 +385,12 @@ extension ProfileViewController {
     
     func fetchUserWithReload() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
-        Database.fetchUserWithUID(uid: uid) { user in
-            self.user = user
-            self.header?.user = user
-            self.collectionView.reloadData()
+        DispatchQueue.main.async {
+            Database.fetchUserWithUID(uid: uid) { user in
+                self.user = user
+                self.header?.user = user
+                self.collectionView.reloadData()
+            }
         }
     }
     
@@ -519,36 +520,37 @@ extension ProfileViewController {
         
         guard let postImage = messagePostViewController.customImage.image else { return }
         guard let caption = messagePostViewController.customTextfield.text else { return }
-        
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        let userPostRef = Database.database().reference().child("posts").child(uid)
-
-        let ref = userPostRef.childByAutoId()
-        
-        let values = ["imageUrl": imageUrl, "caption": caption, "imageWidth": postImage.size.width, "imageHeight": postImage.size.height, "creationDate": Date().timeIntervalSince1970] as [String : Any]
-        
-        ref.updateChildValues(values) { error, ref in
-            if let error {
-                print("Error", error)
+        DispatchQueue.main.async {
+            guard let uid = Auth.auth().currentUser?.uid else { return }
+            let userPostRef = Database.database().reference().child("posts").child(uid)
+            
+            let ref = userPostRef.childByAutoId()
+            
+            let values = ["imageUrl": imageUrl, "caption": caption, "imageWidth": postImage.size.width, "imageHeight": postImage.size.height, "creationDate": Date().timeIntervalSince1970] as [String : Any]
+            
+            ref.updateChildValues(values) { error, ref in
+                if let error {
+                    print("Error", error)
+                }
+                print("succes upload Post in Firebase")
             }
-            print("succes upload Post in Firebase")
-        }
-        self.messagePostViewController.waitingSpinnerPostEnable(false)
-        self.messagePostViewController.sendPostButton.setTitle("Отправить", for: .normal)
-        self.messagePostViewController.sendPostButton.setImage(UIImage(systemName: "paperplane.fill"), for: .normal)
-        
-        AudioServicesPlaySystemSound(self.systemSoundID2)
-        self.dismiss(animated: true)
-        tabBarController?.tabBar.isHidden = false
-        
-        UIView.animate(withDuration: 0.5, animations: {
-            self.posts = []
-            self.fetchUser()
-        })
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.messagePostViewController.customImage.image = nil
-            self.messagePostViewController.customTextfield.text = ""
+            self.messagePostViewController.waitingSpinnerPostEnable(false)
+            self.messagePostViewController.sendPostButton.setTitle("Отправить", for: .normal)
+            self.messagePostViewController.sendPostButton.setImage(UIImage(systemName: "paperplane.fill"), for: .normal)
+            
+            AudioServicesPlaySystemSound(self.systemSoundID2)
+            self.dismiss(animated: true)
+            self.tabBarController?.tabBar.isHidden = false
+            
+            UIView.animate(withDuration: 0.5, animations: {
+                self.posts = []
+                self.fetchUser()
+            })
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.messagePostViewController.customImage.image = nil
+                self.messagePostViewController.customTextfield.text = ""
+            }
         }
     }
 }
@@ -643,34 +645,34 @@ extension ProfileViewController: MessagePostDelegate {
     func presentPostImagePicker() {
         dismiss(animated: true)
         currentImage = messagePostViewController.customImage
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
-            self.present(self.imagePicker, animated: true)
-        })
+        self.present(self.imagePicker, animated: true)
     }
 
     func pushPostDelegate() {
         guard let caption = messagePostViewController.customTextfield.text, caption.count > 0 else { return }
         let imageName = NSUUID().uuidString
-        let storedImage = Storage.storage().reference().child("posts").child(imageName)
-
-        if let uploadData = messagePostViewController.customImage.image?.jpegData(compressionQuality: 0.3) {
-            storedImage.putData(uploadData, metadata: nil) { metadata, error in
-                if let error {
-                    print("error upload", error)
-                    return
+        DispatchQueue.main.async {
+            let storedImage = Storage.storage().reference().child("posts").child(imageName)
+            
+            if let uploadData = self.messagePostViewController.customImage.image?.jpegData(compressionQuality: 0.3) {
+                storedImage.putData(uploadData, metadata: nil) { metadata, error in
+                    if let error {
+                        print("error upload", error)
+                        return
+                    }
+                    storedImage.downloadURL(completion: { url, error in
+                        if let error {
+                            print(error)
+                            return
+                        }
+                        guard let imageURL = url?.absoluteString else { return }
+                        print("succes download Photo in Firebase Library")
+                        self.saveToDatabaseWithImageUrl(imageUrl: imageURL)
+                    })
                 }
-            storedImage.downloadURL(completion: { url, error in
-                if let error {
-                    print(error)
-                    return
-                }
-                guard let imageURL = url?.absoluteString else { return }
-                print("succes download Photo in Firebase Library")
-                self.saveToDatabaseWithImageUrl(imageUrl: imageURL)
-                })
             }
+            self.collectionView.reloadData()
         }
-        self.collectionView.reloadData()
     }
 }
 
@@ -699,15 +701,15 @@ extension ProfileViewController: StretchyDelegate {
             let text = alert.textFields?.first?.text
             header?.statusLabel.text = text
             AudioServicesPlaySystemSound(self.systemSoundID)
-//            UserDefaults.standard.set(header?.statusLabel.text, forKey: "status")
             if let urlText = header?.statusLabel.text {
-                
-                Database.database().reference().child("users").child(Auth.auth().currentUser?.uid ?? "").updateChildValues(["status" : urlText]) { error, ref in
-                    if let error {
-                        print(error)
-                        return
+                DispatchQueue.main.async {
+                    Database.database().reference().child("users").child(Auth.auth().currentUser?.uid ?? "").updateChildValues(["status" : urlText]) { error, ref in
+                        if let error {
+                            print(error)
+                            return
+                        }
+                        print("succes download Status in Firebase Library")
                     }
-                    print("succes download Status in Firebase Library")
                 }
             }
         }
@@ -721,9 +723,7 @@ extension ProfileViewController: StretchyDelegate {
     func presentImagePickerForUser() {
         print("Проверка presentImage")
         currentImage = header?.userImage
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
-            self.present(self.imagePicker, animated: true)
-        })
+        self.present(self.imagePicker, animated: true)
     }
     
     func logOut() {
@@ -757,12 +757,16 @@ extension ProfileViewController: MainCollectionDelegate {
     
     func getUsersFollowMe() {
         guard let user = user else { return }
-        FollowersUsersWithMeController.showUsers(self, user: user)
+        let followMeUsers = FollowersUsersWithMeController()
+        followMeUsers.user = user
+        navigationController?.pushViewController(followMeUsers, animated: true)
     }
     
     func getUsersIFollow() {
         guard let user = user else { return }
-        MyFollowersUserViewController.showUsers(self, user: user)
+        let iFollowUsers = MyFollowersUserViewController()
+        iFollowUsers.user = user
+        navigationController?.pushViewController(iFollowUsers, animated: true)
     }
     
     func editInfo() {

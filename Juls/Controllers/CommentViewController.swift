@@ -123,7 +123,6 @@ class CommentViewController: UIViewController {
     
     @objc func pushComment() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
-        print("post Id", self.post?.id ?? "")
         print("push comment", textfield.text ?? "")
         let postId = self.post?.id ?? ""
         let values = ["text" : textfield.text ?? "", "creationDate" : Date().timeIntervalSince1970, "uid" : uid] as [String:Any]

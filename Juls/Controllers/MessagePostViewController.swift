@@ -29,7 +29,6 @@ class MessagePostViewController: UIViewController {
     let background: UIImageView = {
         let background = UIImageView()
         background.image = UIImage(named: "back")
-//        background.clipsToBounds = true
         background.translatesAutoresizingMaskIntoConstraints = false
         return background
     }()

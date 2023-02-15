@@ -12,6 +12,7 @@ class HomeViewController: UIViewController {
 
     var posts = [Post]()
     var juls = JulsView()
+    var commentArray = [String]()
     var postIndexPath = 0
     var refreshControler = UIRefreshControl()
     
@@ -166,8 +167,10 @@ extension HomeViewController {
 }
 
 extension HomeViewController: HomeTableDelegate {
-    func tapComment() {
-        print("comment")
+    
+    func tapComment(for cell: HomeTableViewCell) {
+        guard let indexPath = tableView.indexPath(for: cell) else { return }
+        CommentViewController.showComment(self, post: posts[indexPath.row])
     }
     
     func didLike(for cell: HomeTableViewCell) {

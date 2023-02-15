@@ -69,18 +69,18 @@ class MyFollowersUserViewController: UIViewController {
         navigationItem.searchController = searchController
     }
     
-    static func show(_ viewController: UIViewController, users: [User]) {
-        let ac = MyFollowersUserViewController()
-        ac.users = users
-        
-        viewController.navigationController?.pushViewController(ac, animated: true)
-    }
-    
-    static func showUsers(_ viewController: UIViewController, user: User) {
-        let ac = MyFollowersUserViewController()
-        ac.user = user
-        viewController.navigationController?.pushViewController(ac, animated: true)
-    }
+//    static func show(_ viewController: UIViewController, users: [User]) {
+//        let ac = MyFollowersUserViewController()
+//        ac.users = users
+//        
+//        viewController.navigationController?.pushViewController(ac, animated: true)
+//    }
+//    
+//    static func showUsers(_ viewController: UIViewController, user: User) {
+//        let ac = MyFollowersUserViewController()
+//        ac.user = user
+//        viewController.navigationController?.pushViewController(ac, animated: true)
+//    }
     
     @objc func didTapRefresh() {
         guard let user = user else { return }

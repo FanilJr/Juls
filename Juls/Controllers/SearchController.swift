@@ -58,8 +58,6 @@ class SearchViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-//        self.users.removeAll()
-//        self.fetchUsers()
         navigationController?.navigationBar.isHidden = false
         searchController.searchBar.isHidden = false
     }
@@ -73,46 +71,49 @@ class SearchViewController: UIViewController {
 
     func fetchUsers() {
         let ref = Database.database().reference().child("users")
-        ref.observeSingleEvent(of: .value, with: { snapshot in
-            self.tableView.refreshControl?.endRefreshing()
-            guard let dictionaries = snapshot.value as? [String: Any] else { return }
-            
-            dictionaries.forEach { key, value in
-                if key == Auth.auth().currentUser?.uid {
-                    return
-                }
-                guard let userDictionary = value as? [String: Any] else { return }
+        DispatchQueue.main.async {
+            ref.observeSingleEvent(of: .value, with: { snapshot in
+                self.tableView.refreshControl?.endRefreshing()
+                guard let dictionaries = snapshot.value as? [String: Any] else { return }
                 
-                let user = User(uid: key, dictionary: userDictionary)
-                self.users.append(user)
+                dictionaries.forEach { key, value in
+                    if key == Auth.auth().currentUser?.uid {
+                        return
+                    }
+                    guard let userDictionary = value as? [String: Any] else { return }
+                    
+                    let user = User(uid: key, dictionary: userDictionary)
+                    self.users.append(user)
+                }
+                self.filteredUsers = self.users
+                self.tableView.reloadData()
+            }) { err in
+                print("Failed to fetch users", err)
             }
-            self.filteredUsers = self.users
-            self.tableView.reloadData()
-        }) { err in
-            print("Failed to fetch users", err)
         }
     }
     
     func fetchPostsWithUser(user: User) {
         
         let ref = Database.database().reference().child("posts").child(user.uid)
-        
-        ref.observeSingleEvent(of: .value, with: { snapshot in
-            guard let dictionaries = snapshot.value as? [String: Any] else { return }
-            
-            dictionaries.forEach { key, value in
-                guard let dictionary = value as? [String: Any] else { return }
-                let post = Post(user: user, dictionary: dictionary)
-                self.post.append(post)
+        DispatchQueue.main.async {
+            ref.observeSingleEvent(of: .value, with: { snapshot in
+                guard let dictionaries = snapshot.value as? [String: Any] else { return }
+                
+                dictionaries.forEach { key, value in
+                    guard let dictionary = value as? [String: Any] else { return }
+                    let post = Post(user: user, dictionary: dictionary)
+                    self.post.append(post)
+                }
+                self.post.sort { p1, p2 in
+                    return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+                }
+                self.tableView.reloadData()
+                print("Перезагрузка в ProfileFriendsViewController fetchPostWithUser")
+            }) { error in
+                print("Failed to fetch posts:", error)
+                return
             }
-            self.post.sort { p1, p2 in
-                return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-            }
-            self.tableView.reloadData()
-            print("Перезагрузка в ProfileFriendsViewController fetchPostWithUser")
-        }) { error in
-            print("Failed to fetch posts:", error)
-            return
         }
     }
     func layout() {

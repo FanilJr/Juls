@@ -10,7 +10,7 @@ import Firebase
 
 protocol HomeTableDelegate: AnyObject {
     func didLike(for cell: HomeTableViewCell)
-    func tapComment()
+    func tapComment(for cell: HomeTableViewCell)
 }
 class HomeTableViewCell: UITableViewCell {
     
@@ -68,6 +68,20 @@ class HomeTableViewCell: UITableViewCell {
         return name
     }()
     
+    lazy var commentCountLabel: UILabel = {
+        let name = UILabel()
+        name.font = UIFont.systemFont(ofSize: 13, weight: .light)
+        name.translatesAutoresizingMaskIntoConstraints = false
+        name.textColor = .gray
+        name.text = "Комментарии"
+        let gesture = UITapGestureRecognizer()
+        gesture.addTarget(self, action: #selector(tapComment))
+        name.addGestureRecognizer(gesture)
+        name.isUserInteractionEnabled = true
+        name.backgroundColor = .clear
+        return name
+    }()
+    
     lazy var commentButton: UIButton = {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -97,7 +111,7 @@ class HomeTableViewCell: UITableViewCell {
     }
     
     @objc func tapComment() {
-        delegate?.tapComment()
+        delegate?.tapComment(for: self)
     }
     
     @objc func tapLike() {
@@ -135,6 +149,9 @@ class HomeTableViewCell: UITableViewCell {
             descriptionText.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
             descriptionText.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             
+//            commentCountLabel.topAnchor.constraint(equalTo: descriptionText.bottomAnchor,constant: 10),
+//            commentCountLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
+//
             datePost.topAnchor.constraint(equalTo: descriptionText.bottomAnchor,constant: 10),
             datePost.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
             datePost.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -20)
@@ -156,7 +173,7 @@ class HomeTableViewCell: UITableViewCell {
         descriptionText.attributedText = attributedText
         
         likeButton.setBackgroundImage(post?.hasLiked == true ? UIImage(named: "heart.circle.fill@100x") : UIImage(systemName: "heart.circle.fill"), for: .normal)
+        
     }
-    
 }
 
