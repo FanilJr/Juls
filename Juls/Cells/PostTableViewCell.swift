@@ -165,7 +165,6 @@ class PostTableViewCell: UITableViewCell {
         attributedText.append(attributeComment)
         
         descriptionText.attributedText = attributedText
-        self.countComment(post: post)
         
         likeButton.setBackgroundImage(post?.hasLiked == true ? UIImage(named: "heart.circle.fill@100x") : UIImage(systemName: "heart.circle.fill"), for: .normal)
     }
