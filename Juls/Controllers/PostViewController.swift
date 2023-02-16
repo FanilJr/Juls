@@ -38,7 +38,6 @@ class PostTableViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .white
         navigationItem.titleView = juls
-        navigationController?.navigationBar.isHidden = false
         refreshController.attributedTitle = NSAttributedString(string: "Обновление")
         refreshController.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
         layout()
@@ -49,7 +48,6 @@ class PostTableViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        navigationController?.navigationBar.isHidden = false
         tabBarController?.tabBar.isHidden = true
     }
     
@@ -66,12 +64,6 @@ class PostTableViewController: UIViewController {
     func updatePost(post: Post?) {
         // added methode update post...
     }
-    
-//    static func showPostTableViewController(_ viewController: UIViewController, post: Post) {
-//        let ac = PostTableViewController()
-//        ac.post = post
-//        viewController.navigationController?.pushViewController(ac, animated: true)
-//    }
 
     func layout() {
         [background,tableView].forEach { view.addSubview($0) }

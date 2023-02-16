@@ -45,7 +45,6 @@ class FollowersUsersWithMeController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        navigationController?.navigationBar.isHidden = false
         title = "Подписчики"
         layout()
         refreshControler.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
@@ -69,22 +68,8 @@ class FollowersUsersWithMeController: UIViewController {
         super.viewWillAppear(animated)
         searchController.searchBar.isHidden = false
         searchController.searchBar.resignFirstResponder()
-        navigationController?.navigationBar.isHidden = false
         navigationItem.searchController = searchController
     }
-    
-//    static func show(_ viewController: UIViewController, users: [User]) {
-//        let ac = FollowersUsersWithMeController()
-//        ac.users = users
-//        
-//        viewController.navigationController?.pushViewController(ac, animated: true)
-//    }
-//    
-//    static func showUsers(_ viewController: UIViewController, user: User) {
-//        let ac = FollowersUsersWithMeController()
-//        ac.user = user
-//        viewController.navigationController?.pushViewController(ac, animated: true)
-//    }
     
     @objc func didTapRefresh() {
         

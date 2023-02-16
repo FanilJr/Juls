@@ -27,6 +27,7 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
                 self.userImage.image = UIImage(named: "noimage")
             } else {
                 self.userImage.loadImage(urlString: imageUrl)
+                self.userImageView.loadImage(urlString: imageUrl)
             }
             self.nickNameLabel.text = user?.username
             self.statusLabel.text = user?.status
@@ -39,6 +40,15 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
     }
     
     weak var delegate: StretchyDelegate?
+    
+    var userImageView: CustomImageView = {
+        let image = CustomImageView()
+        image.translatesAutoresizingMaskIntoConstraints = false
+        image.clipsToBounds = true
+        image.backgroundColor = .black
+        image.contentMode = .scaleAspectFill
+        return image
+    }()
     
     var userImage: CustomImageView = {
         let image = CustomImageView()
@@ -129,13 +139,6 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         return button
     }()
     
-    private lazy var backButton: UIButton = {
-        let button = UIButton()
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.addTarget(self, action: #selector(backUp), for: .touchUpInside)
-        return button
-    }()
-    
     @objc func backUp() {
         delegate?.backUp()
     }
@@ -156,19 +159,14 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         if currentLoggetUserId == userId {
             self.followButton.alpha = 0.0
             self.followButton.isEnabled = false
-            self.backButton.alpha = 0.0
-            self.backButton.isEnabled = false
             self.addButton.setBackgroundImage(UIImage(systemName: "plus"), for: .normal)
             self.editButton.setBackgroundImage(UIImage(systemName: "ellipsis.circle"), for: .normal)
         } else {
-            self.backButton.setBackgroundImage(UIImage(systemName: "arrow.backward.circle.fill"), for: .normal)
             self.followButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100xWhite"), for: .normal)
             self.addButton.alpha = 0.0
             self.addButton.isEnabled = false
             self.editButton.alpha = 0.0
             self.editButton.isEnabled = false
-            self.backButton.alpha = 1
-            self.backButton.isEnabled = true
             self.followButton.alpha = 1
             self.followButton.isEnabled = true
         }
@@ -225,7 +223,7 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
     
     func layout() {
         [nickNameLabel, statusLabel].forEach { stackViewVertical.addArrangedSubview($0) }
-        [userImage,backButton,stackViewVertical,followButton,editButton,addButton].forEach { addSubview($0) }
+        [userImage,stackViewVertical,followButton,editButton,addButton].forEach { addSubview($0) }
         
         NSLayoutConstraint.activate([
             userImage.topAnchor.constraint(equalTo: topAnchor),
@@ -233,17 +231,12 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
             userImage.trailingAnchor.constraint(equalTo: trailingAnchor),
             userImage.bottomAnchor.constraint(equalTo: bottomAnchor),
             
-            backButton.topAnchor.constraint(equalTo: topAnchor,constant: 50),
-            backButton.leadingAnchor.constraint(equalTo: leadingAnchor,constant: 20),
-            backButton.widthAnchor.constraint(equalToConstant: 30),
-            backButton.heightAnchor.constraint(equalToConstant: 30),
-            
-            editButton.topAnchor.constraint(equalTo: topAnchor,constant: 50),
+            editButton.topAnchor.constraint(equalTo: topAnchor,constant: 80),
             editButton.trailingAnchor.constraint(equalTo: trailingAnchor,constant: -20),
             editButton.heightAnchor.constraint(equalToConstant: 30),
             editButton.widthAnchor.constraint(equalToConstant: 30),
             
-            addButton.topAnchor.constraint(equalTo: topAnchor,constant: 50),
+            addButton.topAnchor.constraint(equalTo: topAnchor,constant: 80),
             addButton.trailingAnchor.constraint(equalTo: editButton.leadingAnchor,constant: -20),
             addButton.heightAnchor.constraint(equalToConstant: 30),
             addButton.widthAnchor.constraint(equalToConstant: 30),
@@ -268,7 +261,6 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         let addPost = UIAction(title: "Создать пост",image: UIImage(systemName: "square.and.pencil")) { _ in
             self.delegate?.addPostInCollection()
         }
-        
         let menu = UIMenu(title: "Выберите действие", children: [addPost])
         return menu
     }

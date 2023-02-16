@@ -54,12 +54,14 @@ class LogInViewController: UIViewController {
         layout()
         loginView.delegate = self
         loginView.checkerDelegate = delegate
+        navigationController?.setNavigationBarHidden(true, animated: false)
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         tabBarController?.tabBar.isHidden = true
-        navigationController?.navigationBar.isHidden = true
+        navigationController?.setNavigationBarHidden(true, animated: false)
+//        navigationController?.navigationBar.isHidden = true
     }
 
     private func layout() {

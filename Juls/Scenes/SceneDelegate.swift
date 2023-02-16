@@ -22,11 +22,18 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             let appearance = UINavigationBarAppearance()
             appearance.configureWithOpaqueBackground()
             appearance.backgroundColor = .clear
-            let blureEffect = UIBlurEffect(style: .light)
-            appearance.backgroundEffect = blureEffect
+//            appearance.
+//            let blureEffect = UIBlurEffect(style: .light)
+            appearance.backgroundEffect = nil
+            appearance.shadowImage = nil
+            appearance.shadowColor = nil
+            
 
             UINavigationBar.appearance().standardAppearance = appearance
             UINavigationBar.appearance().scrollEdgeAppearance = appearance
+            UINavigationBar.appearance().setBackgroundImage(UIImage(), for: .any, barMetrics: .default)
+            UINavigationBar.appearance().shadowImage = UIImage()
+            
             UITabBar.appearance().backgroundColor = .clear
             UITabBar.appearance().tintColor = #colorLiteral(red: 0.9294139743, green: 0.2863991261, blue: 0.3659052849, alpha: 1)
             UITabBar.appearance().unselectedItemTintColor = UIColor.createColor(light: .black, dark: .white)

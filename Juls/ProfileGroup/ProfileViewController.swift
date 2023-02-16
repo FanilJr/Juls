@@ -104,19 +104,17 @@ class ProfileViewController: UIViewController {
         super.viewDidLoad()
         fetchUser()
         tabBarController?.tabBar.isHidden = false
-        tabBarItem.title = "Профиль"
-        
+        navigationController?.setNavigationBarHidden(false, animated: false)
         setupTableView()
         imagePicker.delegate = self
         messagePostViewController.delegatePost = self
         refreshController.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
-
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         tabBarController?.tabBar.isHidden = false
-        navigationController?.navigationBar.isHidden = true
+        navigationController?.setNavigationBarHidden(false, animated: false)
     }
     
     @objc func didTapRefresh() {
@@ -215,7 +213,6 @@ extension ProfileViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         switch indexPath.section {
         case 1:
-//            PostTableViewController.showPostTableViewController(self, post: posts[indexPath.row])
             let postVC = PostTableViewController()
             postVC.post = posts[indexPath.row]
             navigationController?.pushViewController(postVC, animated: true)
@@ -225,31 +222,61 @@ extension ProfileViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-
-        switch indexPath.section {
-        case 1:
-            let configuration = UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
-                
-                let _ = UIAction(title: "Поделится", image: UIImage(systemName:"square.and.arrow.up.circle")) { _ in
-                }
-                let remove = UIAction(title: "Удалить", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+        
+        var indexPaths = posts[indexPath.row]
+            switch indexPath.section {
+            case 1:
+                let configuration = UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
+                    let _ = UIAction(title: "Нравится",  image: UIImage(systemName: "heart")) { _ in
+                        //MARK: Работает но только в моем профиле
+                        let uid = self.user?.uid
+                        let values = [uid: indexPaths.hasLiked == true ? 0 : 1]
+                        DispatchQueue.main.async {
+                            Database.database().reference().child("likes").child(indexPaths.id ?? "").updateChildValues(values) { error, _ in
+                                if let error {
+                                    print(error)
+                                    return
+                                }
+                                print("successfully liked post")
+                                indexPaths.hasLiked = !indexPaths.hasLiked
+                            }
+                        }
+                    }
                     
-                    guard let uid = self.user?.uid else { return }
-                    self.getAllKaysPost()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
-                        Database.database().reference().child("posts").child(uid).child(self.postsKeyArray[indexPath.item]).removeValue()
-                        self.posts.remove(at: indexPath.item)
-                        self.collectionView.deleteItems(at: [indexPath])
-                        self.postsKeyArray = []
-                        self.collectionView.reloadData()
-                    })
-                }
-                let menu = UIMenu(title: "", children: [remove])
-                return menu
-            })
-            return configuration
-        default:
-            return nil
+                    let shared = UIAction(title: "Поделится", image: UIImage(systemName:"square.and.arrow.up.circle")) { _ in
+                        let avc = UIActivityViewController(activityItems: [self.posts[indexPath.row].user.username as Any, self.posts[indexPath.row].message as Any], applicationActivities: nil)
+                        self.present(avc, animated: true)
+                    }
+                    let remove = UIAction(title: "Удалить", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                        let alert = UIAlertController(title: "", message: "Вы точно хотите удалить?", preferredStyle: .alert)
+                        let removeAction = UIAlertAction(title: "Удалить", style: .destructive) { _ in
+                            guard let uid = self.user?.uid else { return }
+                            self.getAllKaysPost()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
+                                Database.database().reference().child("posts").child(uid).child(self.postsKeyArray[indexPath.item]).removeValue()
+                                self.posts.remove(at: indexPath.item)
+                                self.collectionView.deleteItems(at: [indexPath])
+                                self.postsKeyArray = []
+                                self.collectionView.reloadData()
+                            })
+                        }
+                        let cancelAction = UIAlertAction(title: "Отмена", style: .default) { _ in
+                            self.dismiss(animated: true)
+                        }
+                        [removeAction, cancelAction].forEach { alert.addAction($0) }
+                        self.present(alert, animated: true)
+                    }
+                    if Auth.auth().currentUser?.uid == self.user?.uid {
+                        let menu = UIMenu(title: "", children: [shared,remove])
+                        return menu
+                    } else {
+                        let menu = UIMenu(title: "", children: [shared])
+                        return menu
+                    }
+                })
+                return configuration
+            default:
+                return nil
         }
     }
     
@@ -267,7 +294,6 @@ extension ProfileViewController: UICollectionViewDataSource {
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let contentOffsetY = scrollView.contentOffset.y
-//        print(contentOffsetY)
         if contentOffsetY == 200 {
             
         }
@@ -279,7 +305,7 @@ extension ProfileViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         switch section {
         case 0:
-            return CGSize(width: self.collectionView.frame.size.width, height: 570)
+            return CGSize(width: self.collectionView.frame.size.width, height: 550)
         case 1:
             return CGSize()
         default:
@@ -377,7 +403,7 @@ extension ProfileViewController {
                 self.checkIFollowing(user: user)
                 self.checkFollowMe(user: user)
                 self.fetchPostsWithUser(user: user)
-                self.title = user.username
+//                self.title = user.username
                 print("Перезагрузка в ProfileViewController fetchUser")
             }
         }
@@ -544,6 +570,10 @@ extension ProfileViewController {
             
             UIView.animate(withDuration: 0.5, animations: {
                 self.posts = []
+                self.usersId.removeAll()
+                self.usersFollowMe.removeAll()
+                self.countUser.removeAll()
+                self.iFollowUsers.removeAll()
                 self.fetchUser()
             })
             
@@ -629,6 +659,10 @@ extension ProfileViewController: InfoDelegate {
             self.infoView.removeFromSuperview()
             self.blure.removeFromSuperview()
             self.posts.removeAll()
+            self.usersId.removeAll()
+            self.usersFollowMe.removeAll()
+            self.countUser.removeAll()
+            self.iFollowUsers.removeAll()
             self.fetchUser()
         }
     }
@@ -645,7 +679,9 @@ extension ProfileViewController: MessagePostDelegate {
     func presentPostImagePicker() {
         dismiss(animated: true)
         currentImage = messagePostViewController.customImage
-        self.present(self.imagePicker, animated: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
+            self.present(self.imagePicker, animated: true)
+        })
     }
 
     func pushPostDelegate() {
@@ -723,7 +759,9 @@ extension ProfileViewController: StretchyDelegate {
     func presentImagePickerForUser() {
         print("Проверка presentImage")
         currentImage = header?.userImage
-        self.present(self.imagePicker, animated: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
+            self.present(self.imagePicker, animated: true)
+        })
     }
     
     func logOut() {
