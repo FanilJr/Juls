@@ -29,7 +29,7 @@ class PostTableViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
         tableView.separatorStyle = .none
-        tableView.refreshControl = refreshController
+//        tableView.refreshControl = refreshController
         tableView.register(PostTableViewCell.self, forCellReuseIdentifier: "PostTableViewCell")
         return tableView
     }()
@@ -48,14 +48,24 @@ class PostTableViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        tabBarController?.tabBar.isHidden = true
+        navigationController?.hidesBarsOnSwipe = true
+        
+        let height = tabBarController?.tabBar.frame.height
+        UIView.animate(withDuration: 0.3) {
+            self.tabBarController?.tabBar.frame.origin.y += height!
+        }
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        tabBarController?.tabBar.isHidden = true
+        let height = tabBarController?.tabBar.frame.height
+
+        UIView.animate(withDuration: 0.3) {
+            self.tabBarController?.tabBar.frame.origin.y -= height!
+        }
     }
     
+        
     @objc func didTapRefresh() {
         updatePost(post: post)
         refreshController.endRefreshing()

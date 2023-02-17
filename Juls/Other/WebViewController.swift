@@ -22,7 +22,7 @@ class WebViewController: UIViewController {
         super.viewDidLoad()
         view.addSubview(web)
         web.frame = view.bounds
-        configurationButton()
+//        configurationButton()
     }
     
     private func configurationButton() {

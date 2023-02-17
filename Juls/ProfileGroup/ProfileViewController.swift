@@ -22,6 +22,7 @@ class ProfileViewController: UIViewController {
     var usersString = [String]()
     var usersFollowMe = [String]()
     var countUser = [String]()
+    var cgfloatTabBar: CGFloat?
     private var refreshController = UIRefreshControl()
     private let messagePostViewController = MessagePostViewController()
     private let settingsViewController = SettingsViewController()
@@ -33,6 +34,7 @@ class ProfileViewController: UIViewController {
     private let headerCollection = StretchyCollectionHeaderView()
     private var header: StretchyCollectionHeaderView?
     let mainCollection = MainCollectionViewCell()
+    
     
     let systemSoundID: SystemSoundID = 1016
     let systemSoundID2: SystemSoundID = 1018
@@ -102,6 +104,7 @@ class ProfileViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        cgfloatTabBar = tabBarController?.tabBar.frame.origin.y
         fetchUser()
         tabBarController?.tabBar.isHidden = false
         navigationController?.setNavigationBarHidden(false, animated: false)
@@ -113,6 +116,14 @@ class ProfileViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
+        let height = tabBarController?.tabBar.frame.height
+        if tabBarController?.tabBar.frame.origin.y != cgfloatTabBar {
+            UIView.animate(withDuration: 0.3) {
+                self.tabBarController?.tabBar.frame.origin.y -= height!
+            }
+        }
+        navigationController?.hidesBarsOnSwipe = false
         tabBarController?.tabBar.isHidden = false
         navigationController?.setNavigationBarHidden(false, animated: false)
     }
@@ -127,7 +138,7 @@ class ProfileViewController: UIViewController {
         self.collectionView.reloadData()
         self.refreshController.endRefreshing()
     }
-    
+
     func waitingSpinnerEnable(_ active: Bool) {
         if active {
             spinnerView.startAnimating()
@@ -243,7 +254,7 @@ extension ProfileViewController: UICollectionViewDataSource {
                         }
                     }
                     
-                    let shared = UIAction(title: "Поделится", image: UIImage(systemName:"square.and.arrow.up.circle")) { _ in
+                    let shared = UIAction(title: "Поделится", image: UIImage(systemName:"square.and.arrow.up")) { _ in
                         let avc = UIActivityViewController(activityItems: [self.posts[indexPath.row].user.username as Any, self.posts[indexPath.row].message as Any], applicationActivities: nil)
                         self.present(avc, animated: true)
                     }
@@ -294,8 +305,7 @@ extension ProfileViewController: UICollectionViewDataSource {
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let contentOffsetY = scrollView.contentOffset.y
-        if contentOffsetY == 200 {
-            
+        if contentOffsetY == 200 {      
         }
     }
 }
@@ -305,7 +315,7 @@ extension ProfileViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         switch section {
         case 0:
-            return CGSize(width: self.collectionView.frame.size.width, height: 550)
+            return CGSize(width: self.collectionView.frame.size.width, height: 540)
         case 1:
             return CGSize()
         default:
@@ -403,7 +413,6 @@ extension ProfileViewController {
                 self.checkIFollowing(user: user)
                 self.checkFollowMe(user: user)
                 self.fetchPostsWithUser(user: user)
-//                self.title = user.username
                 print("Перезагрузка в ProfileViewController fetchUser")
             }
         }

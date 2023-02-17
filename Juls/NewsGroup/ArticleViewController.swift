@@ -39,6 +39,11 @@ class ArticleViewController: UIViewController {
         tableView.delegate = self
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.hidesBarsOnSwipe = true
+    }
+    
     func layout() {
         [background, tableView].forEach { view.addSubview($0) }
         
@@ -69,7 +74,7 @@ extension ArticleViewController: UITableViewDataSource, URLDelegate {
         let myURL = URL(string: articles.url!)
         let request = URLRequest(url: myURL!)
         let navVC = UINavigationController(rootViewController: webVC)
-        webVC.title = "Browser JR"
+//        webVC.title = "Browser JR"
         webVC.web.load(request)
         DispatchQueue.main.asyncAfter(deadline: .now()+1) {
             self.webVC.web.evaluateJavaScript("document.body.innerHTML") { result, error in

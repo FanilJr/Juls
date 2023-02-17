@@ -62,9 +62,15 @@ class NewsListController: UIViewController {
         }
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.hidesBarsOnSwipe = true
+    }
+    
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         activityView.stopAnimating()
+        
     }
 
     @objc func didTapRefresh() {

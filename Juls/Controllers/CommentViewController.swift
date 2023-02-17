@@ -90,12 +90,8 @@ class CommentViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         addObserver()
+        navigationController?.hidesBarsOnSwipe = true
         tabBarController?.tabBar.isHidden = true
-    }
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        tabBarController?.tabBar.isHidden = false
     }
     
     func loadImageCurrentUser() {

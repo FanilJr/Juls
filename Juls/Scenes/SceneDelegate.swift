@@ -22,12 +22,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             let appearance = UINavigationBarAppearance()
             appearance.configureWithOpaqueBackground()
             appearance.backgroundColor = .clear
-//            appearance.
-//            let blureEffect = UIBlurEffect(style: .light)
             appearance.backgroundEffect = nil
             appearance.shadowImage = nil
             appearance.shadowColor = nil
-            
 
             UINavigationBar.appearance().standardAppearance = appearance
             UINavigationBar.appearance().scrollEdgeAppearance = appearance

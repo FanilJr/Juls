@@ -66,6 +66,7 @@ class FollowersUsersWithMeController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        navigationController?.hidesBarsOnSwipe = true
         searchController.searchBar.isHidden = false
         searchController.searchBar.resignFirstResponder()
         navigationItem.searchController = searchController
