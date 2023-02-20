@@ -23,6 +23,7 @@ class ProfileViewController: UIViewController {
     var usersFollowMe = [String]()
     var countUser = [String]()
     var cgfloatTabBar: CGFloat?
+    var postsCount = [String]()
     private var refreshController = UIRefreshControl()
     private let messagePostViewController = MessagePostViewController()
     private let settingsViewController = SettingsViewController()
@@ -76,7 +77,6 @@ class ProfileViewController: UIViewController {
     private lazy var collectionView: UICollectionView = {
         let flowLayout = CollectionViewFlowLayout()
         flowLayout.scrollDirection = .vertical
-        flowLayout.itemSize = CGSize(width: 100, height: 100)
         flowLayout.minimumLineSpacing = 1.0
         flowLayout.minimumInteritemSpacing = 1.0
         
@@ -94,7 +94,6 @@ class ProfileViewController: UIViewController {
     
     init(viewModel: ProfileViewModel) {
         self.viewModel = viewModel
-        
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -104,19 +103,26 @@ class ProfileViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        cgfloatTabBar = tabBarController?.tabBar.frame.origin.y
         fetchUser()
-        tabBarController?.tabBar.isHidden = false
-        navigationController?.setNavigationBarHidden(false, animated: false)
-        setupTableView()
-        imagePicker.delegate = self
-        messagePostViewController.delegatePost = self
-        refreshController.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
+        setupDidLoad()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
+        setupWillAppear()
+    }
+    
+    private func setupDidLoad() {
+        cgfloatTabBar = tabBarController?.tabBar.frame.origin.y
+        tabBarController?.tabBar.isHidden = false
+        navigationController?.setNavigationBarHidden(false, animated: false)
+        refreshController.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
+        setupTableView()
+        imagePicker.delegate = self
+        messagePostViewController.delegatePost = self
+    }
+    
+    private func setupWillAppear() {
         let height = tabBarController?.tabBar.frame.height
         if tabBarController?.tabBar.frame.origin.y != cgfloatTabBar {
             UIView.animate(withDuration: 0.3) {
@@ -134,6 +140,7 @@ class ProfileViewController: UIViewController {
         self.usersFollowMe.removeAll()
         self.countUser.removeAll()
         self.iFollowUsers.removeAll()
+        self.postsCount.removeAll()
         self.fetchUser()
         self.collectionView.reloadData()
         self.refreshController.endRefreshing()
@@ -194,6 +201,7 @@ extension ProfileViewController: UICollectionViewDataSource {
         case 0:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainCollectionViewCell", for: indexPath) as! MainCollectionViewCell
             cell.configureMain(user: self.user)
+            cell.postsButton.setTitle("\(postsCount.count)", for: .normal)
             cell.iFollowButton.setTitle("\(iFollowUsers.count)", for: .normal)
             cell.followMeButton.setTitle("\(countUser.count)", for: .normal)
             cell.delegate = self
@@ -316,14 +324,11 @@ extension ProfileViewController: UICollectionViewDelegateFlowLayout {
         switch section {
         case 0:
             return CGSize(width: self.collectionView.frame.size.width, height: 540)
-        case 1:
-            return CGSize()
         default:
             return CGSize()
         }
     }
     
-    private var interSpace: CGFloat { return 8 }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
@@ -335,46 +340,11 @@ extension ProfileViewController: UICollectionViewDelegateFlowLayout {
             return CGSize(width: width, height: height)
             
         case 1:
-            let width = (collectionView.bounds.width - interSpace * 4) / 3
+            let width = (view.frame.width - 3) / 3
             return CGSize(width: width, height: width)
             
         default:
             return CGSize()
-        }
-    }
-    
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        
-        switch section {
-        case 0:
-            return CGFloat()
-        case 1:
-            return interSpace
-        default:
-            return CGFloat()
-        }
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        switch section {
-        case 0:
-            return UIEdgeInsets()
-        case 1:
-            return UIEdgeInsets(top: interSpace, left: interSpace, bottom: interSpace, right: interSpace)
-        default:
-            return UIEdgeInsets()
-        }
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        switch section {
-        case 0:
-            return CGFloat()
-        case 1:
-            return interSpace
-        default:
-            return CGFloat()
         }
     }
 }
@@ -410,27 +380,15 @@ extension ProfileViewController {
         Database.fetchUserWithUID(uid: uid) { user in
             DispatchQueue.main.async {
                 self.user = user
-                self.checkIFollowing(user: user)
                 self.checkFollowMe(user: user)
+                self.checkPosts(user: user)
+                self.checkIFollowing(user: user)
                 self.fetchPostsWithUser(user: user)
-                print("Перезагрузка в ProfileViewController fetchUser")
-            }
-        }
-    }
-    
-    func fetchUserWithReload() {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        DispatchQueue.main.async {
-            Database.fetchUserWithUID(uid: uid) { user in
-                self.user = user
-                self.header?.user = user
-                self.collectionView.reloadData()
             }
         }
     }
     
     func fetchPostsWithUser(user: User) {
-        
         let ref = Database.database().reference().child("posts").child(user.uid)
         DispatchQueue.main.async {
             ref.observeSingleEvent(of: .value, with: { snapshot in
@@ -462,6 +420,7 @@ extension ProfileViewController {
     }
     
     func saveChanges() {
+        guard let userId = Auth.auth().currentUser?.uid else { return }
         let imageName = NSUUID().uuidString
         let storedImage = Storage.storage().reference().child("profile_image").child(imageName)
 
@@ -477,7 +436,7 @@ extension ProfileViewController {
                         return
                     }
                     if let urlText = url?.absoluteString {
-                        Database.database().reference().child("users").child(Auth.auth().currentUser?.uid ?? "").updateChildValues(["picture" : urlText]) { error, ref in
+                        Database.database().reference().child("users").child(userId).updateChildValues(["picture" : urlText]) { error, ref in
                             if let error {
                                 print(error)
                                 return
@@ -511,11 +470,25 @@ extension ProfileViewController {
     func checkIFollowing(user: User?) {
         guard let userId = user?.uid else { return }
         DispatchQueue.main.async {
-            let ref = Database.database().reference().child("following").child(userId)
-            ref.observeSingleEvent(of: .value, with: { snapshot in
-                guard let iFollowUsers = snapshot.value as? [String: Any] else { return }
-                iFollowUsers.forEach { key, value in
+            Database.database().reference().child("following").child(userId).observeSingleEvent(of: .value, with: { snapshot in
+                for child in snapshot.children {
+                    let snap = child as! Firebase.DataSnapshot
+                    let key = snap.key
                     self.iFollowUsers.append(key)
+                }
+                self.collectionView.reloadData()
+            })
+        }
+    }
+    
+    func checkPosts(user: User?) {
+        guard let uid = user?.uid else { return }
+        DispatchQueue.main.async {
+            Database.database().reference().child("posts").child(uid).observeSingleEvent(of: .value, with: { snapshot in
+                for child in snapshot.children {
+                    let snap = child as! Firebase.DataSnapshot
+                    let key = snap.key
+                    self.postsCount.append(key)
                 }
                 self.collectionView.reloadData()
             })
@@ -527,8 +500,9 @@ extension ProfileViewController {
         DispatchQueue.main.async {
             let ref = Database.database().reference().child("following")
             ref.observeSingleEvent(of: .value, with: { snapshot in
-                guard let iFollowUsers = snapshot.value as? [String: Any] else { return }
-                iFollowUsers.forEach { key, value in
+                for child in snapshot.children {
+                    let snap = child as! Firebase.DataSnapshot
+                    let key = snap.key
                     if key != userId {
                         self.usersFollowMe.append(key)
                     }
@@ -536,14 +510,15 @@ extension ProfileViewController {
                 for i in self.usersFollowMe {
                     let ref = Database.database().reference().child("following").child(i)
                     ref.observeSingleEvent(of: .value, with: { snapshot in
-                        guard let followMeUsers = snapshot.value as? [String: Any] else { return }
-                        followMeUsers.forEach { key, value in
+                        for child in snapshot.children {
+                            let snap = child as! Firebase.DataSnapshot
+                            let key = snap.key
                             if key == self.user?.uid {
                                 self.countUser.append(i)
                             }
                         }
-                        self.collectionView.reloadData()
                     })
+                    self.collectionView.reloadData()
                 }
             })
         }
@@ -583,6 +558,7 @@ extension ProfileViewController {
                 self.usersFollowMe.removeAll()
                 self.countUser.removeAll()
                 self.iFollowUsers.removeAll()
+                self.postsCount.removeAll()
                 self.fetchUser()
             })
             
@@ -672,6 +648,7 @@ extension ProfileViewController: InfoDelegate {
             self.usersFollowMe.removeAll()
             self.countUser.removeAll()
             self.iFollowUsers.removeAll()
+            self.postsCount.removeAll()
             self.fetchUser()
         }
     }
@@ -801,6 +778,11 @@ extension ProfileViewController: StretchyDelegate {
 }
 
 extension ProfileViewController: MainCollectionDelegate {
+    
+    func tapPosts(for cell: MainCollectionViewCell) {
+        guard let indexPath = collectionView.indexPath(for: cell) else { return }
+        collectionView.scrollToItem(at: indexPath, at: UICollectionView.ScrollPosition.top, animated: true)
+    }
     
     func getUsersFollowMe() {
         guard let user = user else { return }

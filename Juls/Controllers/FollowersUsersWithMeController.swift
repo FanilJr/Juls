@@ -44,6 +44,15 @@ class FollowersUsersWithMeController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupDidLoad()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        setupWillAppear()
+    }
+    
+    private func setupDidLoad() {
         view.backgroundColor = .white
         title = "Подписчики"
         layout()
@@ -64,8 +73,7 @@ class FollowersUsersWithMeController: UIViewController {
         }
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+    private func setupWillAppear() {
         navigationController?.hidesBarsOnSwipe = true
         searchController.searchBar.isHidden = false
         searchController.searchBar.resignFirstResponder()

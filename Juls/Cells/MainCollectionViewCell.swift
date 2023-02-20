@@ -13,6 +13,7 @@ protocol MainCollectionDelegate: AnyObject {
     func editInfo()
     func getUsersIFollow()
     func getUsersFollowMe()
+    func tapPosts(for cell: MainCollectionViewCell)
 }
 
 class MainCollectionViewCell: UICollectionViewCell {
@@ -132,6 +133,14 @@ class MainCollectionViewCell: UICollectionViewCell {
         return nothing
     }()
     
+    lazy var postsCount: UILabel = {
+        let nothing = UILabel()
+        nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .light)
+        nothing.translatesAutoresizingMaskIntoConstraints = false
+        nothing.text = "Посты"
+        return nothing
+    }()
+    
     private lazy var editButton: UIButton = {
         let button = UIButton()
         button.tintColor = UIColor.createColor(light: .black, dark: .white)
@@ -163,6 +172,17 @@ class MainCollectionViewCell: UICollectionViewCell {
         return button
     }()
     
+    lazy var postsButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("-", for: .normal)
+        button.setTitleColor(.black, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .bold)
+        button.addTarget(self, action: #selector(tapPosts), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.showsMenuAsPrimaryAction = true
+        return button
+    }()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupCell()
@@ -170,6 +190,10 @@ class MainCollectionViewCell: UICollectionViewCell {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    @objc func tapPosts() {
+        delegate?.tapPosts(for: self)
     }
     
     @objc func getUsersFollowMe() {
@@ -190,19 +214,26 @@ class MainCollectionViewCell: UICollectionViewCell {
     }
     
     func setupCell() {
-        [iFollowButton, followMeButton, iFollow, followMe, info, first,two,three,four, name, ageUser, statusLife, heightUser, editButton].forEach { addSubview($0) }
+        [postsButton,iFollowButton,followMeButton,postsCount,iFollow,followMe,info,first,two,three,four, name,ageUser,statusLife,heightUser,editButton].forEach { addSubview($0) }
         
         NSLayoutConstraint.activate([
+            postsButton.topAnchor.constraint(equalTo: topAnchor,constant: 10),
+            postsButton.leadingAnchor.constraint(equalTo: leadingAnchor,constant: 80),
+            postsButton.heightAnchor.constraint(equalToConstant: 30),
+            postsButton.widthAnchor.constraint(equalToConstant: 30),
             
             iFollowButton.topAnchor.constraint(equalTo: topAnchor,constant: 10),
-            iFollowButton.centerXAnchor.constraint(equalTo: centerXAnchor,constant: -60),
+            iFollowButton.centerXAnchor.constraint(equalTo: centerXAnchor),
             iFollowButton.heightAnchor.constraint(equalToConstant: 30),
             iFollowButton.widthAnchor.constraint(equalToConstant: 30),
             
             followMeButton.centerYAnchor.constraint(equalTo: iFollowButton.centerYAnchor),
-            followMeButton.centerXAnchor.constraint(equalTo: centerXAnchor,constant: 60),
+            followMeButton.trailingAnchor.constraint(equalTo: trailingAnchor,constant: -80),
             followMeButton.heightAnchor.constraint(equalToConstant: 30),
             followMeButton.widthAnchor.constraint(equalToConstant: 30),
+            
+            postsCount.topAnchor.constraint(equalTo: postsButton.bottomAnchor),
+            postsCount.centerXAnchor.constraint(equalTo: postsButton.centerXAnchor),
             
             iFollow.topAnchor.constraint(equalTo: iFollowButton.bottomAnchor),
             iFollow.centerXAnchor.constraint(equalTo: iFollowButton.centerXAnchor),

@@ -76,22 +76,14 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
         let homeVC = viewControllerFactory.viewController(for: .home)
         let navHomeVC = createNavController(for: homeVC, title: String("Лента"), image: UIImage(systemName: Constants.ribbonImageName)!, selectImage: UIImage(systemName: ConstantsSelect.ribbonImageName) ?? UIImage())
         let homeCoordinator = HomeCoordinator(navigationController: navHomeVC, viewControllerFactory: viewControllerFactory)
-        
-        //MARK: SETTINGS
-        let infoVC = viewControllerFactory.viewController(for: .info)
-        let navInfoVC = createNavController(for: infoVC, title: String("Информация"), image: UIImage(systemName: Constants.infoImageName)!, selectImage: UIImage(systemName: ConstantsSelect.infoImageName) ?? UIImage())
-        let _ = InfoCoordinator(navigationController: navInfoVC, viewControllerFactory: viewControllerFactory)
-
 
         addDependency(searchCoordinator)
         addDependency(homeCoordinator)
         addDependency(newsCoordinator)
-//        addDependency(infoCoordinator)
 
         searchCoordinator.start()
         homeCoordinator.start()
         newsCoordinator.start()
-//        infoCoordinator.start()
         
         if Auth.auth().currentUser == nil {
             let loginViewModel = LoginViewModel()

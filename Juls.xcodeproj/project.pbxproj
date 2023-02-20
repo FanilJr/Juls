@@ -16,14 +16,12 @@
 		848881C12964C9F2006BE6A1 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 848881C02964C9F1006BE6A1 /* GoogleService-Info.plist */; };
 		848881CC2964CC4B006BE6A1 /* ViewControllerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848881CB2964CC4B006BE6A1 /* ViewControllerFactory.swift */; };
 		848881D82964CE8C006BE6A1 /* PhotosCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848881D72964CE8C006BE6A1 /* PhotosCollectionViewCell.swift */; };
-		848881E52964D001006BE6A1 /* PhotosViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848881E42964D000006BE6A1 /* PhotosViewController.swift */; };
 		848881E72964D022006BE6A1 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848881E62964D022006BE6A1 /* SettingsViewController.swift */; };
 		848881EA2964D06C006BE6A1 /* Coordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848881E92964D06C006BE6A1 /* Coordinator.swift */; };
 		848881EC2964D0B3006BE6A1 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848881EB2964D0B3006BE6A1 /* AppCoordinator.swift */; };
 		848881F22964D105006BE6A1 /* NewsCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848881F12964D105006BE6A1 /* NewsCoordinator.swift */; };
 		848881F42964D11A006BE6A1 /* LoginCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848881F32964D11A006BE6A1 /* LoginCoordinator.swift */; };
 		848881F82964D16D006BE6A1 /* ProfileCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848881F72964D16D006BE6A1 /* ProfileCoordinator.swift */; };
-		848881FA2964D181006BE6A1 /* PhotosCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848881F92964D181006BE6A1 /* PhotosCoordinator.swift */; };
 		848881FF2964D2AB006BE6A1 /* CustomTextfield.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848881FE2964D2AB006BE6A1 /* CustomTextfield.swift */; };
 		848882012964D374006BE6A1 /* CustomButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848882002964D373006BE6A1 /* CustomButton.swift */; };
 		848882082964D3E2006BE6A1 /* WebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848882072964D3E2006BE6A1 /* WebViewController.swift */; };
@@ -92,14 +90,12 @@
 		848881C02964C9F1006BE6A1 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		848881CB2964CC4B006BE6A1 /* ViewControllerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewControllerFactory.swift; sourceTree = "<group>"; };
 		848881D72964CE8C006BE6A1 /* PhotosCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosCollectionViewCell.swift; sourceTree = "<group>"; };
-		848881E42964D000006BE6A1 /* PhotosViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosViewController.swift; sourceTree = "<group>"; };
 		848881E62964D022006BE6A1 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		848881E92964D06C006BE6A1 /* Coordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coordinator.swift; sourceTree = "<group>"; };
 		848881EB2964D0B3006BE6A1 /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
 		848881F12964D105006BE6A1 /* NewsCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsCoordinator.swift; sourceTree = "<group>"; };
 		848881F32964D11A006BE6A1 /* LoginCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginCoordinator.swift; sourceTree = "<group>"; };
 		848881F72964D16D006BE6A1 /* ProfileCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileCoordinator.swift; sourceTree = "<group>"; };
-		848881F92964D181006BE6A1 /* PhotosCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosCoordinator.swift; sourceTree = "<group>"; };
 		848881FE2964D2AB006BE6A1 /* CustomTextfield.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTextfield.swift; sourceTree = "<group>"; };
 		848882002964D373006BE6A1 /* CustomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomButton.swift; sourceTree = "<group>"; };
 		848882072964D3E2006BE6A1 /* WebViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewController.swift; sourceTree = "<group>"; };
@@ -242,7 +238,6 @@
 		848881E32964CFE2006BE6A1 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				848881E42964D000006BE6A1 /* PhotosViewController.swift */,
 				8488828B2968BC4B006BE6A1 /* HomeViewController.swift */,
 				8488827A29678494006BE6A1 /* SearchController.swift */,
 				848881E62964D022006BE6A1 /* SettingsViewController.swift */,
@@ -264,7 +259,6 @@
 				848881E92964D06C006BE6A1 /* Coordinator.swift */,
 				848881F32964D11A006BE6A1 /* LoginCoordinator.swift */,
 				848881F12964D105006BE6A1 /* NewsCoordinator.swift */,
-				848881F92964D181006BE6A1 /* PhotosCoordinator.swift */,
 				8488828D2968BCF5006BE6A1 /* HomeCoordinator.swift */,
 				848881F72964D16D006BE6A1 /* ProfileCoordinator.swift */,
 				8488827C296784E3006BE6A1 /* SearchCoordinator.swift */,
@@ -465,7 +459,6 @@
 				8488827B29678494006BE6A1 /* SearchController.swift in Sources */,
 				8488821A2964D4D5006BE6A1 /* ColorMode.swift in Sources */,
 				848881F42964D11A006BE6A1 /* LoginCoordinator.swift in Sources */,
-				848881FA2964D181006BE6A1 /* PhotosCoordinator.swift in Sources */,
 				848882402964D798006BE6A1 /* DownloadManager.swift in Sources */,
 				848882082964D3E2006BE6A1 /* WebViewController.swift in Sources */,
 				8482EC112972685000058A7D /* AppDelegate.swift in Sources */,
@@ -500,7 +493,6 @@
 				8482EC0F2972680B00058A7D /* Post.swift in Sources */,
 				8488828E2968BCF5006BE6A1 /* HomeCoordinator.swift in Sources */,
 				848882812967A335006BE6A1 /* CustomImageView.swift in Sources */,
-				848881E52964D001006BE6A1 /* PhotosViewController.swift in Sources */,
 				84888279296680DD006BE6A1 /* InfoView.swift in Sources */,
 				8488827D296784E4006BE6A1 /* SearchCoordinator.swift in Sources */,
 				84B3C1712984524D0044EE9C /* MainCollectionViewCell.swift in Sources */,

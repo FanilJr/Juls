@@ -35,7 +35,15 @@ class HomeViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        setupDidLoad()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        setupWillAppear()
+    }
+    
+    private func setupDidLoad() {
         navigationItem.titleView = juls
 
         tableView.delegate = self
@@ -46,8 +54,7 @@ class HomeViewController: UIViewController {
         refreshControler.attributedTitle = NSAttributedString(string: "Обновление")
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+    private func setupWillAppear() {
         tabBarController?.tabBar.isHidden = false
         navigationController?.hidesBarsOnSwipe = true
     }
@@ -122,47 +129,50 @@ extension HomeViewController {
     
     func fetchPostsWithUser(user: User) {
         let ref = Database.database().reference().child("posts").child(user.uid)
+        DispatchQueue.main.async {
+            ref.observeSingleEvent(of: .value, with: { (snapshot) in
+                self.tableView.refreshControl?.endRefreshing()
+                guard let dictionaries = snapshot.value as? [String: Any] else { return }
         
-        ref.observeSingleEvent(of: .value, with: { (snapshot) in
-            self.tableView.refreshControl?.endRefreshing()
-            guard let dictionaries = snapshot.value as? [String: Any] else { return }
-        
-            dictionaries.forEach ({ (key, value) in
-                guard let dictionary = value as? [String: Any] else { return }
-                var post = Post(user: user, dictionary: dictionary)
-                post.id = key
-                guard let uid = Auth.auth().currentUser?.uid else { return }
-                Database.database().reference().child("likes").child(key).child(uid).observeSingleEvent(of: .value, with: { (snapshot) in
-                    if let value = snapshot.value as? Int, value == 1 {
-                        post.hasLiked = true
-                    } else {
-                        post.hasLiked = false
-                    }
-                    self.posts.append(post)
-                    self.posts.sort { p1, p2 in
-                        return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-                    }
-                    self.tableView.reloadData()
-                }, withCancel: { (error) in
-                    print(error)
+                dictionaries.forEach ({ (key, value) in
+                    guard let dictionary = value as? [String: Any] else { return }
+                    var post = Post(user: user, dictionary: dictionary)
+                    post.id = key
+                    guard let uid = Auth.auth().currentUser?.uid else { return }
+                    Database.database().reference().child("likes").child(key).child(uid).observeSingleEvent(of: .value, with: { (snapshot) in
+                        if let value = snapshot.value as? Int, value == 1 {
+                            post.hasLiked = true
+                        } else {
+                            post.hasLiked = false
+                        }
+                        self.posts.append(post)
+                        self.posts.sort { p1, p2 in
+                            return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+                        }
+                        self.tableView.reloadData()
+                    }, withCancel: { (error) in
+                        print(error)
+                    })
                 })
-            })
-        }) { error in
-            print("Failed to fetch posts:", error)
+            }) { error in
+                print("Failed to fetch posts:", error)
+            }
         }
     }
     
     func fetchFollowingUserUids() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
-        Database.database().reference().child("following").child(uid).observeSingleEvent(of: .value, with: { snapshot in
-            guard let userIdsDictionary = snapshot.value as? [String: Any] else { return }
-            userIdsDictionary.forEach ({ (key, value) in
-                Database.fetchUserWithUID(uid: key, completion: { (user) in
-                    self.fetchPostsWithUser(user: user)
+        DispatchQueue.main.async {
+            Database.database().reference().child("following").child(uid).observeSingleEvent(of: .value, with: { snapshot in
+                guard let userIdsDictionary = snapshot.value as? [String: Any] else { return }
+                userIdsDictionary.forEach ({ (key, value) in
+                    Database.fetchUserWithUID(uid: key, completion: { (user) in
+                        self.fetchPostsWithUser(user: user)
+                    })
                 })
-            })
-        }) { (error) in
-            print("error")
+            }) { (error) in
+                print("error")
+            }
         }
     }
 }

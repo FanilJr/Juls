@@ -43,7 +43,20 @@ class NewsListController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        setupDidLoad()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.hidesBarsOnSwipe = true
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        activityView.stopAnimating()
+    }
+    
+    private func setupDidLoad() {
         navigationItem.titleView = juls
         
         refreshControle.attributedTitle = NSAttributedString(string: "Обновление")
@@ -60,17 +73,6 @@ class NewsListController: UIViewController {
                 self.tableView.reloadData()
             }
         }
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        navigationController?.hidesBarsOnSwipe = true
-    }
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        activityView.stopAnimating()
-        
     }
 
     @objc func didTapRefresh() {

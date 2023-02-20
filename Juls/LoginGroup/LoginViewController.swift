@@ -49,7 +49,15 @@ class LogInViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        setupDidLoad()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        setupWillAppear()
+    }
+    
+    private func setupDidLoad() {
         view.backgroundColor = .white
         layout()
         loginView.delegate = self
@@ -57,11 +65,9 @@ class LogInViewController: UIViewController {
         navigationController?.setNavigationBarHidden(true, animated: false)
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+    private func setupWillAppear() {
         tabBarController?.tabBar.isHidden = true
         navigationController?.setNavigationBarHidden(true, animated: false)
-//        navigationController?.navigationBar.isHidden = true
     }
 
     private func layout() {

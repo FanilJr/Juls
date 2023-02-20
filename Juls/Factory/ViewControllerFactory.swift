@@ -12,10 +12,9 @@ enum TypeOfViewController {
     case main
     case login(viewModel: LoginViewModel)
     case profile(viewModel: ProfileViewModel)
-    case photosView
     case home
     case news
-    case info
+//    case info
     case search
 }
 
@@ -28,14 +27,12 @@ extension TypeOfViewController {
             return LogInViewController(viewModel: viewModel)
         case .profile(let viewModel):
             return ProfileViewController(viewModel: viewModel)
-        case .photosView:
-            return PhotosViewController()
         case .home:
             return HomeViewController()
         case .news:
             return NewsListController()
-        case .info:
-            return InfoViewController()
+//        case .info:
+//            return InfoViewController()
         case .search:
             return SearchViewController()
         }

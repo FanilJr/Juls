@@ -32,16 +32,19 @@ class ArticleViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        navigationItem.titleView = juls
-        layout()
-        tableView.dataSource = self
-        tableView.delegate = self
+        setupDidLoad()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.hidesBarsOnSwipe = true
+    }
+    
+    private func setupDidLoad() {
+        navigationItem.titleView = juls
+        layout()
+        tableView.dataSource = self
+        tableView.delegate = self
     }
     
     func layout() {

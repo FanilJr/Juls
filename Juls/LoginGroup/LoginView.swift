@@ -251,7 +251,7 @@ class LoginView: UIView {
                 print("succes update user info")
                 
                 
-    //____________________________________________________________________________________________________________\\
+    //______________________________________________________________________________________________________\\
                 
                 Auth.auth().signIn(withEmail: mailText, password: passwordRegText) { user, error in
                     if let error {
@@ -261,23 +261,6 @@ class LoginView: UIView {
                     }
                     guard let userId = user?.user.uid else { return }
                     print("succes Login", userId as Any)
-                    
-//                    let ref = Database.database().reference().child("users").child(userId)
-//                    ref.observeSingleEvent(of: .value, with: { snapshot in
-//                        guard let dictionaries = snapshot.value as? [String: Any] else { return }
-//                        dictionaries.forEach { key, value in
-//                            switch key {
-//                            case "username":
-//                                UserDefaults.standard.set(value, forKey: "username")
-//                                print(value)
-//                            case "status":
-//                                UserDefaults.standard.set(value, forKey: "status")
-//                                print(value)
-//                            default:
-//                                return
-//                            }
-//                        }
-//                    })
                     self.registerButton.isEnabled = false
                     self.registerButton.backgroundColor = #colorLiteral(red: 0.2745098174, green: 0.4862745106, blue: 0.1411764771, alpha: 1)
                     self.backUpButton()
@@ -307,23 +290,6 @@ class LoginView: UIView {
             }
             guard let userId = user?.user.uid else { return }
             print("succes Login", userId as Any)
-            
-//            let ref = Database.database().reference().child("users").child(userId)
-//            ref.observeSingleEvent(of: .value, with: { snapshot in
-//                guard let dictionaries = snapshot.value as? [String: Any] else { return }
-//                dictionaries.forEach { key, value in
-//                    switch key {
-//                    case "username":
-//                        UserDefaults.standard.set(value, forKey: "username")
-//                        print(value)
-//                    case "status":
-//                        UserDefaults.standard.set(value, forKey: "status")
-//                        print(value)
-//                    default:
-//                        return
-//                    }
-//                }
-//            })
             self.delegate?.tappedButton()
         }
     }

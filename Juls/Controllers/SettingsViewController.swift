@@ -202,7 +202,6 @@ class SettingsViewController: UIViewController {
         settings.layer.cornerRadius = 14
         settings.translatesAutoresizingMaskIntoConstraints = false
         settings.clipsToBounds = true
-//        settings.addTarget(self, action: #selector(tapSave), for: .touchUpInside)
         return settings
     }()
     
@@ -215,7 +214,6 @@ class SettingsViewController: UIViewController {
         settings.layer.cornerRadius = 14
         settings.translatesAutoresizingMaskIntoConstraints = false
         settings.clipsToBounds = true
-//        settings.addTarget(self, action: #selector(cancelSave), for: .touchUpInside)
         return settings
     }()
     

@@ -12,9 +12,7 @@ protocol ProfileCoordinatorFlowProtocol {
     var navigationController: UINavigationController { get }
     var viewControllerFactory: ViewControllersFactoryProtocol { get }
     
-    func showPhotosVc()
     func showLoginVc()
-//    func showImageSettings()
 }
 
 class ProfileCoordinatorFlow: ProfileCoordinatorFlowProtocol {
@@ -30,23 +28,10 @@ class ProfileCoordinatorFlow: ProfileCoordinatorFlowProtocol {
         self.viewControllerFactory = viewControllerFactory
     }
     
-    func showPhotosVc() {
-        let photosViewCoordinator = PhotosViewCoordinator(
-            navigationController: navigationController,
-            viewControllerFactory: viewControllerFactory
-        )
-        photosViewCoordinator.start()
-    }
-    
     func showLoginVc() {
         let logInCoordinator = LogInCoordinator(navigationController: navigationController,viewControllerFactory: viewControllerFactory)
         logInCoordinator.start()
     }
-    
-//    func showImageSettings() {
-//        let settingsViewCoordinator = SettingsCoordinator(navigationController: navigationController, viewControllerFactory: viewControllerFactory)
-//        settingsViewCoordinator.start()
-//    }
 }
 
 class ProfileCoordinator: Coordinator {
@@ -68,9 +53,7 @@ class ProfileCoordinator: Coordinator {
                 viewModel: viewModel
             )
         ) as! ProfileViewController
-        viewModel.showPhotosVc = profileCoordinatorFlow.showPhotosVc
         viewModel.showLoginVc = profileCoordinatorFlow.showLoginVc
-//        viewModel.showImageSettingsVc = profileCoordinatorFlow.showImageSettings
         navigationController?.setViewControllers([profileVc], animated: false)
     }
 }

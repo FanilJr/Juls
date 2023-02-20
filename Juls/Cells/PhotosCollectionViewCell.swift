@@ -15,7 +15,6 @@ class PhotosCollectionViewCell: UICollectionViewCell {
         blure.effect = bluereEffect
         blure.translatesAutoresizingMaskIntoConstraints = false
         blure.clipsToBounds = true
-        blure.layer.cornerRadius = 14
         return blure
     }()
     
@@ -23,12 +22,14 @@ class PhotosCollectionViewCell: UICollectionViewCell {
         let image = CustomImageView()
         image.contentMode = .scaleAspectFill
         image.translatesAutoresizingMaskIntoConstraints = false
+        image.clipsToBounds = true
         return image
     }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupCell()
+        clipsToBounds = true
     }
     
     required init?(coder: NSCoder) {
@@ -50,8 +51,6 @@ class PhotosCollectionViewCell: UICollectionViewCell {
             image.trailingAnchor.constraint(equalTo: trailingAnchor),
             image.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
-        layer.cornerRadius = 14
-        clipsToBounds = true
     }
     
     func configureCell(post: Post?) {

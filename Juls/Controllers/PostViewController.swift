@@ -14,7 +14,6 @@ class PostTableViewController: UIViewController {
     var post: Post?
     var juls = JulsView()
     var commentArray = [String]()
-    var refreshController = UIRefreshControl()
     
     let background: UIImageView = {
         let back = UIImageView()
@@ -29,50 +28,46 @@ class PostTableViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
         tableView.separatorStyle = .none
-//        tableView.refreshControl = refreshController
         tableView.register(PostTableViewCell.self, forCellReuseIdentifier: "PostTableViewCell")
         return tableView
     }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        setupDidLoad()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        setupWillAppear()
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        setupDidDisappear()
+    }
+    
+    private func setupDidLoad() {
         navigationItem.titleView = juls
-        refreshController.attributedTitle = NSAttributedString(string: "Обновление")
-        refreshController.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
         layout()
         countComment(post: post)
         tableView.delegate = self
         tableView.dataSource = self
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+    private func setupWillAppear() {
         navigationController?.hidesBarsOnSwipe = true
-        
         let height = tabBarController?.tabBar.frame.height
         UIView.animate(withDuration: 0.3) {
             self.tabBarController?.tabBar.frame.origin.y += height!
         }
     }
     
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
+    private func setupDidDisappear() {
         let height = tabBarController?.tabBar.frame.height
-
         UIView.animate(withDuration: 0.3) {
             self.tabBarController?.tabBar.frame.origin.y -= height!
         }
-    }
-    
-        
-    @objc func didTapRefresh() {
-        updatePost(post: post)
-        refreshController.endRefreshing()
-    }
-    
-    func updatePost(post: Post?) {
-        // added methode update post...
     }
 
     func layout() {

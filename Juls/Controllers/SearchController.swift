@@ -42,6 +42,15 @@ class SearchViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupDidLoad()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        searchController.searchBar.isHidden = false
+    }
+    
+    private func setupDidLoad() {
         view.backgroundColor = .white
         navigationItem.titleView = juls
         navigationItem.searchController = searchController
@@ -54,11 +63,6 @@ class SearchViewController: UIViewController {
         tableView.alwaysBounceVertical = true
         tableView.keyboardDismissMode = .onDrag
         self.fetchUsers()
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        searchController.searchBar.isHidden = false
     }
     
     @objc func didTapRefresh() {

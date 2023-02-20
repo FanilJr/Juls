@@ -43,6 +43,15 @@ class MyFollowersUserViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
+        setupDidLoad()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        setupWillAppear()
+    }
+    
+    private func setupDidLoad() {
         title = "Подписки"
         layout()
         refreshControler.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
@@ -60,8 +69,7 @@ class MyFollowersUserViewController: UIViewController {
         }
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+    private func setupWillAppear() {
         navigationController?.hidesBarsOnSwipe = true
         searchController.searchBar.isHidden = false
         searchController.searchBar.resignFirstResponder()

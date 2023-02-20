@@ -79,6 +79,15 @@ class CommentViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupDidLoad()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        setupWillAppear()
+    }
+    
+    private func setupDidLoad() {
         headerComment.post = post
         title = "Комментарии"
         setupLayout()
@@ -87,8 +96,7 @@ class CommentViewController: UIViewController {
         loadImageCurrentUser()
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+    private func setupWillAppear() {
         addObserver()
         navigationController?.hidesBarsOnSwipe = true
         tabBarController?.tabBar.isHidden = true
@@ -111,6 +119,9 @@ class CommentViewController: UIViewController {
             Database.fetchUserWithUID(uid: uid) { user in
                 let comment = Comment(user: user, dictionary: dictionary)
                 self.comments.append(comment)
+                self.comments.sort { p1, p2 in
+                    return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+                }
                 self.tableView.reloadData()
             }
         })
@@ -261,7 +272,6 @@ extension CommentViewController: UITableViewDelegate {
 }
 
 extension UITextField {
-    
     func setupLeftView() {
         let imageView = UIImageView(frame: CGRect(x: 10, y: 10, width: 20, height: 20))
         imageView.image = UIImage(systemName: "ellipsis.message.fill")
@@ -274,10 +284,8 @@ extension UITextField {
         leftView = imageViewContrainerView
         leftViewMode = .always
     }
-    
-    func paddingUp() {
-    }
 }
+
 extension CommentViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         view.endEditing(true)
