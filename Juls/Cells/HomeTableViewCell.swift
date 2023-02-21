@@ -122,7 +122,6 @@ class HomeTableViewCell: UITableViewCell {
         [authorImage, nameAuthor, postImage, commentButton, likeButton, descriptionText, datePost].forEach { contentView.addSubview($0) }
         
         NSLayoutConstraint.activate([
-            
             authorImage.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10),
             authorImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
             authorImage.heightAnchor.constraint(equalToConstant: 50),
@@ -149,9 +148,6 @@ class HomeTableViewCell: UITableViewCell {
             descriptionText.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
             descriptionText.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             
-//            commentCountLabel.topAnchor.constraint(equalTo: descriptionText.bottomAnchor,constant: 10),
-//            commentCountLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
-//
             datePost.topAnchor.constraint(equalTo: descriptionText.bottomAnchor,constant: 10),
             datePost.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
             datePost.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -20)
@@ -173,7 +169,6 @@ class HomeTableViewCell: UITableViewCell {
         descriptionText.attributedText = attributedText
         
         likeButton.setBackgroundImage(post?.hasLiked == true ? UIImage(named: "heart.circle.fill@100x") : UIImage(systemName: "heart.circle.fill"), for: .normal)
-        
     }
 }
 

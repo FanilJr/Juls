@@ -14,6 +14,16 @@ final class ProfileViewModel {
     var showLoginVc: (() -> Void)?
     var showImageSettingsVc: (() -> Void)?
     
+    enum State {
+        case initial
+        case loaded
+    }
+    
+    enum Action {
+        case showPhotosVc
+        case showLoginVc
+        case showImageSettingsVc
+    }
     
     func send(_ action: Action) {
         switch action {
@@ -24,19 +34,5 @@ final class ProfileViewModel {
         case .showImageSettingsVc:
             showImageSettingsVc?()
         }
-    }
-}
-
-extension ProfileViewModel {
-    
-    enum Action {
-        case showPhotosVc
-        case showLoginVc
-        case showImageSettingsVc
-    }
-    
-    enum State {
-        case initial
-        case loaded
     }
 }

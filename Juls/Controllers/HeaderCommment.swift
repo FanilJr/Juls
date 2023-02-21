@@ -54,7 +54,7 @@ class HeaderCommment: UIView {
         let name = UILabel()
         name.font = UIFont.systemFont(ofSize: 14, weight: .light)
         name.translatesAutoresizingMaskIntoConstraints = false
-        name.textColor = .gray
+        name.textColor = .systemGray5
         name.backgroundColor = .clear
         return name
     }()

@@ -32,6 +32,7 @@ class PostTableViewCell: UITableViewCell {
         let imageView = CustomImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.backgroundColor = .gray
+        imageView.layer.cornerRadius = 20
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.clipsToBounds = true
         return imageView
@@ -49,6 +50,7 @@ class PostTableViewCell: UITableViewCell {
         let name = UILabel()
         name.font = UIFont.systemFont(ofSize: 14, weight: .light)
         name.numberOfLines = 0
+        
         name.translatesAutoresizingMaskIntoConstraints = false
         return name
     }()
@@ -57,7 +59,7 @@ class PostTableViewCell: UITableViewCell {
         let name = UILabel()
         name.font = UIFont.systemFont(ofSize: 12, weight: .light)
         name.translatesAutoresizingMaskIntoConstraints = false
-        name.textColor = .gray
+        name.textColor = .systemGray5
         name.backgroundColor = .clear
         return name
     }()
@@ -66,7 +68,7 @@ class PostTableViewCell: UITableViewCell {
         let name = UILabel()
         name.font = UIFont.systemFont(ofSize: 13, weight: .light)
         name.translatesAutoresizingMaskIntoConstraints = false
-        name.textColor = .gray
+        name.textColor = .systemGray5
         name.text = "Комментарии"
         let gesture = UITapGestureRecognizer()
         gesture.addTarget(self, action: #selector(tapComment))
@@ -116,6 +118,7 @@ class PostTableViewCell: UITableViewCell {
          [authorImage, nameAuthor, postImage, commentButton, likeButton, descriptionText, commentCountLabel, datePost].forEach { contentView.addSubview($0) }
         
         NSLayoutConstraint.activate([
+            
             authorImage.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10),
             authorImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
             authorImage.heightAnchor.constraint(equalToConstant: 50),
@@ -126,7 +129,8 @@ class PostTableViewCell: UITableViewCell {
             
             postImage.topAnchor.constraint(equalTo: authorImage.bottomAnchor,constant: 10),
             postImage.heightAnchor.constraint(equalTo: contentView.widthAnchor,constant: 100),
-            postImage.widthAnchor.constraint(equalTo: contentView.widthAnchor),
+            postImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 5),
+            postImage.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -5),
             
             commentButton.topAnchor.constraint(equalTo: postImage.bottomAnchor,constant: 10),
             commentButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),

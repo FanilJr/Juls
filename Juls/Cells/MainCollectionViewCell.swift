@@ -121,7 +121,7 @@ class MainCollectionViewCell: UICollectionViewCell {
         let nothing = UILabel()
         nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .light)
         nothing.translatesAutoresizingMaskIntoConstraints = false
-        nothing.text = "Подписки"
+        nothing.text = "подписки"
         return nothing
     }()
     
@@ -129,7 +129,7 @@ class MainCollectionViewCell: UICollectionViewCell {
         let nothing = UILabel()
         nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .light)
         nothing.translatesAutoresizingMaskIntoConstraints = false
-        nothing.text = "Подписчики"
+        nothing.text = "подписчики"
         return nothing
     }()
     
@@ -137,7 +137,7 @@ class MainCollectionViewCell: UICollectionViewCell {
         let nothing = UILabel()
         nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .light)
         nothing.translatesAutoresizingMaskIntoConstraints = false
-        nothing.text = "Посты"
+        nothing.text = "посты"
         return nothing
     }()
     
@@ -208,7 +208,6 @@ class MainCollectionViewCell: UICollectionViewCell {
         let changeInfo = UIAction(title: "Редактировать инфо",image: UIImage(systemName: "person.fill.viewfinder")) { _ in
             self.delegate?.editInfo()
         }
-        
         let menu = UIMenu(title: "Выберите действие", children: [changeInfo])
         return menu
     }
@@ -240,7 +239,6 @@ class MainCollectionViewCell: UICollectionViewCell {
             
             followMe.centerYAnchor.constraint(equalTo: iFollow.centerYAnchor),
             followMe.centerXAnchor.constraint(equalTo: followMeButton.centerXAnchor),
-            
             
             info.topAnchor.constraint(equalTo: iFollow.bottomAnchor,constant: 10),
             info.leadingAnchor.constraint(equalTo: leadingAnchor,constant: 10),
@@ -291,7 +289,6 @@ class MainCollectionViewCell: UICollectionViewCell {
         } else {
             self.editButton.setBackgroundImage(UIImage(systemName: "pencil.circle"), for: .normal)
         }
-        
         name.text = user?.name
         ageUser.text = user?.age
         statusLife.text = user?.lifeStatus

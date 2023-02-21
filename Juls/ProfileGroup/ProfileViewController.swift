@@ -40,6 +40,25 @@ class ProfileViewController: UIViewController {
     let systemSoundID: SystemSoundID = 1016
     let systemSoundID2: SystemSoundID = 1018
     
+    lazy var blureForCell: UIVisualEffectView = {
+        let bluereEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
+        let blure = UIVisualEffectView()
+        blure.effect = bluereEffect
+        blure.translatesAutoresizingMaskIntoConstraints = false
+        blure.clipsToBounds = true
+        return blure
+    }()
+    
+    lazy var imageBack: CustomImageView = {
+        let imageView = CustomImageView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.backgroundColor = .gray
+        imageView.layer.cornerRadius = 50/2
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
     private let spinnerView: UIActivityIndicatorView = {
         let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .large)
         activityView.color = .white
@@ -155,13 +174,23 @@ class ProfileViewController: UIViewController {
     }
         
     func setupTableView() {
-        [background, collectionView, spinnerView].forEach({ view.addSubview($0) })
+        [background, imageBack, blureForCell, collectionView, spinnerView].forEach({ view.addSubview($0) })
             
         NSLayoutConstraint.activate([
             background.topAnchor.constraint(equalTo: view.topAnchor),
             background.leftAnchor.constraint(equalTo: view.leftAnchor),
             background.rightAnchor.constraint(equalTo: view.rightAnchor),
             background.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            imageBack.topAnchor.constraint(equalTo: view.topAnchor),
+            imageBack.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            imageBack.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            imageBack.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            blureForCell.topAnchor.constraint(equalTo: imageBack.topAnchor),
+            blureForCell.leadingAnchor.constraint(equalTo: imageBack.leadingAnchor),
+            blureForCell.trailingAnchor.constraint(equalTo: imageBack.trailingAnchor),
+            blureForCell.bottomAnchor.constraint(equalTo: imageBack.bottomAnchor),
                 
             collectionView.topAnchor.constraint(equalTo: background.topAnchor),
             collectionView.leftAnchor.constraint(equalTo: background.leftAnchor),
@@ -380,6 +409,7 @@ extension ProfileViewController {
         Database.fetchUserWithUID(uid: uid) { user in
             DispatchQueue.main.async {
                 self.user = user
+                self.imageBack.loadImage(urlString: user.picture)
                 self.checkFollowMe(user: user)
                 self.checkPosts(user: user)
                 self.checkIFollowing(user: user)

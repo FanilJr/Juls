@@ -15,6 +15,25 @@ class PostTableViewController: UIViewController {
     var juls = JulsView()
     var commentArray = [String]()
     
+    lazy var blureForCell: UIVisualEffectView = {
+        let bluereEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
+        let blure = UIVisualEffectView()
+        blure.effect = bluereEffect
+        blure.translatesAutoresizingMaskIntoConstraints = false
+        blure.clipsToBounds = true
+        return blure
+    }()
+    
+    lazy var imageBack: CustomImageView = {
+        let imageView = CustomImageView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.backgroundColor = .gray
+        imageView.layer.cornerRadius = 50/2
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
     let background: UIImageView = {
         let back = UIImageView()
         back.image = UIImage(named: "back")
@@ -53,6 +72,8 @@ class PostTableViewController: UIViewController {
         countComment(post: post)
         tableView.delegate = self
         tableView.dataSource = self
+        guard let imageUrl = post?.imageUrl else { return }
+        imageBack.loadImage(urlString: imageUrl)
     }
     
     private func setupWillAppear() {
@@ -71,13 +92,23 @@ class PostTableViewController: UIViewController {
     }
 
     func layout() {
-        [background,tableView].forEach { view.addSubview($0) }
+        [background,imageBack,blureForCell,tableView].forEach { view.addSubview($0) }
         
         NSLayoutConstraint.activate([
             background.topAnchor.constraint(equalTo: view.topAnchor),
             background.leftAnchor.constraint(equalTo: view.leftAnchor),
             background.rightAnchor.constraint(equalTo: view.rightAnchor),
             background.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            imageBack.topAnchor.constraint(equalTo: view.topAnchor),
+            imageBack.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            imageBack.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            imageBack.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            blureForCell.topAnchor.constraint(equalTo: imageBack.topAnchor),
+            blureForCell.leadingAnchor.constraint(equalTo: imageBack.leadingAnchor),
+            blureForCell.trailingAnchor.constraint(equalTo: imageBack.trailingAnchor),
+            blureForCell.bottomAnchor.constraint(equalTo: imageBack.bottomAnchor),
             
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.leftAnchor.constraint(equalTo: view.leftAnchor),

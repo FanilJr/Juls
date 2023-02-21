@@ -51,6 +51,8 @@ class PhotosCollectionViewCell: UICollectionViewCell {
             image.trailingAnchor.constraint(equalTo: trailingAnchor),
             image.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
+        layer.cornerRadius = 12
+        clipsToBounds = true
     }
     
     func configureCell(post: Post?) {
