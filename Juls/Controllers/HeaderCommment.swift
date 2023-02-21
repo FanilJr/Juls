@@ -44,8 +44,15 @@ class HeaderCommment: UIView {
     
     lazy var descriptionText: UILabel = {
         let name = UILabel()
-        name.font = UIFont.systemFont(ofSize: 16, weight: .light)
         name.numberOfLines = 0
+        name.textColor = UIColor.createColor(light: .white, dark: .white)
+        name.shadowColor = .black
+        name.font = .systemFont(ofSize: 16, weight: .thin)
+        name.shadowOffset = CGSize(width: 1, height: 1)
+        name.layer.shadowOpacity = 1
+        name.layer.shadowRadius = 30
+        name.layer.cornerRadius = 3
+        name.clipsToBounds = true
         name.translatesAutoresizingMaskIntoConstraints = false
         return name
     }()

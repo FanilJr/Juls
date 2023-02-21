@@ -27,7 +27,6 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
                 self.userImage.image = UIImage(named: "noimage")
             } else {
                 self.userImage.loadImage(urlString: imageUrl)
-                self.userImageView.loadImage(urlString: imageUrl)
             }
             self.nickNameLabel.text = user?.username
             self.statusLabel.text = user?.status
@@ -41,20 +40,13 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
     
     weak var delegate: StretchyDelegate?
     
-    var userImageView: CustomImageView = {
-        let image = CustomImageView()
-        image.translatesAutoresizingMaskIntoConstraints = false
-        image.clipsToBounds = true
-        image.backgroundColor = .black
-        image.contentMode = .scaleAspectFill
-        return image
-    }()
-    
     var userImage: CustomImageView = {
         let image = CustomImageView()
         image.translatesAutoresizingMaskIntoConstraints = false
         image.clipsToBounds = true
         image.backgroundColor = .black
+        image.layer.cornerRadius = 14
+        image.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
         image.contentMode = .scaleAspectFill
         return image
     }()

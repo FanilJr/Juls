@@ -40,7 +40,11 @@ class PostTableViewCell: UITableViewCell {
     
     lazy var nameAuthor: UILabel = {
         let name = UILabel()
-        name.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
+        name.textColor = UIColor.createColor(light: .white, dark: .white)
+        name.shadowColor = .black
+        name.font = .systemFont(ofSize: 15, weight: .bold)
+        name.shadowOffset = CGSize(width: 1, height: 1)
+        name.clipsToBounds = true
         name.translatesAutoresizingMaskIntoConstraints = false
         name.backgroundColor = .clear
         return name
@@ -48,9 +52,15 @@ class PostTableViewCell: UITableViewCell {
     
     lazy var descriptionText: UILabel = {
         let name = UILabel()
-        name.font = UIFont.systemFont(ofSize: 14, weight: .light)
         name.numberOfLines = 0
-        
+        name.textColor = UIColor.createColor(light: .white, dark: .white)
+        name.shadowColor = .black
+        name.font = .systemFont(ofSize: 14, weight: .thin)
+        name.shadowOffset = CGSize(width: 1, height: 1)
+        name.layer.shadowOpacity = 1
+        name.layer.shadowRadius = 30
+        name.layer.cornerRadius = 3
+        name.clipsToBounds = true
         name.translatesAutoresizingMaskIntoConstraints = false
         return name
     }()
@@ -118,7 +128,6 @@ class PostTableViewCell: UITableViewCell {
          [authorImage, nameAuthor, postImage, commentButton, likeButton, descriptionText, commentCountLabel, datePost].forEach { contentView.addSubview($0) }
         
         NSLayoutConstraint.activate([
-            
             authorImage.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10),
             authorImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
             authorImage.heightAnchor.constraint(equalToConstant: 50),

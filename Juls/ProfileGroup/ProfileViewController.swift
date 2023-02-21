@@ -250,7 +250,7 @@ extension ProfileViewController: UICollectionViewDataSource {
         switch indexPath.section {
         case 0:
             header = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "StretchyCollectionHeaderView", for: indexPath) as? StretchyCollectionHeaderView
-            header?.user = self.user
+//            header?.user = self.user
             header?.delegate = self
             return header!
         default:
@@ -409,6 +409,7 @@ extension ProfileViewController {
         Database.fetchUserWithUID(uid: uid) { user in
             DispatchQueue.main.async {
                 self.user = user
+                self.header?.user = user
                 self.imageBack.loadImage(urlString: user.picture)
                 self.checkFollowMe(user: user)
                 self.checkPosts(user: user)

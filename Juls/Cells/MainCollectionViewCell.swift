@@ -24,17 +24,33 @@ class MainCollectionViewCell: UICollectionViewCell {
     
     weak var delegate: MainCollectionDelegate?
     
+    lazy var blureForCell: UIVisualEffectView = {
+        let bluereEffect = UIBlurEffect(style: .systemUltraThinMaterialLight)
+        let blure = UIVisualEffectView()
+        blure.effect = bluereEffect
+        blure.translatesAutoresizingMaskIntoConstraints = false
+        blure.layer.cornerRadius = 14
+        blure.clipsToBounds = true
+        return blure
+    }()
+    
     private lazy var info: UILabel = {
         let name = UILabel()
         name.text = "О себе:"
-        name.font = UIFont.systemFont(ofSize: 20.0, weight: .heavy)
+        name.shadowColor = .white
+        name.font = .systemFont(ofSize: 20, weight: .heavy)
+        name.shadowOffset = CGSize(width: 0.5, height: 0.5)
+        name.clipsToBounds = true
         name.translatesAutoresizingMaskIntoConstraints = false
         return name
     }()
     
     lazy var first: UILabel = {
         let nothing = UILabel()
-        nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .semibold)
+        nothing.shadowColor = .white
+        nothing.font = .systemFont(ofSize: 15.0, weight: .semibold)
+        nothing.shadowOffset = CGSize(width: 0.5, height: 0.5)
+        nothing.clipsToBounds = true
         nothing.translatesAutoresizingMaskIntoConstraints = false
         nothing.text = "Имя:"
         return nothing
@@ -42,7 +58,10 @@ class MainCollectionViewCell: UICollectionViewCell {
     
     lazy var two: UILabel = {
         let nothing = UILabel()
-        nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .semibold)
+        nothing.shadowColor = .white
+        nothing.font = .systemFont(ofSize: 15.0, weight: .semibold)
+        nothing.shadowOffset = CGSize(width: 0.5, height: 0.5)
+        nothing.clipsToBounds = true
         nothing.translatesAutoresizingMaskIntoConstraints = false
         nothing.text = "Возраст:"
         return nothing
@@ -50,7 +69,10 @@ class MainCollectionViewCell: UICollectionViewCell {
     
     lazy var three: UILabel = {
         let nothing = UILabel()
-        nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .semibold)
+        nothing.shadowColor = .white
+        nothing.font = .systemFont(ofSize: 15.0, weight: .semibold)
+        nothing.shadowOffset = CGSize(width: 0.5, height: 0.5)
+        nothing.clipsToBounds = true
         nothing.translatesAutoresizingMaskIntoConstraints = false
         nothing.text = "Семейное положение:"
         return nothing
@@ -58,7 +80,10 @@ class MainCollectionViewCell: UICollectionViewCell {
     
     lazy var four: UILabel = {
         let nothing = UILabel()
-        nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .semibold)
+        nothing.shadowColor = .white
+        nothing.font = .systemFont(ofSize: 15.0, weight: .semibold)
+        nothing.shadowOffset = CGSize(width: 0.5, height: 0.5)
+        nothing.clipsToBounds = true
         nothing.translatesAutoresizingMaskIntoConstraints = false
         nothing.text = "Рост:"
         return nothing
@@ -66,8 +91,12 @@ class MainCollectionViewCell: UICollectionViewCell {
     
     lazy var name: UILabel = {
         let name = UILabel()
-        name.font = UIFont.systemFont(ofSize: 15.0, weight: .semibold)
         name.text = "-"
+        name.textColor = UIColor.createColor(light: .white, dark: .white)
+        name.shadowColor = .black
+        name.font = .systemFont(ofSize: 15, weight: .bold)
+        name.shadowOffset = CGSize(width: 1, height: 1)
+        name.clipsToBounds = true
         name.translatesAutoresizingMaskIntoConstraints = false
         return name
     }()
@@ -82,9 +111,12 @@ class MainCollectionViewCell: UICollectionViewCell {
     
     lazy var descriptionLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .createColor(light: .black, dark: .white)
-        label.font = UIFont.systemFont(ofSize: 14.0, weight: .light)
         label.text = "-"
+        label.textColor = UIColor.createColor(light: .white, dark: .white)
+        label.shadowColor = .black
+        label.font = .systemFont(ofSize: 15, weight: .bold)
+        label.shadowOffset = CGSize(width: 1, height: 1)
+        label.clipsToBounds = true
         label.numberOfLines = 0
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -92,8 +124,11 @@ class MainCollectionViewCell: UICollectionViewCell {
     
     lazy var statusLife: UILabel = {
         let label = UILabel()
-        label.textColor = .createColor(light: .black, dark: .white)
-        label.font = UIFont.systemFont(ofSize: 16.0)
+        label.textColor = UIColor.createColor(light: .white, dark: .white)
+        label.shadowColor = .black
+        label.font = .systemFont(ofSize: 16.0, weight: .bold)
+        label.shadowOffset = CGSize(width: 1, height: 1)
+        label.clipsToBounds = true
         label.text = "-"
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -101,8 +136,11 @@ class MainCollectionViewCell: UICollectionViewCell {
     
     lazy var heightUser: UILabel = {
         let label = UILabel()
-        label.textColor = .createColor(light: .black, dark: .white)
-        label.font = UIFont.systemFont(ofSize: 16.0)
+        label.textColor = .createColor(light: .white, dark: .white)
+        label.shadowColor = .black
+        label.font = .systemFont(ofSize: 16.0, weight: .bold)
+        label.shadowOffset = CGSize(width: 1, height: 1)
+        label.clipsToBounds = true
         label.text = "-"
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -110,8 +148,11 @@ class MainCollectionViewCell: UICollectionViewCell {
     
     lazy var ageUser: UILabel = {
         let label = UILabel()
-        label.textColor = .createColor(light: .black, dark: .white)
-        label.font = UIFont.systemFont(ofSize: 16.0)
+        label.textColor = .createColor(light: .white, dark: .white)
+        label.shadowColor = .black
+        label.font = .systemFont(ofSize: 16.0, weight: .bold)
+        label.shadowOffset = CGSize(width: 1, height: 1)
+        label.clipsToBounds = true
         label.text = "-"
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -119,7 +160,11 @@ class MainCollectionViewCell: UICollectionViewCell {
     
     lazy var iFollow: UILabel = {
         let nothing = UILabel()
-        nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .light)
+//        nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .light)
+        nothing.shadowColor = .white
+        nothing.font = .systemFont(ofSize: 15, weight: .bold)
+        nothing.shadowOffset = CGSize(width: 0.5, height: 0.5)
+        nothing.clipsToBounds = true
         nothing.translatesAutoresizingMaskIntoConstraints = false
         nothing.text = "подписки"
         return nothing
@@ -127,7 +172,10 @@ class MainCollectionViewCell: UICollectionViewCell {
     
     lazy var followMe: UILabel = {
         let nothing = UILabel()
-        nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .light)
+        nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .bold)
+        nothing.shadowColor = .white
+        nothing.shadowOffset = CGSize(width: 0.5, height: 0.5)
+        nothing.clipsToBounds = true
         nothing.translatesAutoresizingMaskIntoConstraints = false
         nothing.text = "подписчики"
         return nothing
@@ -135,7 +183,10 @@ class MainCollectionViewCell: UICollectionViewCell {
     
     lazy var postsCount: UILabel = {
         let nothing = UILabel()
-        nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .light)
+        nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .bold)
+        nothing.shadowColor = .white
+        nothing.shadowOffset = CGSize(width: 0.5, height: 0.5)
+        nothing.clipsToBounds = true
         nothing.translatesAutoresizingMaskIntoConstraints = false
         nothing.text = "посты"
         return nothing
@@ -213,9 +264,15 @@ class MainCollectionViewCell: UICollectionViewCell {
     }
     
     func setupCell() {
-        [postsButton,iFollowButton,followMeButton,postsCount,iFollow,followMe,info,first,two,three,four, name,ageUser,statusLife,heightUser,editButton].forEach { addSubview($0) }
+        [blureForCell,postsButton,iFollowButton,followMeButton,postsCount,iFollow,followMe,info,first,two,three,four, name,ageUser,statusLife,heightUser,editButton].forEach { addSubview($0) }
         
         NSLayoutConstraint.activate([
+            
+            blureForCell.topAnchor.constraint(equalTo: topAnchor,constant: 5),
+            blureForCell.leadingAnchor.constraint(equalTo: leadingAnchor),
+            blureForCell.trailingAnchor.constraint(equalTo: trailingAnchor),
+            blureForCell.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -5),
+            
             postsButton.topAnchor.constraint(equalTo: topAnchor,constant: 10),
             postsButton.leadingAnchor.constraint(equalTo: leadingAnchor,constant: 80),
             postsButton.heightAnchor.constraint(equalToConstant: 30),
@@ -245,8 +302,8 @@ class MainCollectionViewCell: UICollectionViewCell {
             
             editButton.centerYAnchor.constraint(equalTo: info.centerYAnchor),
             editButton.trailingAnchor.constraint(equalTo: trailingAnchor,constant: -10),
-            editButton.heightAnchor.constraint(equalToConstant: 25),
-            editButton.widthAnchor.constraint(equalToConstant: 25),
+            editButton.heightAnchor.constraint(equalToConstant: 20),
+            editButton.widthAnchor.constraint(equalToConstant: 20),
             
             first.topAnchor.constraint(equalTo: info.bottomAnchor,constant: 10),
             first.leadingAnchor.constraint(equalTo: leadingAnchor,constant: 10),
@@ -259,23 +316,23 @@ class MainCollectionViewCell: UICollectionViewCell {
             
             four.topAnchor.constraint(equalTo: three.bottomAnchor,constant: 10),
             four.leadingAnchor.constraint(equalTo: leadingAnchor,constant: 10),
-            four.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -10),
+            four.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -15),
             
             name.topAnchor.constraint(equalTo: info.bottomAnchor,constant: 10),
             name.centerYAnchor.constraint(equalTo: first.centerYAnchor),
-            name.trailingAnchor.constraint(equalTo: trailingAnchor,constant: -10),
+            name.leadingAnchor.constraint(equalTo: centerXAnchor),
             
             ageUser.topAnchor.constraint(equalTo: name.bottomAnchor,constant: 10),
             ageUser.centerYAnchor.constraint(equalTo: two.centerYAnchor),
-            ageUser.trailingAnchor.constraint(equalTo: trailingAnchor,constant: -10),
+            ageUser.leadingAnchor.constraint(equalTo: centerXAnchor),
             
             statusLife.topAnchor.constraint(equalTo: ageUser.bottomAnchor,constant: 10),
             statusLife.centerYAnchor.constraint(equalTo: three.centerYAnchor),
-            statusLife.trailingAnchor.constraint(equalTo: trailingAnchor,constant: -10),
+            statusLife.leadingAnchor.constraint(equalTo: centerXAnchor),
             
             heightUser.topAnchor.constraint(equalTo: statusLife.bottomAnchor,constant: 10),
             heightUser.centerYAnchor.constraint(equalTo: four.centerYAnchor),
-            heightUser.trailingAnchor.constraint(equalTo: trailingAnchor,constant: -10)
+            heightUser.leadingAnchor.constraint(equalTo: centerXAnchor),
         ])
     }
     
@@ -287,7 +344,7 @@ class MainCollectionViewCell: UICollectionViewCell {
             self.editButton.alpha = 0.0
             self.editButton.isEnabled = true
         } else {
-            self.editButton.setBackgroundImage(UIImage(systemName: "pencil.circle"), for: .normal)
+            self.editButton.setBackgroundImage(UIImage(systemName: "ellipsis"), for: .normal)
         }
         name.text = user?.name
         ageUser.text = user?.age
