@@ -1,13 +1,14 @@
 //
-//  CellIdTableViewCell.swift
+//  MessagesTableViewCell.swift
 //  Juls
 //
-//  Created by Fanil_Jr on 06.01.2023.
+//  Created by Fanil_Jr on 24.02.2023.
 //
 
+import Foundation
 import UIKit
 
-class CellIdTableViewCell: UITableViewCell {
+class MessagesTableViewCell: UITableViewCell {
     
     let profileImageView: CustomImageView = {
         let pi = CustomImageView()

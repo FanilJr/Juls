@@ -301,7 +301,7 @@ class MainCollectionViewCell: UICollectionViewCell {
             info.leadingAnchor.constraint(equalTo: leadingAnchor,constant: 10),
             
             editButton.centerYAnchor.constraint(equalTo: info.centerYAnchor),
-            editButton.trailingAnchor.constraint(equalTo: trailingAnchor,constant: -10),
+            editButton.trailingAnchor.constraint(equalTo: trailingAnchor,constant: -15),
             editButton.heightAnchor.constraint(equalToConstant: 20),
             editButton.widthAnchor.constraint(equalToConstant: 20),
             

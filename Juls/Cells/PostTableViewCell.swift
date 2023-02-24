@@ -137,7 +137,7 @@ class PostTableViewCell: UITableViewCell {
             nameAuthor.leadingAnchor.constraint(equalTo: authorImage.trailingAnchor,constant: 10),
             
             postImage.topAnchor.constraint(equalTo: authorImage.bottomAnchor,constant: 10),
-            postImage.heightAnchor.constraint(equalTo: contentView.widthAnchor,constant: 100),
+            postImage.heightAnchor.constraint(lessThanOrEqualToConstant: 600),
             postImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 5),
             postImage.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -5),
             

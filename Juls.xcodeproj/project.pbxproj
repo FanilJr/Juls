@@ -56,6 +56,9 @@
 		849ABB4229700EAC000ABEA2 /* HomeTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849ABB4129700EAC000ABEA2 /* HomeTableViewCell.swift */; };
 		849ABB44297047F7000ABEA2 /* JulsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849ABB43297047F7000ABEA2 /* JulsView.swift */; };
 		84A42BFA29786439001FD432 /* MessagePostViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A42BF929786439001FD432 /* MessagePostViewController.swift */; };
+		84A7309129A8785900FF3888 /* MessagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A7309029A8785800FF3888 /* MessagesViewController.swift */; };
+		84A7309329A8795600FF3888 /* MessagesTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A7309229A8795600FF3888 /* MessagesTableViewCell.swift */; };
+		84A7309629A8EF5E00FF3888 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A7309529A8EF5E00FF3888 /* Message.swift */; };
 		84B3C16B2981F5AE0044EE9C /* PostViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B3C16A2981F5AE0044EE9C /* PostViewController.swift */; };
 		84B3C16D298383DA0044EE9C /* StretchyCollectionHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B3C16C298383DA0044EE9C /* StretchyCollectionHeaderView.swift */; };
 		84B3C16F2983850F0044EE9C /* CollectionViewFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B3C16E2983850F0044EE9C /* CollectionViewFlowLayout.swift */; };
@@ -130,6 +133,9 @@
 		849ABB4129700EAC000ABEA2 /* HomeTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTableViewCell.swift; sourceTree = "<group>"; };
 		849ABB43297047F7000ABEA2 /* JulsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JulsView.swift; sourceTree = "<group>"; };
 		84A42BF929786439001FD432 /* MessagePostViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagePostViewController.swift; sourceTree = "<group>"; };
+		84A7309029A8785800FF3888 /* MessagesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesViewController.swift; sourceTree = "<group>"; };
+		84A7309229A8795600FF3888 /* MessagesTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesTableViewCell.swift; sourceTree = "<group>"; };
+		84A7309529A8EF5E00FF3888 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		84B3C16A2981F5AE0044EE9C /* PostViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostViewController.swift; sourceTree = "<group>"; };
 		84B3C16C298383DA0044EE9C /* StretchyCollectionHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StretchyCollectionHeaderView.swift; sourceTree = "<group>"; };
 		84B3C16E2983850F0044EE9C /* CollectionViewFlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionViewFlowLayout.swift; sourceTree = "<group>"; };
@@ -182,6 +188,7 @@
 		848881AB2964C97D006BE6A1 /* Juls */ = {
 			isa = PBXGroup;
 			children = (
+				84A7309429A8EF4700FF3888 /* Message */,
 				84D0A3EB299786CD00B2DE8F /* Comment */,
 				840C603B298EDC1400932714 /* Assets.xcassets */,
 				848881B72964C983006BE6A1 /* LaunchScreen.storyboard */,
@@ -231,6 +238,7 @@
 				84BB3CEE2987854A003795C3 /* MyFollowersUserViewCell.swift */,
 				84BB3CF2298A1657003795C3 /* FollowersUserWithMeCell.swift */,
 				84D0A3E7299742B100B2DE8F /* CommentsTableViewCell.swift */,
+				84A7309229A8795600FF3888 /* MessagesTableViewCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -248,6 +256,7 @@
 				84BB3CF4298E52F3003795C3 /* InfoViewController.swift */,
 				84D0A3E529973AF600B2DE8F /* CommentViewController.swift */,
 				84D0A3E92997442300B2DE8F /* HeaderCommment.swift */,
+				84A7309029A8785800FF3888 /* MessagesViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -346,6 +355,14 @@
 				8482EC0E2972680A00058A7D /* Post.swift */,
 			);
 			path = Posts;
+			sourceTree = "<group>";
+		};
+		84A7309429A8EF4700FF3888 /* Message */ = {
+			isa = PBXGroup;
+			children = (
+				84A7309529A8EF5E00FF3888 /* Message.swift */,
+			);
+			path = Message;
 			sourceTree = "<group>";
 		};
 		84D0A3EB299786CD00B2DE8F /* Comment */ = {
@@ -458,6 +475,7 @@
 				84D0A3E8299742B200B2DE8F /* CommentsTableViewCell.swift in Sources */,
 				8488827B29678494006BE6A1 /* SearchController.swift in Sources */,
 				8488821A2964D4D5006BE6A1 /* ColorMode.swift in Sources */,
+				84A7309629A8EF5E00FF3888 /* Message.swift in Sources */,
 				848881F42964D11A006BE6A1 /* LoginCoordinator.swift in Sources */,
 				848882402964D798006BE6A1 /* DownloadManager.swift in Sources */,
 				848882082964D3E2006BE6A1 /* WebViewController.swift in Sources */,
@@ -485,6 +503,7 @@
 				848882322964D67A006BE6A1 /* LoginViewController.swift in Sources */,
 				848882442964D7D3006BE6A1 /* ArticleViewController.swift in Sources */,
 				84B3C16F2983850F0044EE9C /* CollectionViewFlowLayout.swift in Sources */,
+				84A7309329A8795600FF3888 /* MessagesTableViewCell.swift in Sources */,
 				848882422964D7B6006BE6A1 /* ArticleTableViewCell.swift in Sources */,
 				84B3C17B298635DB0044EE9C /* ExtensionDate.swift in Sources */,
 				849ABB44297047F7000ABEA2 /* JulsView.swift in Sources */,
@@ -493,6 +512,7 @@
 				8482EC0F2972680B00058A7D /* Post.swift in Sources */,
 				8488828E2968BCF5006BE6A1 /* HomeCoordinator.swift in Sources */,
 				848882812967A335006BE6A1 /* CustomImageView.swift in Sources */,
+				84A7309129A8785900FF3888 /* MessagesViewController.swift in Sources */,
 				84888279296680DD006BE6A1 /* InfoView.swift in Sources */,
 				8488827D296784E4006BE6A1 /* SearchCoordinator.swift in Sources */,
 				84B3C1712984524D0044EE9C /* MainCollectionViewCell.swift in Sources */,

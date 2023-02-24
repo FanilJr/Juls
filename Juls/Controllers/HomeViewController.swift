@@ -149,7 +149,9 @@ extension HomeViewController {
                         self.posts.sort { p1, p2 in
                             return p1.creationDate.compare(p2.creationDate) == .orderedDescending
                         }
-                        self.tableView.reloadData()
+                        DispatchQueue.main.async {
+                            self.tableView.reloadData()
+                        }
                     }, withCancel: { (error) in
                         print(error)
                     })

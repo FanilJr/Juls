@@ -68,7 +68,9 @@ class FollowersUsersWithMeController: UIViewController {
         checkFollowMeKeys(user: user!) { massive in
             self.checkCountKeys(item: massive) { item in
                 self.ktoImennoKeys(item: item)
-                self.tableView.reloadData()
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
+                }
             }
         }
     }
@@ -214,7 +216,9 @@ extension FollowersUsersWithMeController {
                             let user = User(uid: key, dictionary: userDictionary)
                             self.users.append(user)
                             self.filteredUsers = self.users
-                            self.tableView.reloadData()
+                            DispatchQueue.main.async {
+                                self.tableView.reloadData()
+                            }
                         }
                     }
                 })

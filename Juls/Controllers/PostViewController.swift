@@ -160,7 +160,9 @@ extension PostTableViewController: CommentDelegate {
                     print("successfully liked post")
                     post.hasLiked = !post.hasLiked
                     self.post = post
-                    self.tableView.reloadRows(at: [indexPath], with: .fade)
+                    DispatchQueue.main.async {
+                        self.tableView.reloadRows(at: [indexPath], with: .fade)
+                    }
                 }
             }
         }
@@ -179,8 +181,17 @@ extension PostTableViewController: CommentDelegate {
                     let key = snap.key
                     self.commentArray.append(key)
                 }
-                self.tableView.reloadData()
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
+                }
             })
         }
+    }
+}
+
+extension UIImage {
+    func getCropRation() -> CGFloat {
+        let withRatio = CGFloat(self.size.width / self.size.height)
+        return withRatio
     }
 }

@@ -16,6 +16,7 @@ protocol StretchyDelegate: AnyObject {
     func showAlbum()
     func setupSettings()
     func backUp()
+    func goMessage()
 }
 
 class StretchyCollectionHeaderView: UICollectionReusableView {
@@ -31,8 +32,8 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
             self.nickNameLabel.text = user?.username
             self.statusLabel.text = user?.status
             
-            self.addButton.setBackgroundImage(UIImage(systemName: "plus"), for: .normal)
-            self.editButton.setBackgroundImage(UIImage(systemName: "ellipsis.circle"), for: .normal)
+//            self.addButton.setBackgroundImage(UIImage(systemName: "plus"), for: .normal)
+//            self.editButton.setBackgroundImage(UIImage(systemName: "ellipsis.circle"), for: .normal)
             setupEditFollowButton()
             checkUserFollow()
         }
@@ -131,6 +132,20 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         return button
     }()
     
+    private lazy var messageButton: UIButton = {
+        let button = UIButton()
+        button.tintColor = UIColor.createColor(light: .white, dark: .white)
+        button.backgroundColor = .clear
+        button.addTarget(self, action: #selector(goMessage), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.clipsToBounds = true
+        return button
+    }()
+    
+    @objc func goMessage() {
+        delegate?.goMessage()
+    }
+    
     @objc func backUp() {
         delegate?.backUp()
     }
@@ -151,6 +166,7 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         if currentLoggetUserId == userId {
             self.followButton.alpha = 0.0
             self.followButton.isEnabled = false
+            self.messageButton.setBackgroundImage(UIImage(named: "bubble.left.and.bubble.right.fill@100x"), for: .normal)
             self.addButton.setBackgroundImage(UIImage(systemName: "plus"), for: .normal)
             self.editButton.setBackgroundImage(UIImage(systemName: "ellipsis.circle"), for: .normal)
         } else {
@@ -215,13 +231,18 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
     
     func layout() {
         [nickNameLabel, statusLabel].forEach { stackViewVertical.addArrangedSubview($0) }
-        [userImage,stackViewVertical,followButton,editButton,addButton].forEach { addSubview($0) }
+        [userImage,stackViewVertical,messageButton,followButton,editButton,addButton].forEach { addSubview($0) }
         
         NSLayoutConstraint.activate([
             userImage.topAnchor.constraint(equalTo: topAnchor),
             userImage.leadingAnchor.constraint(equalTo: leadingAnchor),
             userImage.trailingAnchor.constraint(equalTo: trailingAnchor),
             userImage.bottomAnchor.constraint(equalTo: bottomAnchor),
+            
+            messageButton.topAnchor.constraint(equalTo: topAnchor,constant: 80),
+            messageButton.leadingAnchor.constraint(equalTo: leadingAnchor,constant: 20),
+            messageButton.heightAnchor.constraint(equalToConstant: 30),
+            messageButton.widthAnchor.constraint(equalToConstant: 33),
             
             editButton.topAnchor.constraint(equalTo: topAnchor,constant: 80),
             editButton.trailingAnchor.constraint(equalTo: trailingAnchor,constant: -20),

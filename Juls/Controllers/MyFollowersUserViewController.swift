@@ -150,7 +150,9 @@ extension MyFollowersUserViewController: UISearchBarDelegate {
                 return user.username.lowercased().contains(searchText.lowercased())
             }
         }
-        self.tableView.reloadData()
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+        }
     }
 }
 
@@ -192,7 +194,9 @@ extension MyFollowersUserViewController {
                             self.users.append(user)
                         }
                         self.filteredUsers = self.users
-                        self.tableView.reloadData()
+                        DispatchQueue.main.async {
+                            self.tableView.reloadData()
+                        }
                     }
                 })
             }

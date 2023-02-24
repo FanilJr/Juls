@@ -1,13 +1,13 @@
 //
-//  Comment.swift
+//  Message.swift
 //  Juls
 //
-//  Created by Fanil_Jr on 11.02.2023.
+//  Created by Fanil_Jr on 24.02.2023.
 //
 
 import Foundation
 
-struct Comment {
+struct Message {
     
     let user: User
     let text: String

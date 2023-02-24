@@ -1,15 +1,14 @@
 //
-//  SearchController.swift
+//  MessagesViewController.swift
 //  Juls
 //
-//  Created by Fanil_Jr on 06.01.2023.
+//  Created by Fanil_Jr on 24.02.2023.
 //
 
-import Foundation
 import UIKit
 import Firebase
 
-class SearchViewController: UIViewController {
+class MessagesViewController: UIViewController {
     
     var filteredUsers = [User]()
     var users = [User]()
@@ -36,7 +35,7 @@ class SearchViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
         tableView.refreshControl = refreshControler
-        tableView.register(CellIdTableViewCell.self, forCellReuseIdentifier: "CellIdTableViewCell")
+        tableView.register(MessagesTableViewCell.self, forCellReuseIdentifier: "MessagesTableViewCell")
         return tableView
     }()
     
@@ -115,7 +114,7 @@ class SearchViewController: UIViewController {
     }
 }
 
-extension SearchViewController: UITableViewDataSource {
+extension MessagesViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableView.automaticDimension
@@ -126,7 +125,7 @@ extension SearchViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CellIdTableViewCell", for: indexPath) as! CellIdTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "MessagesTableViewCell", for: indexPath) as! MessagesTableViewCell
         cell.backgroundColor = .clear
         cell.configureTable(user: experimentUser[indexPath.row])
         cell.selectionStyle = UITableViewCell.SelectionStyle.none
@@ -139,20 +138,20 @@ extension SearchViewController: UITableViewDataSource {
         if myUserId == user.uid {
             print("hello myUser")
         } else {
-            let profileVcUser = ProfileViewController(viewModel: ProfileViewModel())
-            profileVcUser.userId = user.uid
-            navigationController?.pushViewController(profileVcUser, animated: true)
-            searchController.searchBar.isHidden = true
-            searchController.searchBar.resignFirstResponder()
+//            let profileVcUser = ProfileViewController(viewModel: ProfileViewModel())
+//            profileVcUser.userId = user.uid
+//            navigationController?.pushViewController(profileVcUser, animated: true)
+//            searchController.searchBar.isHidden = true
+//            searchController.searchBar.resignFirstResponder()
         }
     }
 }
 
-extension SearchViewController: UITableViewDelegate {
+extension MessagesViewController: UITableViewDelegate {
     
 }
 
-extension SearchViewController: UISearchBarDelegate {
+extension MessagesViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         
         if searchText.isEmpty {

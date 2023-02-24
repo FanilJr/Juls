@@ -290,7 +290,6 @@ extension ProfileViewController: UICollectionViewDataSource {
                             }
                         }
                     }
-                    
                     let shared = UIAction(title: "Поделится", image: UIImage(systemName:"square.and.arrow.up")) { _ in
                         let avc = UIActivityViewController(activityItems: [self.posts[indexPath.row].user.username as Any, self.posts[indexPath.row].message as Any], applicationActivities: nil)
                         self.present(avc, animated: true)
@@ -305,7 +304,9 @@ extension ProfileViewController: UICollectionViewDataSource {
                                 self.posts.remove(at: indexPath.item)
                                 self.collectionView.deleteItems(at: [indexPath])
                                 self.postsKeyArray = []
-                                self.collectionView.reloadData()
+                                DispatchQueue.main.async {
+                                    self.collectionView.reloadData()
+                                }
                             })
                         }
                         let cancelAction = UIAlertAction(title: "Отмена", style: .default) { _ in
@@ -440,7 +441,9 @@ extension ProfileViewController {
                         self.posts.sort { p1, p2 in
                             return p1.creationDate.compare(p2.creationDate) == .orderedDescending
                         }
-                        self.collectionView.reloadData()
+                        DispatchQueue.main.async {
+                            self.collectionView.reloadData()
+                        }
                     })
                 }
                 print("Перезагрузка в ProfileViewController fetchPostsWithUser")
@@ -507,7 +510,9 @@ extension ProfileViewController {
                     let key = snap.key
                     self.iFollowUsers.append(key)
                 }
-                self.collectionView.reloadData()
+                DispatchQueue.main.async {
+                    self.collectionView.reloadData()
+                }
             })
         }
     }
@@ -521,7 +526,9 @@ extension ProfileViewController {
                     let key = snap.key
                     self.postsCount.append(key)
                 }
-                self.collectionView.reloadData()
+                DispatchQueue.main.async {
+                    self.collectionView.reloadData()
+                }
             })
         }
     }
@@ -549,7 +556,9 @@ extension ProfileViewController {
                             }
                         }
                     })
-                    self.collectionView.reloadData()
+                    DispatchQueue.main.async {
+                        self.collectionView.reloadData()
+                    }
                 }
             })
         }
@@ -724,12 +733,20 @@ extension ProfileViewController: MessagePostDelegate {
                     })
                 }
             }
-            self.collectionView.reloadData()
+            DispatchQueue.main.async {
+                self.collectionView.reloadData()
+            }
         }
     }
 }
 
 extension ProfileViewController: StretchyDelegate {
+    
+    func goMessage() {
+        let messageVC = MessagesViewController()
+        navigationController?.pushViewController(messageVC, animated: true)
+    }
+    
     func backUp() {
         navigationController?.popViewController(animated: true)
     }
