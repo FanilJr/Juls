@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import Firebase
 
 protocol ProfileCoordinatorFlowProtocol {
     var navigationController: UINavigationController { get }
@@ -17,6 +18,7 @@ protocol ProfileCoordinatorFlowProtocol {
 
 class ProfileCoordinatorFlow: ProfileCoordinatorFlowProtocol {
    
+    var post: Post?
     let navigationController: UINavigationController
     let viewControllerFactory: ViewControllersFactoryProtocol
     
@@ -53,6 +55,12 @@ class ProfileCoordinator: Coordinator {
                 viewModel: viewModel
             )
         ) as! ProfileViewController
+        
+//        let userId: String?
+//        let uid = userId ?? (Auth.auth().currentUser?.uid ?? "")
+//        Database.database().fetchUser(withUID: uid) { user in
+//            profileVc.user = user
+//        }
         viewModel.showLoginVc = profileCoordinatorFlow.showLoginVc
         navigationController?.setViewControllers([profileVc], animated: false)
     }

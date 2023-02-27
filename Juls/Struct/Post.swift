@@ -14,8 +14,10 @@ struct Post {
     let imageUrl: String
     let message: String
     let creationDate: Date
-    
     var hasLiked = true
+    
+    var likes: Int = 0
+    var likedByCurrentUser = false
     
     init(user: User, dictionary: [String: Any]) {
         self.user = user

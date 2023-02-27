@@ -10,11 +10,31 @@ import Firebase
 
 class HomeViewController: UIViewController {
 
+    
     var posts = [Post]()
     var juls = JulsView()
     var commentArray = [String]()
     var postIndexPath = 0
     var refreshControler = UIRefreshControl()
+    
+    lazy var blureForCell: UIVisualEffectView = {
+        let bluereEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
+        let blure = UIVisualEffectView()
+        blure.effect = bluereEffect
+        blure.translatesAutoresizingMaskIntoConstraints = false
+        blure.clipsToBounds = true
+        return blure
+    }()
+    
+    lazy var imageBack: CustomImageView = {
+        let imageView = CustomImageView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.backgroundColor = .gray
+        imageView.layer.cornerRadius = 50/2
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
     
     let background: UIImageView = {
         let back = UIImageView()
@@ -71,18 +91,28 @@ class HomeViewController: UIViewController {
     }
     
     func layout() {
-        [background,tableView].forEach { view.addSubview($0) }
+        [background,imageBack,blureForCell,tableView].forEach { view.addSubview($0) }
         
         NSLayoutConstraint.activate([
             background.topAnchor.constraint(equalTo: view.topAnchor),
-            background.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            background.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            background.leftAnchor.constraint(equalTo: view.leftAnchor),
+            background.rightAnchor.constraint(equalTo: view.rightAnchor),
             background.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            tableView.topAnchor.constraint(equalTo: background.topAnchor),
-            tableView.leadingAnchor.constraint(equalTo: background.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: background.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: background.bottomAnchor)
+            imageBack.topAnchor.constraint(equalTo: view.topAnchor),
+            imageBack.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            imageBack.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            imageBack.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            blureForCell.topAnchor.constraint(equalTo: imageBack.topAnchor),
+            blureForCell.leadingAnchor.constraint(equalTo: imageBack.leadingAnchor),
+            blureForCell.trailingAnchor.constraint(equalTo: imageBack.trailingAnchor),
+            blureForCell.bottomAnchor.constraint(equalTo: imageBack.bottomAnchor),
+            
+            tableView.topAnchor.constraint(equalTo: view.topAnchor),
+            tableView.leftAnchor.constraint(equalTo: view.leftAnchor),
+            tableView.rightAnchor.constraint(equalTo: view.rightAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
 }
@@ -122,43 +152,42 @@ extension HomeViewController {
     
     func fetchPosts() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
-        Database.fetchUserWithUID(uid: uid) { user in
+        Database.database().fetchUser(withUID: uid) { user in
+            self.imageBack.loadImage(urlString: user.picture)
             self.fetchPostsWithUser(user: user)
         }
     }
     
     func fetchPostsWithUser(user: User) {
         let ref = Database.database().reference().child("posts").child(user.uid)
-        DispatchQueue.main.async {
-            ref.observeSingleEvent(of: .value, with: { (snapshot) in
+        ref.observeSingleEvent(of: .value, with: { (snapshot) in
                 self.tableView.refreshControl?.endRefreshing()
-                guard let dictionaries = snapshot.value as? [String: Any] else { return }
+            guard let dictionaries = snapshot.value as? [String: Any] else { return }
         
-                dictionaries.forEach ({ (key, value) in
-                    guard let dictionary = value as? [String: Any] else { return }
-                    var post = Post(user: user, dictionary: dictionary)
-                    post.id = key
-                    guard let uid = Auth.auth().currentUser?.uid else { return }
-                    Database.database().reference().child("likes").child(key).child(uid).observeSingleEvent(of: .value, with: { (snapshot) in
-                        if let value = snapshot.value as? Int, value == 1 {
-                            post.hasLiked = true
-                        } else {
-                            post.hasLiked = false
-                        }
-                        self.posts.append(post)
-                        self.posts.sort { p1, p2 in
-                            return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-                        }
-                        DispatchQueue.main.async {
-                            self.tableView.reloadData()
-                        }
-                    }, withCancel: { (error) in
-                        print(error)
-                    })
+            dictionaries.forEach ({ (key, value) in
+                guard let dictionary = value as? [String: Any] else { return }
+                var post = Post(user: user, dictionary: dictionary)
+                post.id = key
+                guard let uid = Auth.auth().currentUser?.uid else { return }
+                Database.database().reference().child("likes").child(key).child(uid).observeSingleEvent(of: .value, with: { (snapshot) in
+                    if let value = snapshot.value as? Int, value == 1 {
+                        post.hasLiked = true
+                    } else {
+                        post.hasLiked = false
+                    }
+                    self.posts.append(post)
+                    self.posts.sort { p1, p2 in
+                        return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+                    }
+                    DispatchQueue.main.async {
+                        self.tableView.reloadData()
+                    }
+                }, withCancel: { (error) in
+                    print(error)
                 })
-            }) { error in
-                print("Failed to fetch posts:", error)
-            }
+            })
+        }) { error in
+            print("Failed to fetch posts:", error)
         }
     }
     
@@ -168,9 +197,9 @@ extension HomeViewController {
             Database.database().reference().child("following").child(uid).observeSingleEvent(of: .value, with: { snapshot in
                 guard let userIdsDictionary = snapshot.value as? [String: Any] else { return }
                 userIdsDictionary.forEach ({ (key, value) in
-                    Database.fetchUserWithUID(uid: key, completion: { (user) in
+                    Database.database().fetchUser(withUID: key) { user in
                         self.fetchPostsWithUser(user: user)
-                    })
+                    }
                 })
             }) { (error) in
                 print("error")

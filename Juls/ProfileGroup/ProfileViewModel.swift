@@ -10,29 +10,16 @@ import UIKit
 
 final class ProfileViewModel {
     
-    var showPhotosVc: (() -> Void)?
     var showLoginVc: (() -> Void)?
-    var showImageSettingsVc: (() -> Void)?
-    
-    enum State {
-        case initial
-        case loaded
-    }
     
     enum Action {
-        case showPhotosVc
         case showLoginVc
-        case showImageSettingsVc
     }
     
     func send(_ action: Action) {
         switch action {
-        case .showPhotosVc:
-            showPhotosVc?()
         case .showLoginVc:
             showLoginVc?()
-        case .showImageSettingsVc:
-            showImageSettingsVc?()
         }
     }
 }

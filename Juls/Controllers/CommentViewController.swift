@@ -125,7 +125,7 @@ class CommentViewController: UIViewController {
     
     func loadImageCurrentUser() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
-        Database.fetchUserWithUID(uid: uid) { user in
+        Database.database().fetchUser(withUID: uid) { user in
             self.myUserComment = user
             self.authorComment.loadImage(urlString: user.picture)
         }
@@ -137,7 +137,7 @@ class CommentViewController: UIViewController {
         ref.observe(.childAdded, with: { snapshot in
             guard let dictionary = snapshot.value as? [String: Any] else { return }
             guard let uid = dictionary["uid"] as? String else { return }
-            Database.fetchUserWithUID(uid: uid) { user in
+            Database.database().fetchUser(withUID: uid) { user in
                 let comment = Comment(user: user, dictionary: dictionary)
                 self.comments.append(comment)
                 self.comments.sort { p1, p2 in

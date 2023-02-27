@@ -16,7 +16,6 @@
 		848881C12964C9F2006BE6A1 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 848881C02964C9F1006BE6A1 /* GoogleService-Info.plist */; };
 		848881CC2964CC4B006BE6A1 /* ViewControllerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848881CB2964CC4B006BE6A1 /* ViewControllerFactory.swift */; };
 		848881D82964CE8C006BE6A1 /* PhotosCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848881D72964CE8C006BE6A1 /* PhotosCollectionViewCell.swift */; };
-		848881E72964D022006BE6A1 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848881E62964D022006BE6A1 /* SettingsViewController.swift */; };
 		848881EA2964D06C006BE6A1 /* Coordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848881E92964D06C006BE6A1 /* Coordinator.swift */; };
 		848881EC2964D0B3006BE6A1 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848881EB2964D0B3006BE6A1 /* AppCoordinator.swift */; };
 		848881F22964D105006BE6A1 /* NewsCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848881F12964D105006BE6A1 /* NewsCoordinator.swift */; };
@@ -42,7 +41,6 @@
 		848882482964D806006BE6A1 /* NewsListController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848882472964D806006BE6A1 /* NewsListController.swift */; };
 		8488824D2964D84E006BE6A1 /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8488824C2964D84E006BE6A1 /* ProfileViewController.swift */; };
 		8488826E2964DA55006BE6A1 /* LocalAuthorizationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8488826D2964DA55006BE6A1 /* LocalAuthorizationService.swift */; };
-		848882732964DB48006BE6A1 /* SettingsCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848882722964DB48006BE6A1 /* SettingsCoordinator.swift */; };
 		848882772966555E006BE6A1 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848882762966555D006BE6A1 /* User.swift */; };
 		84888279296680DD006BE6A1 /* InfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84888278296680DD006BE6A1 /* InfoView.swift */; };
 		8488827B29678494006BE6A1 /* SearchController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8488827A29678494006BE6A1 /* SearchController.swift */; };
@@ -69,8 +67,6 @@
 		84BB3CEF2987854A003795C3 /* MyFollowersUserViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BB3CEE2987854A003795C3 /* MyFollowersUserViewCell.swift */; };
 		84BB3CF1298A15EE003795C3 /* FollowersUsersWithMeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BB3CF0298A15EE003795C3 /* FollowersUsersWithMeController.swift */; };
 		84BB3CF3298A1657003795C3 /* FollowersUserWithMeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BB3CF2298A1657003795C3 /* FollowersUserWithMeCell.swift */; };
-		84BB3CF5298E52F4003795C3 /* InfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BB3CF4298E52F3003795C3 /* InfoViewController.swift */; };
-		84BB3CF7298E54FC003795C3 /* InfoCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BB3CF6298E54FC003795C3 /* InfoCoordinator.swift */; };
 		84D0A3DE2994241200B2DE8F /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 84D0A3DD2994241200B2DE8F /* FirebaseAnalytics */; };
 		84D0A3E02994241200B2DE8F /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 84D0A3DF2994241200B2DE8F /* FirebaseAuth */; };
 		84D0A3E22994241200B2DE8F /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 84D0A3E12994241200B2DE8F /* FirebaseDatabase */; };
@@ -93,7 +89,6 @@
 		848881C02964C9F1006BE6A1 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		848881CB2964CC4B006BE6A1 /* ViewControllerFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewControllerFactory.swift; sourceTree = "<group>"; };
 		848881D72964CE8C006BE6A1 /* PhotosCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosCollectionViewCell.swift; sourceTree = "<group>"; };
-		848881E62964D022006BE6A1 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		848881E92964D06C006BE6A1 /* Coordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coordinator.swift; sourceTree = "<group>"; };
 		848881EB2964D0B3006BE6A1 /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
 		848881F12964D105006BE6A1 /* NewsCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsCoordinator.swift; sourceTree = "<group>"; };
@@ -119,7 +114,6 @@
 		848882472964D806006BE6A1 /* NewsListController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewsListController.swift; sourceTree = "<group>"; };
 		8488824C2964D84E006BE6A1 /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
 		8488826D2964DA55006BE6A1 /* LocalAuthorizationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalAuthorizationService.swift; sourceTree = "<group>"; };
-		848882722964DB48006BE6A1 /* SettingsCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCoordinator.swift; sourceTree = "<group>"; };
 		848882762966555D006BE6A1 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
 		84888278296680DD006BE6A1 /* InfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoView.swift; sourceTree = "<group>"; };
 		8488827A29678494006BE6A1 /* SearchController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchController.swift; sourceTree = "<group>"; };
@@ -146,8 +140,6 @@
 		84BB3CEE2987854A003795C3 /* MyFollowersUserViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyFollowersUserViewCell.swift; sourceTree = "<group>"; };
 		84BB3CF0298A15EE003795C3 /* FollowersUsersWithMeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowersUsersWithMeController.swift; sourceTree = "<group>"; };
 		84BB3CF2298A1657003795C3 /* FollowersUserWithMeCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowersUserWithMeCell.swift; sourceTree = "<group>"; };
-		84BB3CF4298E52F3003795C3 /* InfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoViewController.swift; sourceTree = "<group>"; };
-		84BB3CF6298E54FC003795C3 /* InfoCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoCoordinator.swift; sourceTree = "<group>"; };
 		84D0A3E529973AF600B2DE8F /* CommentViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentViewController.swift; sourceTree = "<group>"; };
 		84D0A3E7299742B100B2DE8F /* CommentsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentsTableViewCell.swift; sourceTree = "<group>"; };
 		84D0A3E92997442300B2DE8F /* HeaderCommment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderCommment.swift; sourceTree = "<group>"; };
@@ -188,8 +180,7 @@
 		848881AB2964C97D006BE6A1 /* Juls */ = {
 			isa = PBXGroup;
 			children = (
-				84A7309429A8EF4700FF3888 /* Message */,
-				84D0A3EB299786CD00B2DE8F /* Comment */,
+				84A7309929AB1D8000FF3888 /* Struct */,
 				840C603B298EDC1400932714 /* Assets.xcassets */,
 				848881B72964C983006BE6A1 /* LaunchScreen.storyboard */,
 				848881BA2964C983006BE6A1 /* Info.plist */,
@@ -202,10 +193,8 @@
 				848882302964D65B006BE6A1 /* LoginGroup */,
 				8488823E2964D778006BE6A1 /* NewsGroup */,
 				848882022964D39E006BE6A1 /* Other */,
-				84888295296A7E96006BE6A1 /* Posts */,
 				848882492964D812006BE6A1 /* ProfileGroup */,
 				848881C92964CBF5006BE6A1 /* Scenes */,
-				848882562964D944006BE6A1 /* Users */,
 			);
 			path = Juls;
 			sourceTree = "<group>";
@@ -248,12 +237,10 @@
 			children = (
 				8488828B2968BC4B006BE6A1 /* HomeViewController.swift */,
 				8488827A29678494006BE6A1 /* SearchController.swift */,
-				848881E62964D022006BE6A1 /* SettingsViewController.swift */,
 				84A42BF929786439001FD432 /* MessagePostViewController.swift */,
 				84B3C16A2981F5AE0044EE9C /* PostViewController.swift */,
 				84BB3CEC298784D1003795C3 /* MyFollowersUserViewController.swift */,
 				84BB3CF0298A15EE003795C3 /* FollowersUsersWithMeController.swift */,
-				84BB3CF4298E52F3003795C3 /* InfoViewController.swift */,
 				84D0A3E529973AF600B2DE8F /* CommentViewController.swift */,
 				84D0A3E92997442300B2DE8F /* HeaderCommment.swift */,
 				84A7309029A8785800FF3888 /* MessagesViewController.swift */,
@@ -271,8 +258,6 @@
 				8488828D2968BCF5006BE6A1 /* HomeCoordinator.swift */,
 				848881F72964D16D006BE6A1 /* ProfileCoordinator.swift */,
 				8488827C296784E3006BE6A1 /* SearchCoordinator.swift */,
-				848882722964DB48006BE6A1 /* SettingsCoordinator.swift */,
-				84BB3CF6298E54FC003795C3 /* InfoCoordinator.swift */,
 			);
 			path = Coordinator;
 			sourceTree = "<group>";
@@ -341,36 +326,15 @@
 			path = ProfileGroup;
 			sourceTree = "<group>";
 		};
-		848882562964D944006BE6A1 /* Users */ = {
+		84A7309929AB1D8000FF3888 /* Struct */ = {
 			isa = PBXGroup;
 			children = (
 				848882762966555D006BE6A1 /* User.swift */,
-			);
-			path = Users;
-			sourceTree = "<group>";
-		};
-		84888295296A7E96006BE6A1 /* Posts */ = {
-			isa = PBXGroup;
-			children = (
 				8482EC0E2972680A00058A7D /* Post.swift */,
-			);
-			path = Posts;
-			sourceTree = "<group>";
-		};
-		84A7309429A8EF4700FF3888 /* Message */ = {
-			isa = PBXGroup;
-			children = (
+				84D0A3EC299786EC00B2DE8F /* Comment.swift */,
 				84A7309529A8EF5E00FF3888 /* Message.swift */,
 			);
-			path = Message;
-			sourceTree = "<group>";
-		};
-		84D0A3EB299786CD00B2DE8F /* Comment */ = {
-			isa = PBXGroup;
-			children = (
-				84D0A3EC299786EC00B2DE8F /* Comment.swift */,
-			);
-			path = Comment;
+			path = Struct;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -461,12 +425,10 @@
 				848882462964D7EB006BE6A1 /* NewsTableViewCell.swift in Sources */,
 				848882362964D6AD006BE6A1 /* LoginViewModel.swift in Sources */,
 				8488824D2964D84E006BE6A1 /* ProfileViewController.swift in Sources */,
-				84BB3CF5298E52F4003795C3 /* InfoViewController.swift in Sources */,
 				848882942969F78F006BE6A1 /* SaveView.swift in Sources */,
 				848881CC2964CC4B006BE6A1 /* ViewControllerFactory.swift in Sources */,
 				848882282964D59A006BE6A1 /* LocalNotificationService.swift in Sources */,
 				84A42BFA29786439001FD432 /* MessagePostViewController.swift in Sources */,
-				848882732964DB48006BE6A1 /* SettingsCoordinator.swift in Sources */,
 				848882772966555E006BE6A1 /* User.swift in Sources */,
 				8403008E299CE470005342AC /* ProfileViewModel.swift in Sources */,
 				84BB3CF1298A15EE003795C3 /* FollowersUsersWithMeController.swift in Sources */,
@@ -494,11 +456,9 @@
 				848882182964D4BE006BE6A1 /* String+Extension.swift in Sources */,
 				848882162964D4A5006BE6A1 /* LocalizedExtension.swift in Sources */,
 				84B3C16B2981F5AE0044EE9C /* PostViewController.swift in Sources */,
-				848881E72964D022006BE6A1 /* SettingsViewController.swift in Sources */,
 				848882832967DB2B006BE6A1 /* Firebase+Extension.swift in Sources */,
 				84BB3CEF2987854A003795C3 /* MyFollowersUserViewCell.swift in Sources */,
 				848881F22964D105006BE6A1 /* NewsCoordinator.swift in Sources */,
-				84BB3CF7298E54FC003795C3 /* InfoCoordinator.swift in Sources */,
 				8488821E2964D514006BE6A1 /* CommonAlert.swift in Sources */,
 				848882322964D67A006BE6A1 /* LoginViewController.swift in Sources */,
 				848882442964D7D3006BE6A1 /* ArticleViewController.swift in Sources */,

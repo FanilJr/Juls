@@ -14,7 +14,6 @@ enum TypeOfViewController {
     case profile(viewModel: ProfileViewModel)
     case home
     case news
-//    case info
     case search
 }
 
@@ -31,8 +30,6 @@ extension TypeOfViewController {
             return HomeViewController()
         case .news:
             return NewsListController()
-//        case .info:
-//            return InfoViewController()
         case .search:
             return SearchViewController()
         }

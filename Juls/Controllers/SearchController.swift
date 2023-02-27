@@ -74,27 +74,25 @@ class SearchViewController: UIViewController {
 
     func fetchUsers() {
         let ref = Database.database().reference().child("users")
-        DispatchQueue.main.async {
-            ref.observeSingleEvent(of: .value, with: { snapshot in
-                self.tableView.refreshControl?.endRefreshing()
-                guard let dictionaries = snapshot.value as? [String: Any] else { return }
+        ref.observeSingleEvent(of: .value, with: { snapshot in
+            self.tableView.refreshControl?.endRefreshing()
+            guard let dictionaries = snapshot.value as? [String: Any] else { return }
                 
-                dictionaries.forEach { key, value in
-                    if key == Auth.auth().currentUser?.uid {
-                        return
-                    }
-                    guard let userDictionary = value as? [String: Any] else { return }
-                    
-                    let user = User(uid: key, dictionary: userDictionary)
-                    self.users.append(user)
+            dictionaries.forEach { key, value in
+                if key == Auth.auth().currentUser?.uid {
+                    return
                 }
-                self.filteredUsers = self.users
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
-                }
-            }) { err in
-                print("Failed to fetch users", err)
+                guard let userDictionary = value as? [String: Any] else { return }
+                
+                let user = User(uid: key, dictionary: userDictionary)
+                self.users.append(user)
             }
+            self.filteredUsers = self.users
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
+        }) { err in
+            print("Failed to fetch users", err)
         }
     }
     

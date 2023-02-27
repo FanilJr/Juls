@@ -160,7 +160,6 @@ class MainCollectionViewCell: UICollectionViewCell {
     
     lazy var iFollow: UILabel = {
         let nothing = UILabel()
-//        nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .light)
         nothing.shadowColor = .white
         nothing.font = .systemFont(ofSize: 15, weight: .bold)
         nothing.shadowOffset = CGSize(width: 0.5, height: 0.5)

@@ -149,20 +149,18 @@ extension PostTableViewController: CommentDelegate {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
         guard let postId = post?.id else { return }
         if var post = post {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        let values = [uid: post.hasLiked == true ? 0 : 1]
-            DispatchQueue.main.async {
-                Database.database().reference().child("likes").child(postId).updateChildValues(values) { [self] error, _ in
-                    if let error {
-                        print(error)
-                        return
-                    }
-                    print("successfully liked post")
-                    post.hasLiked = !post.hasLiked
-                    self.post = post
-                    DispatchQueue.main.async {
-                        self.tableView.reloadRows(at: [indexPath], with: .fade)
-                    }
+            guard let uid = Auth.auth().currentUser?.uid else { return }
+            let values = [uid: post.hasLiked == true ? 0 : 1]
+            Database.database().reference().child("likes").child(postId).updateChildValues(values) { [self] error, _ in
+                if let error {
+                    print(error)
+                    return
+                }
+                print("successfully liked post:", post.message)
+                post.hasLiked = !post.hasLiked
+                self.post = post
+                DispatchQueue.main.async {
+                    self.tableView.reloadRows(at: [indexPath], with: .fade)
                 }
             }
         }
@@ -174,18 +172,16 @@ extension PostTableViewController: CommentDelegate {
     
     func countComment(post: Post?) {
         guard let uid = post?.id else { return }
-        DispatchQueue.main.async {
-            Database.database().reference().child("comments").child(uid).observeSingleEvent(of: .value, with: { snapshot in
-                for child in snapshot.children {
-                    let snap = child as! Firebase.DataSnapshot
-                    let key = snap.key
-                    self.commentArray.append(key)
-                }
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
-                }
-            })
-        }
+        Database.database().reference().child("comments").child(uid).observeSingleEvent(of: .value, with: { snapshot in
+            for child in snapshot.children {
+                let snap = child as! Firebase.DataSnapshot
+                let key = snap.key
+                self.commentArray.append(key)
+            }
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
+        })
     }
 }
 

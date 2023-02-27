@@ -18,23 +18,15 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
     private enum Constants {
         static let newsImageName: String = "newspaper.circle"
         static let profileImageName: String = "person.circle"
-        static let postFavoritesImageName: String = "heart.circle"
-        static let playerImageName: String = "play.circle"
         static let searchImageName: String = "magnifyingglass.circle"
         static let ribbonImageName: String = "house.circle"
-        static let settingsImageName: String = "gearshape.circle"
-        static let infoImageName: String = "info.circle"
     }
     
     private enum ConstantsSelect {
         static let newsImageName: String = "newspaper.circle.fill"
         static let profileImageName: String = "person.circle.fill"
-        static let postFavoritesImageName: String = "heart.circle.fill"
-        static let playerImageName: String = "play.circle.fill"
         static let searchImageName: String = "magnifyingglass.circle.fill"
         static let ribbonImageName: String = "house.circle.fill"
-        static let settingsImageName: String = "gearshape.circle.fill"
-        static let infoImageName: String = "info.circle.fill"
     }
 
     init(scene: UIWindowScene, viewControllerFactory: ViewControllersFactoryProtocol) {

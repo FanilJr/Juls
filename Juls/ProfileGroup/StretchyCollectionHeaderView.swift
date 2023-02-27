@@ -13,8 +13,6 @@ protocol StretchyDelegate: AnyObject {
     func presentImagePickerForUser()
     func addStatus()
     func logOut()
-    func showAlbum()
-    func setupSettings()
     func backUp()
     func goMessage()
 }
@@ -31,9 +29,6 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
             }
             self.nickNameLabel.text = user?.username
             self.statusLabel.text = user?.status
-            
-//            self.addButton.setBackgroundImage(UIImage(systemName: "plus"), for: .normal)
-//            self.editButton.setBackgroundImage(UIImage(systemName: "ellipsis.circle"), for: .normal)
             setupEditFollowButton()
             checkUserFollow()
         }
@@ -100,15 +95,6 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         button.clipsToBounds = true
         return button
     }()
-    
-    lazy var albumButton: UIButton = {
-        let button = UIButton()
-        button.addTarget(self, action: #selector(showAlbumController), for: .touchUpInside)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.clipsToBounds = true
-        return button
-    }()
-    
     
     private lazy var editButton: UIButton = {
         let button = UIButton()
@@ -181,34 +167,24 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
     }
     
     @objc func followFriend() {
-        guard let myId = Auth.auth().currentUser?.uid else { return }
         guard let userId = user?.uid else { return }
-        
-        let ref = Database.database().reference().child("following").child(myId)
         if self.followButton.backgroundImage(for: .normal) == UIImage(named: "heart.circle.fill@100xWhite") {
-            let values = [userId: 1]
-            ref.updateChildValues(values) { error, ref in
+            Database.database().followUser(withUID: userId) { error in
                 if let error {
-                    print("error", error)
+                    print(error)
                     return
                 }
-                DispatchQueue.main.async {
-                    print("succes followed user: ", self.user?.username ?? "")
-                    self.followButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100x"), for: .normal)
-                    self.followButton.tintColor = .red
-                }
+                print("succes followed user: ", self.user?.username ?? "")
+                self.followButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100x"), for: .normal)
             }
         } else {
-            Database.database().reference().child("following").child(myId).child(userId).removeValue { error, ref in
+            Database.database().unfollowUser(withUID: userId) { error in
                 if let error {
-                    print("error", error)
+                    print(error)
                     return
                 }
-                DispatchQueue.main.async {
-                    print("succeful unfollow user: ", self.user?.username ?? "")
-                    self.followButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100xWhite"), for: .normal)
-                    self.followButton.tintColor = .white
-                }
+                print("succeful unfollow user: ", self.user?.username ?? "")
+                self.followButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100xWhite"), for: .normal)
             }
         }
     }
@@ -266,10 +242,6 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         ])
     }
     
-    @objc func showAlbumController() {
-        delegate?.showAlbum()
-    }
-    
     private func addMenuPlusButton() -> UIMenu {
         let addPost = UIAction(title: "Создать пост",image: UIImage(systemName: "square.and.pencil")) { _ in
             self.delegate?.addPostInCollection()
@@ -285,10 +257,6 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         
         let changeStatus = UIAction(title: "Изменить статус", image: UIImage(systemName: "heart.text.square.fill")) { _ in
             self.delegate?.addStatus()
-        }
-        
-        let _ = UIAction(title: "Настройки", image: UIImage(systemName: "gear")) { _ in
-            self.delegate?.setupSettings()
         }
         
         let quit = UIAction(title: "Выйти из аккаунта", image: UIImage(systemName: "hands.sparkles.fill"), attributes: .destructive) { _ in

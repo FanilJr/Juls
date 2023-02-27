@@ -14,28 +14,20 @@ class ProfileViewController: UIViewController {
     
     var user: User?
     var userId: String?
-    var usersId = [User]()
-    var experementUser = [User]()
     var posts = [Post]()
     var postsKeyArray = [String]()
-    var iFollowUsers = [String]()
-    var usersString = [String]()
-    var usersFollowMe = [String]()
-    var countUser = [String]()
+    var iFollowUsers: Int?
+    var followMeUsers: Int?
+    var postsCount: Int?
     var cgfloatTabBar: CGFloat?
-    var postsCount = [String]()
     private var refreshController = UIRefreshControl()
     private let messagePostViewController = MessagePostViewController()
-    private let settingsViewController = SettingsViewController()
     private let viewModel: ProfileViewModel
     private let saveView = SaveView()
     private let infoView = InfoView()
     private let imagePicker = UIImagePickerController()
     private var currentImage: UIImageView?
-    private let headerCollection = StretchyCollectionHeaderView()
     private var header: StretchyCollectionHeaderView?
-    let mainCollection = MainCollectionViewCell()
-    
     
     let systemSoundID: SystemSoundID = 1016
     let systemSoundID2: SystemSoundID = 1018
@@ -154,15 +146,8 @@ class ProfileViewController: UIViewController {
     }
     
     @objc func didTapRefresh() {
-        self.posts.removeAll()
-        self.usersId.removeAll()
-        self.usersFollowMe.removeAll()
-        self.countUser.removeAll()
-        self.iFollowUsers.removeAll()
-        self.postsCount.removeAll()
         self.fetchUser()
-        self.collectionView.reloadData()
-        self.refreshController.endRefreshing()
+        print("refresh Profile")
     }
 
     func waitingSpinnerEnable(_ active: Bool) {
@@ -203,182 +188,6 @@ class ProfileViewController: UIViewController {
     }
 }
 
-extension ProfileViewController: UICollectionViewDelegate {
-}
-
-extension ProfileViewController: UICollectionViewDataSource {
-    
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return 2
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        switch section {
-        case 0:
-            return 1
-        case 1:
-            return posts.count
-        default:
-            return 0
-        }
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        
-        switch indexPath.section {
-            
-        case 0:
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainCollectionViewCell", for: indexPath) as! MainCollectionViewCell
-            cell.configureMain(user: self.user)
-            cell.postsButton.setTitle("\(postsCount.count)", for: .normal)
-            cell.iFollowButton.setTitle("\(iFollowUsers.count)", for: .normal)
-            cell.followMeButton.setTitle("\(countUser.count)", for: .normal)
-            cell.delegate = self
-            cell.backgroundColor = .clear
-            return cell
-        case 1:
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotosCollectionViewCell", for: indexPath) as! PhotosCollectionViewCell
-            cell.configureCell(post: posts[indexPath.item])
-            return cell
-            
-        default:
-            return UICollectionViewCell()
-        }
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        switch indexPath.section {
-        case 0:
-            header = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "StretchyCollectionHeaderView", for: indexPath) as? StretchyCollectionHeaderView
-//            header?.user = self.user
-            header?.delegate = self
-            return header!
-        default:
-            return UICollectionReusableView()
-        }
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        switch indexPath.section {
-        case 1:
-            let postVC = PostTableViewController()
-            postVC.post = posts[indexPath.row]
-            navigationController?.pushViewController(postVC, animated: true)
-        default:
-            print(indexPath.section)
-        }
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
-        
-        var indexPaths = posts[indexPath.row]
-            switch indexPath.section {
-            case 1:
-                let configuration = UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
-                    let _ = UIAction(title: "Нравится",  image: UIImage(systemName: "heart")) { _ in
-                        //MARK: Работает но только в моем профиле
-                        let uid = self.user?.uid
-                        let values = [uid: indexPaths.hasLiked == true ? 0 : 1]
-                        DispatchQueue.main.async {
-                            Database.database().reference().child("likes").child(indexPaths.id ?? "").updateChildValues(values) { error, _ in
-                                if let error {
-                                    print(error)
-                                    return
-                                }
-                                print("successfully liked post")
-                                indexPaths.hasLiked = !indexPaths.hasLiked
-                            }
-                        }
-                    }
-                    let shared = UIAction(title: "Поделится", image: UIImage(systemName:"square.and.arrow.up")) { _ in
-                        let avc = UIActivityViewController(activityItems: [self.posts[indexPath.row].user.username as Any, self.posts[indexPath.row].message as Any], applicationActivities: nil)
-                        self.present(avc, animated: true)
-                    }
-                    let remove = UIAction(title: "Удалить", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
-                        let alert = UIAlertController(title: "", message: "Вы точно хотите удалить?", preferredStyle: .alert)
-                        let removeAction = UIAlertAction(title: "Удалить", style: .destructive) { _ in
-                            guard let uid = self.user?.uid else { return }
-                            self.getAllKaysPost()
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
-                                Database.database().reference().child("posts").child(uid).child(self.postsKeyArray[indexPath.item]).removeValue()
-                                self.posts.remove(at: indexPath.item)
-                                self.collectionView.deleteItems(at: [indexPath])
-                                self.postsKeyArray = []
-                                DispatchQueue.main.async {
-                                    self.collectionView.reloadData()
-                                }
-                            })
-                        }
-                        let cancelAction = UIAlertAction(title: "Отмена", style: .default) { _ in
-                            self.dismiss(animated: true)
-                        }
-                        [removeAction, cancelAction].forEach { alert.addAction($0) }
-                        self.present(alert, animated: true)
-                    }
-                    if Auth.auth().currentUser?.uid == self.user?.uid {
-                        let menu = UIMenu(title: "", children: [shared,remove])
-                        return menu
-                    } else {
-                        let menu = UIMenu(title: "", children: [shared])
-                        return menu
-                    }
-                })
-                return configuration
-            default:
-                return nil
-        }
-    }
-    
-    func getAllKaysPost() {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        Database.database().reference().child("posts").child(uid).observeSingleEvent(of: .value, with: { snapshot in
-            
-            for child in snapshot.children {
-                let snap = child as! Firebase.DataSnapshot
-                let key = snap.key
-                self.postsKeyArray.insert(key, at: 0)
-            }
-        })
-    }
-    
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let contentOffsetY = scrollView.contentOffset.y
-        if contentOffsetY == 200 {      
-        }
-    }
-}
-
-extension ProfileViewController: UICollectionViewDelegateFlowLayout {
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-        switch section {
-        case 0:
-            return CGSize(width: self.collectionView.frame.size.width, height: 540)
-        default:
-            return CGSize()
-        }
-    }
-    
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        
-        switch indexPath.section {
-            
-        case 0:
-            let width = collectionView.bounds.width
-            let height = CGFloat(220)
-            return CGSize(width: width, height: height)
-            
-        case 1:
-            let width = (view.frame.width - 3) / 3
-            return CGSize(width: width, height: width)
-            
-        default:
-            return CGSize()
-        }
-    }
-}
-
 extension ProfileViewController: UIImagePickerControllerDelegate & UINavigationControllerDelegate {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         guard let pickedImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage else { return }
@@ -407,25 +216,45 @@ extension ProfileViewController {
     
     func fetchUser() {
         let uid = userId ?? (Auth.auth().currentUser?.uid ?? "")
-        Database.fetchUserWithUID(uid: uid) { user in
-            DispatchQueue.main.async {
-                self.user = user
-                self.header?.user = user
-                self.imageBack.loadImage(urlString: user.picture)
-                self.checkFollowMe(user: user)
-                self.checkPosts(user: user)
-                self.checkIFollowing(user: user)
-                self.fetchPostsWithUser(user: user)
+        Database.database().fetchUser(withUID: uid) { user in
+            self.user = user
+            self.header?.user = user
+            self.loadDatabase()
+            self.imageBack.loadImage(urlString: user.picture)
+            self.fetchPostWithUserPost(user: user) { posts in
+                self.posts.removeAll()
+                self.posts = posts
+                self.posts.sort { p1, p2 in
+                    return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+                }
+                DispatchQueue.main.async {
+                    self.collectionView.reloadData()
+                }
             }
         }
     }
     
-    func fetchPostsWithUser(user: User) {
+    private func loadDatabase() {
+        let uid = userId ?? (Auth.auth().currentUser?.uid ?? "")
+        
+        Database.database().numberOfPostsForUser(withUID: uid) { number in
+            self.postsCount = number
+        }
+        Database.database().numberOfFollowingForUser(withUID: uid) { number in
+            self.iFollowUsers = number
+        }
+        Database.database().numberOfFollowersForUser(withUID: uid) { number in
+            self.followMeUsers = number
+        }
+    }
+    
+    func fetchPostWithUserPost(user: User, completion: @escaping ([Post]) -> ()) {
         let ref = Database.database().reference().child("posts").child(user.uid)
+        var posts = [Post]()
         DispatchQueue.main.async {
             ref.observeSingleEvent(of: .value, with: { snapshot in
+                self.collectionView.refreshControl?.endRefreshing()
                 guard let dictionaries = snapshot.value as? [String: Any] else { return }
-                
                 dictionaries.forEach { key, value in
                     guard let dictionary = value as? [String: Any] else { return }
                     var post = Post(user: user, dictionary: dictionary)
@@ -437,19 +266,11 @@ extension ProfileViewController {
                         } else {
                             post.hasLiked = false
                         }
-                        self.posts.append(post)
-                        self.posts.sort { p1, p2 in
-                            return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-                        }
-                        DispatchQueue.main.async {
-                            self.collectionView.reloadData()
-                        }
+                        posts.append(post)
+                        completion(posts)
                     })
                 }
-                print("Перезагрузка в ProfileViewController fetchPostsWithUser")
-            }) { error in
-                print("Failed to fetch posts:", error)
-            }
+            })
         }
     }
     
@@ -457,7 +278,7 @@ extension ProfileViewController {
         guard let userId = Auth.auth().currentUser?.uid else { return }
         let imageName = NSUUID().uuidString
         let storedImage = Storage.storage().reference().child("profile_image").child(imageName)
-
+        
         if let uploadData = header?.userImage.image?.jpegData(compressionQuality: 0.3) {
             storedImage.putData(uploadData, metadata: nil) { metadata, error in
                 if let error {
@@ -478,8 +299,7 @@ extension ProfileViewController {
                             print("succes download Photo in Firebase Library")
                             self.waitingSpinnerEnable(false)
                             self.view.addSubview(self.saveView)
-                            self.posts.removeAll()
-                            self.fetchUser()
+                            self.didTapRefresh()
                             NSLayoutConstraint.activate([
                                 self.saveView.topAnchor.constraint(equalTo: self.collectionView.topAnchor,constant: 300),
                                 self.saveView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
@@ -501,68 +321,6 @@ extension ProfileViewController {
         }
     }
     
-    func checkIFollowing(user: User?) {
-        guard let userId = user?.uid else { return }
-        DispatchQueue.main.async {
-            Database.database().reference().child("following").child(userId).observeSingleEvent(of: .value, with: { snapshot in
-                for child in snapshot.children {
-                    let snap = child as! Firebase.DataSnapshot
-                    let key = snap.key
-                    self.iFollowUsers.append(key)
-                }
-                DispatchQueue.main.async {
-                    self.collectionView.reloadData()
-                }
-            })
-        }
-    }
-    
-    func checkPosts(user: User?) {
-        guard let uid = user?.uid else { return }
-        DispatchQueue.main.async {
-            Database.database().reference().child("posts").child(uid).observeSingleEvent(of: .value, with: { snapshot in
-                for child in snapshot.children {
-                    let snap = child as! Firebase.DataSnapshot
-                    let key = snap.key
-                    self.postsCount.append(key)
-                }
-                DispatchQueue.main.async {
-                    self.collectionView.reloadData()
-                }
-            })
-        }
-    }
-    
-    func checkFollowMe(user: User?) {
-        guard let userId = user?.uid else { return }
-        DispatchQueue.main.async {
-            let ref = Database.database().reference().child("following")
-            ref.observeSingleEvent(of: .value, with: { snapshot in
-                for child in snapshot.children {
-                    let snap = child as! Firebase.DataSnapshot
-                    let key = snap.key
-                    if key != userId {
-                        self.usersFollowMe.append(key)
-                    }
-                }
-                for i in self.usersFollowMe {
-                    let ref = Database.database().reference().child("following").child(i)
-                    ref.observeSingleEvent(of: .value, with: { snapshot in
-                        for child in snapshot.children {
-                            let snap = child as! Firebase.DataSnapshot
-                            let key = snap.key
-                            if key == self.user?.uid {
-                                self.countUser.append(i)
-                            }
-                        }
-                    })
-                    DispatchQueue.main.async {
-                        self.collectionView.reloadData()
-                    }
-                }
-            })
-        }
-    }
     //MARK: Отправка поста
     func saveToDatabaseWithImageUrl(imageUrl: String) {
         
@@ -575,36 +333,30 @@ extension ProfileViewController {
             let userPostRef = Database.database().reference().child("posts").child(uid)
             
             let ref = userPostRef.childByAutoId()
-            
             let values = ["imageUrl": imageUrl, "caption": caption, "imageWidth": postImage.size.width, "imageHeight": postImage.size.height, "creationDate": Date().timeIntervalSince1970] as [String : Any]
             
             ref.updateChildValues(values) { error, ref in
                 if let error {
                     print("Error", error)
+                    return
                 }
                 print("succes upload Post in Firebase")
-            }
-            self.messagePostViewController.waitingSpinnerPostEnable(false)
-            self.messagePostViewController.sendPostButton.setTitle("Отправить", for: .normal)
-            self.messagePostViewController.sendPostButton.setImage(UIImage(systemName: "paperplane.fill"), for: .normal)
-            
-            AudioServicesPlaySystemSound(self.systemSoundID2)
-            self.dismiss(animated: true)
-            self.tabBarController?.tabBar.isHidden = false
-            
-            UIView.animate(withDuration: 0.5, animations: {
-                self.posts = []
-                self.usersId.removeAll()
-                self.usersFollowMe.removeAll()
-                self.countUser.removeAll()
-                self.iFollowUsers.removeAll()
-                self.postsCount.removeAll()
-                self.fetchUser()
-            })
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                self.messagePostViewController.customImage.image = nil
-                self.messagePostViewController.customTextfield.text = ""
+                self.messagePostViewController.waitingSpinnerPostEnable(false)
+                self.messagePostViewController.sendPostButton.setTitle("Отправить", for: .normal)
+                self.messagePostViewController.sendPostButton.setImage(UIImage(systemName: "paperplane.fill"), for: .normal)
+                
+                AudioServicesPlaySystemSound(self.systemSoundID2)
+                self.dismiss(animated: true)
+                self.tabBarController?.tabBar.isHidden = false
+                
+                UIView.animate(withDuration: 0.5, animations: {
+                    self.didTapRefresh()
+                })
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.messagePostViewController.customImage.image = nil
+                    self.messagePostViewController.customTextfield.text = ""
+                }
             }
         }
     }
@@ -683,13 +435,7 @@ extension ProfileViewController: InfoDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
             self.infoView.removeFromSuperview()
             self.blure.removeFromSuperview()
-            self.posts.removeAll()
-            self.usersId.removeAll()
-            self.usersFollowMe.removeAll()
-            self.countUser.removeAll()
-            self.iFollowUsers.removeAll()
-            self.postsCount.removeAll()
-            self.fetchUser()
+            self.didTapRefresh()
         }
     }
 }
@@ -733,9 +479,6 @@ extension ProfileViewController: MessagePostDelegate {
                     })
                 }
             }
-            DispatchQueue.main.async {
-                self.collectionView.reloadData()
-            }
         }
     }
 }
@@ -749,20 +492,6 @@ extension ProfileViewController: StretchyDelegate {
     
     func backUp() {
         navigationController?.popViewController(animated: true)
-    }
-    
-    func setupSettings() {
-        if let sheet = settingsViewController.sheetPresentationController {
-            sheet.detents = [.medium(), .large()]
-            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
-            sheet.largestUndimmedDetentIdentifier = .medium
-            sheet.prefersGrabberVisible = true
-        }
-        present(settingsViewController, animated: true)
-    }
-    
-    func showAlbum() {
-        viewModel.send(.showPhotosVc)
     }
     
     func addStatus() {
@@ -787,7 +516,6 @@ extension ProfileViewController: StretchyDelegate {
         alert.addTextField()
         [alertOK,alertCancel].forEach { alert.addAction($0) }
         present(alert, animated: true)
-
     }
     
     func presentImagePickerForUser() {
@@ -869,5 +597,177 @@ extension ProfileViewController: MainCollectionDelegate {
             self.blure.alpha = 1
         })
         tabBarController?.tabBar.isHidden = true
+    }
+}
+
+
+extension ProfileViewController: UICollectionViewDelegate {
+}
+
+extension ProfileViewController: UICollectionViewDataSource {
+    
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        return 2
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        switch section {
+        case 0:
+            return 1
+        case 1:
+            return posts.count
+        default:
+            return 0
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        
+        switch indexPath.section {
+            
+        case 0:
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainCollectionViewCell", for: indexPath) as! MainCollectionViewCell
+            cell.configureMain(user: self.user)
+            cell.postsButton.setTitle("\(postsCount ?? 0)", for: .normal)
+            cell.iFollowButton.setTitle("\(iFollowUsers ?? 0)", for: .normal)
+            cell.followMeButton.setTitle("\(followMeUsers ?? 0)", for: .normal)
+            cell.delegate = self
+            cell.backgroundColor = .clear
+            return cell
+        case 1:
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotosCollectionViewCell", for: indexPath) as! PhotosCollectionViewCell
+            cell.configureCell(post: posts[indexPath.item])
+            return cell
+            
+        default:
+            return UICollectionViewCell()
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        switch indexPath.section {
+        case 0:
+            header = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "StretchyCollectionHeaderView", for: indexPath) as? StretchyCollectionHeaderView
+            header?.delegate = self
+            return header!
+        default:
+            return UICollectionReusableView()
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        switch indexPath.section {
+        case 1:
+            let postVC = PostTableViewController()
+            postVC.post = posts[indexPath.row]
+            navigationController?.pushViewController(postVC, animated: true)
+        default:
+            print(indexPath.section)
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
+        
+        var indexPaths = posts[indexPath.row]
+            switch indexPath.section {
+            case 1:
+                let configuration = UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
+                    let _ = UIAction(title: "Нравится",  image: UIImage(systemName: "heart")) { _ in
+                        //MARK: Работает но только в моем профиле
+                        let uid = self.user?.uid
+                        let values = [uid: indexPaths.hasLiked == true ? 0 : 1]
+                        DispatchQueue.main.async {
+                            Database.database().reference().child("likes").child(indexPaths.id ?? "").updateChildValues(values) { error, _ in
+                                if let error {
+                                    print(error)
+                                    return
+                                }
+                                print("successfully liked post")
+                                indexPaths.hasLiked = !indexPaths.hasLiked
+                            }
+                        }
+                    }
+                    let shared = UIAction(title: "Поделится", image: UIImage(systemName:"square.and.arrow.up")) { _ in
+                        let avc = UIActivityViewController(activityItems: [self.posts[indexPath.row].user.username as Any, self.posts[indexPath.row].message as Any], applicationActivities: nil)
+                        self.present(avc, animated: true)
+                    }
+                    let remove = UIAction(title: "Удалить", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                        let alert = UIAlertController(title: "", message: "Вы точно хотите удалить?", preferredStyle: .alert)
+                        let removeAction = UIAlertAction(title: "Удалить", style: .destructive) { _ in
+                            guard let uid = self.user?.uid else { return }
+                            self.getAllKaysPost()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
+                                Database.database().reference().child("posts").child(uid).child(self.postsKeyArray[indexPath.item]).removeValue()
+                                self.posts.remove(at: indexPath.item)
+                                self.collectionView.deleteItems(at: [indexPath])
+                                self.postsKeyArray = []
+                                DispatchQueue.main.async {
+                                    self.collectionView.reloadData()
+                                }
+                            })
+                        }
+                        let cancelAction = UIAlertAction(title: "Отмена", style: .default) { _ in
+                            self.dismiss(animated: true)
+                        }
+                        [removeAction, cancelAction].forEach { alert.addAction($0) }
+                        self.present(alert, animated: true)
+                    }
+                    if Auth.auth().currentUser?.uid == self.user?.uid {
+                        let menu = UIMenu(title: "", children: [shared,remove])
+                        return menu
+                    } else {
+                        let menu = UIMenu(title: "", children: [shared])
+                        return menu
+                    }
+                })
+                return configuration
+            default:
+                return nil
+        }
+    }
+    
+    func getAllKaysPost() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        Database.database().reference().child("posts").child(uid).observeSingleEvent(of: .value, with: { snapshot in
+            for child in snapshot.children {
+                let snap = child as! Firebase.DataSnapshot
+                let key = snap.key
+                self.postsKeyArray.insert(key, at: 0)
+            }
+        })
+    }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let contentOffsetY = scrollView.contentOffset.y
+        if contentOffsetY == 200 {
+        }
+    }
+}
+
+extension ProfileViewController: UICollectionViewDelegateFlowLayout {
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+        switch section {
+        case 0:
+            return CGSize(width: self.collectionView.frame.size.width, height: 540)
+        default:
+            return CGSize()
+        }
+    }
+    
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        
+        switch indexPath.section {
+        case 0:
+            let width = collectionView.bounds.width
+            let height = CGFloat(220)
+            return CGSize(width: width, height: height)
+        case 1:
+            let width = (view.frame.width - 3) / 3
+            return CGSize(width: width, height: width)
+        default:
+            return CGSize()
+        }
     }
 }
