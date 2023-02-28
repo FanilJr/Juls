@@ -345,9 +345,9 @@ class MainCollectionViewCell: UICollectionViewCell {
         } else {
             self.editButton.setBackgroundImage(UIImage(systemName: "ellipsis"), for: .normal)
         }
-        name.text = user?.name
-        ageUser.text = user?.age
-        statusLife.text = user?.lifeStatus
-        heightUser.text = user?.height
+        self.name.text = user?.name
+        self.ageUser.text = user?.age
+        self.statusLife.text = user?.lifeStatus
+        self.heightUser.text = user?.height
     }
 }

@@ -166,19 +166,20 @@ class PostTableViewCell: UITableViewCell {
     
     func configureTable(post: Post?) {
         guard let authorImageUrl = post?.user.picture else { return }
-        authorImage.loadImage(urlString: authorImageUrl)
         guard let postImageUrl = post?.imageUrl else { return }
-        postImage.loadImage(urlString: postImageUrl)
-        nameAuthor.text = post?.user.username
-        datePost.text = post?.creationDate.timeAgoDisplay()
-        
+        DispatchQueue.main.async {
+            self.authorImage.loadImage(urlString: authorImageUrl)
+        }
+        self.nameAuthor.text = post?.user.username
+        self.datePost.text = post?.creationDate.timeAgoDisplay()
+            
         let attributedText = NSMutableAttributedString(string: post?.user.username ?? "")
         attributedText.addAttribute(.font, value: UIFont.systemFont(ofSize: 14, weight: .bold), range: NSRange(location: 0, length: post?.user.username.count ?? 0))
         let attributeComment = NSAttributedString(string: "  \(post?.message ?? "")")
         attributedText.append(attributeComment)
+        self.descriptionText.attributedText = attributedText
         
-        descriptionText.attributedText = attributedText
-        
+        postImage.loadImage(urlString: postImageUrl)
         likeButton.setBackgroundImage(post?.hasLiked == true ? UIImage(named: "heart.circle.fill@100x") : UIImage(systemName: "heart.circle.fill"), for: .normal)
     }
 }

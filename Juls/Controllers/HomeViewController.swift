@@ -153,41 +153,45 @@ extension HomeViewController {
     func fetchPosts() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         Database.database().fetchUser(withUID: uid) { user in
-            self.imageBack.loadImage(urlString: user.picture)
-            self.fetchPostsWithUser(user: user)
+            DispatchQueue.main.async {
+                self.imageBack.loadImage(urlString: user.picture)
+                self.fetchPostsWithUser(user: user)
+            }
         }
     }
     
     func fetchPostsWithUser(user: User) {
         let ref = Database.database().reference().child("posts").child(user.uid)
-        ref.observeSingleEvent(of: .value, with: { (snapshot) in
+        DispatchQueue.main.async {
+            ref.observeSingleEvent(of: .value, with: { (snapshot) in
                 self.tableView.refreshControl?.endRefreshing()
-            guard let dictionaries = snapshot.value as? [String: Any] else { return }
+                guard let dictionaries = snapshot.value as? [String: Any] else { return }
         
-            dictionaries.forEach ({ (key, value) in
-                guard let dictionary = value as? [String: Any] else { return }
-                var post = Post(user: user, dictionary: dictionary)
-                post.id = key
-                guard let uid = Auth.auth().currentUser?.uid else { return }
-                Database.database().reference().child("likes").child(key).child(uid).observeSingleEvent(of: .value, with: { (snapshot) in
-                    if let value = snapshot.value as? Int, value == 1 {
-                        post.hasLiked = true
-                    } else {
-                        post.hasLiked = false
-                    }
-                    self.posts.append(post)
-                    self.posts.sort { p1, p2 in
-                        return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-                    }
-                    DispatchQueue.main.async {
-                        self.tableView.reloadData()
-                    }
-                }, withCancel: { (error) in
-                    print(error)
+                dictionaries.forEach ({ (key, value) in
+                    guard let dictionary = value as? [String: Any] else { return }
+                    var post = Post(user: user, dictionary: dictionary)
+                    post.id = key
+                    guard let uid = Auth.auth().currentUser?.uid else { return }
+                    Database.database().reference().child("likes").child(key).child(uid).observeSingleEvent(of: .value, with: { (snapshot) in
+                        if let value = snapshot.value as? Int, value == 1 {
+                            post.hasLiked = true
+                        } else {
+                            post.hasLiked = false
+                        }
+                        self.posts.append(post)
+                        self.posts.sort { p1, p2 in
+                            return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+                        }
+                        DispatchQueue.main.async {
+                            self.tableView.reloadData()
+                        }
+                    }, withCancel: { (error) in
+                        print(error)
+                    })
                 })
-            })
-        }) { error in
-            print("Failed to fetch posts:", error)
+            }) { error in
+                print("Failed to fetch posts:", error)
+            }
         }
     }
     

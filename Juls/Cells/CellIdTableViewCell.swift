@@ -57,7 +57,9 @@ class CellIdTableViewCell: UITableViewCell {
         if profileImageUrl == "" {
             self.profileImageView.image = UIImage(named: "noimage")
         } else {
-            profileImageView.loadImage(urlString: profileImageUrl)
+            DispatchQueue.main.async {
+                self.profileImageView.loadImage(urlString: profileImageUrl)
+            }
         }
         usernameLabel.text = user?.username
     }

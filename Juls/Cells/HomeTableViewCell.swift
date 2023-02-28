@@ -169,9 +169,10 @@ class HomeTableViewCell: UITableViewCell {
     
     func configureHomeTable(post: Post?) {
         guard let postImageUrl = post?.imageUrl else { return }
-        postImage.loadImage(urlString: postImageUrl)
         guard let authorImageUrl = post?.user.picture else { return }
+        postImage.loadImage(urlString: postImageUrl)
         authorImage.loadImage(urlString: authorImageUrl)
+
         nameAuthor.text = post?.user.username
         datePost.text = post?.creationDate.timeAgoDisplay()
         

@@ -23,9 +23,13 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         didSet {
             guard let imageUrl = user?.picture else { return }
             if imageUrl == "" {
-                self.userImage.image = UIImage(named: "noimage")
+                DispatchQueue.main.async {
+                    self.userImage.image = UIImage(named: "noimage")
+                }
             } else {
-                self.userImage.loadImage(urlString: imageUrl)
+                DispatchQueue.main.async {
+                    self.userImage.loadImage(urlString: imageUrl)
+                }
             }
             self.nickNameLabel.text = user?.username
             self.statusLabel.text = user?.status

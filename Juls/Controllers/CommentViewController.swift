@@ -113,8 +113,18 @@ class CommentViewController: UIViewController {
         title = "Комментарии"
         setupLayout()
         tapScreen()
-        fetchComments()
+        fetchCommentsPost()
         loadImageCurrentUser()
+    }
+    
+    func fetchCommentsPost() {
+        guard let postId = self.post?.id else { return }
+        Database.database().fetchCommentsForPost(withId: postId) { comments in
+            DispatchQueue.main.async {
+                self.comments = comments
+                self.tableView.reloadData()
+            }
+        }
     }
     
     private func setupWillAppear() {
@@ -126,28 +136,11 @@ class CommentViewController: UIViewController {
     func loadImageCurrentUser() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         Database.database().fetchUser(withUID: uid) { user in
-            self.myUserComment = user
-            self.authorComment.loadImage(urlString: user.picture)
-        }
-    }
-    
-    func fetchComments() {
-        guard let postId = self.post?.id else { return }
-        let ref = Database.database().reference().child("comments").child(postId)
-        ref.observe(.childAdded, with: { snapshot in
-            guard let dictionary = snapshot.value as? [String: Any] else { return }
-            guard let uid = dictionary["uid"] as? String else { return }
-            Database.database().fetchUser(withUID: uid) { user in
-                let comment = Comment(user: user, dictionary: dictionary)
-                self.comments.append(comment)
-                self.comments.sort { p1, p2 in
-                    return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-                }
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
-                }
+            DispatchQueue.main.async {
+                self.myUserComment = user
+                self.authorComment.loadImage(urlString: user.picture)
             }
-        })
+        }
     }
     
     @objc func pushComment() {
@@ -180,7 +173,7 @@ class CommentViewController: UIViewController {
         if let kdbSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
             tableView.contentInset.bottom = kdbSize.height
             tableView.verticalScrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: kdbSize.height, right: 0)
-            self.containerView.transform = CGAffineTransform(translationX: 0, y: -330)
+            self.containerView.transform = CGAffineTransform(translationX: 0, y: -kdbSize.height)
         }
     }
 

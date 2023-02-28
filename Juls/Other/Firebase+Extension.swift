@@ -184,7 +184,7 @@ extension Database {
         }
     }
     
-    func fetchCommentsForPost(withId postId: String, completion: @escaping ([Comment]) -> (), withCancel cancel: ((Error) -> ())?) {
+    func fetchCommentsForPost(withId postId: String, completion: @escaping ([Comment]) -> ()) {
         let commentsReference = Database.database().reference().child("comments").child(postId)
         
         commentsReference.observeSingleEvent(of: .value, with: { (snapshot) in
@@ -211,15 +211,20 @@ extension Database {
                     }
                 }
             })
-            
-        }) { (err) in
-            print("Failed to fetch comments:", err)
-            cancel?(err)
-        }
+        })
     }
     
     //MARK: Utilities
-    
+    func fetchCommetsCount(withPostId uid: String, completion: @escaping (Int) -> ()) {
+        Database.database().reference().child("comments").child(uid).observeSingleEvent(of: .value) { snapshot in
+            if let dictionaries = snapshot.value as? [String: Any] {
+                completion(dictionaries.count)
+            } else {
+                completion(0)
+            }
+        }
+    }
+                                                                                        
     func numberOfPostsForUser(withUID uid: String, completion: @escaping (Int) -> ()) {
         Database.database().reference().child("posts").child(uid).observeSingleEvent(of: .value) { (snapshot) in
             if let dictionaries = snapshot.value as? [String: Any] {

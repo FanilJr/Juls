@@ -135,14 +135,14 @@ class ProfileViewController: UIViewController {
     
     private func setupWillAppear() {
         let height = tabBarController?.tabBar.frame.height
-        if tabBarController?.tabBar.frame.origin.y != cgfloatTabBar {
+        if self.tabBarController?.tabBar.frame.origin.y != self.cgfloatTabBar {
             UIView.animate(withDuration: 0.3) {
                 self.tabBarController?.tabBar.frame.origin.y -= height!
             }
         }
-        navigationController?.hidesBarsOnSwipe = false
-        tabBarController?.tabBar.isHidden = false
-        navigationController?.setNavigationBarHidden(false, animated: false)
+        self.navigationController?.hidesBarsOnSwipe = false
+        self.tabBarController?.tabBar.isHidden = false
+        self.navigationController?.setNavigationBarHidden(false, animated: false)
     }
     
     @objc func didTapRefresh() {
@@ -216,18 +216,19 @@ extension ProfileViewController {
     
     func fetchUser() {
         let uid = userId ?? (Auth.auth().currentUser?.uid ?? "")
+        
         Database.database().fetchUser(withUID: uid) { user in
-            self.user = user
-            self.header?.user = user
-            self.loadDatabase()
-            self.imageBack.loadImage(urlString: user.picture)
-            self.fetchPostWithUserPost(user: user) { posts in
-                self.posts.removeAll()
-                self.posts = posts
-                self.posts.sort { p1, p2 in
-                    return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-                }
-                DispatchQueue.main.async {
+            DispatchQueue.main.async {
+                self.user = user
+                self.imageBack.loadImage(urlString: user.picture)
+                self.header?.user = user
+                self.loadDatabase()
+                self.fetchPostWithUserPost(user: user) { posts in
+                    self.posts.removeAll()
+                    self.posts = posts
+                    self.posts.sort { p1, p2 in
+                        return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+                    }
                     self.collectionView.reloadData()
                 }
             }
@@ -238,40 +239,44 @@ extension ProfileViewController {
         let uid = userId ?? (Auth.auth().currentUser?.uid ?? "")
         
         Database.database().numberOfPostsForUser(withUID: uid) { number in
-            self.postsCount = number
+            DispatchQueue.main.async {
+                self.postsCount = number
+            }
         }
         Database.database().numberOfFollowingForUser(withUID: uid) { number in
-            self.iFollowUsers = number
+            DispatchQueue.main.async {
+                self.iFollowUsers = number
+            }
         }
         Database.database().numberOfFollowersForUser(withUID: uid) { number in
-            self.followMeUsers = number
+            DispatchQueue.main.async {
+                self.followMeUsers = number
+            }
         }
     }
     
     func fetchPostWithUserPost(user: User, completion: @escaping ([Post]) -> ()) {
         let ref = Database.database().reference().child("posts").child(user.uid)
         var posts = [Post]()
-        DispatchQueue.main.async {
-            ref.observeSingleEvent(of: .value, with: { snapshot in
-                self.collectionView.refreshControl?.endRefreshing()
-                guard let dictionaries = snapshot.value as? [String: Any] else { return }
-                dictionaries.forEach { key, value in
-                    guard let dictionary = value as? [String: Any] else { return }
-                    var post = Post(user: user, dictionary: dictionary)
-                    post.id = key
-                    guard let uid = Auth.auth().currentUser?.uid else { return }
-                    Database.database().reference().child("likes").child(key).child(uid).observeSingleEvent(of: .value, with: { snapshot in
-                        if let value = snapshot.value as? Int, value == 1 {
-                            post.hasLiked = true
-                        } else {
-                            post.hasLiked = false
-                        }
-                        posts.append(post)
-                        completion(posts)
-                    })
-                }
-            })
-        }
+        ref.observeSingleEvent(of: .value, with: { snapshot in
+            self.collectionView.refreshControl?.endRefreshing()
+            guard let dictionaries = snapshot.value as? [String: Any] else { return }
+            dictionaries.forEach { key, value in
+                guard let dictionary = value as? [String: Any] else { return }
+                var post = Post(user: user, dictionary: dictionary)
+                post.id = key
+                guard let uid = Auth.auth().currentUser?.uid else { return }
+                Database.database().reference().child("likes").child(key).child(uid).observeSingleEvent(of:.value, with: { snapshot in
+                    if let value = snapshot.value as? Int, value == 1 {
+                        post.hasLiked = true
+                    } else {
+                        post.hasLiked = false
+                    }
+                    posts.append(post)
+                    completion(posts)
+                })
+            }
+        })
     }
     
     func saveChanges() {
@@ -328,13 +333,13 @@ extension ProfileViewController {
         
         guard let postImage = messagePostViewController.customImage.image else { return }
         guard let caption = messagePostViewController.customTextfield.text else { return }
+        
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        let userPostRef = Database.database().reference().child("posts").child(uid)
+            
+        let ref = userPostRef.childByAutoId()
+        let values = ["imageUrl": imageUrl, "caption": caption, "imageWidth": postImage.size.width, "imageHeight": postImage.size.height, "creationDate": Date().timeIntervalSince1970] as [String : Any]
         DispatchQueue.main.async {
-            guard let uid = Auth.auth().currentUser?.uid else { return }
-            let userPostRef = Database.database().reference().child("posts").child(uid)
-            
-            let ref = userPostRef.childByAutoId()
-            let values = ["imageUrl": imageUrl, "caption": caption, "imageWidth": postImage.size.width, "imageHeight": postImage.size.height, "creationDate": Date().timeIntervalSince1970] as [String : Any]
-            
             ref.updateChildValues(values) { error, ref in
                 if let error {
                     print("Error", error)
@@ -660,7 +665,7 @@ extension ProfileViewController: UICollectionViewDataSource {
         case 1:
             let postVC = PostTableViewController()
             postVC.post = posts[indexPath.row]
-            navigationController?.pushViewController(postVC, animated: true)
+            self.navigationController?.pushViewController(postVC, animated: true)
         default:
             print(indexPath.section)
         }
