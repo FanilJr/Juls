@@ -91,6 +91,7 @@ class HomeViewController: UIViewController {
         Database.database().fetchUser(withUID: userId) { user in
             self.user = user
             self.imageBack.loadImage(urlString: user.picture)
+            print(user.username)
         }
     }
     
