@@ -33,7 +33,7 @@ class NewsListController: UIViewController {
     }()
     
     private lazy var tableView: UITableView = {
-        let tableView = UITableView(frame: .zero, style: .insetGrouped)
+        let tableView = UITableView(frame: .zero, style: .grouped)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
         tableView.refreshControl = refreshControle
@@ -43,12 +43,12 @@ class NewsListController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = .systemBackground
         setupDidLoad()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        navigationController?.hidesBarsOnSwipe = true
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -57,7 +57,9 @@ class NewsListController: UIViewController {
     }
     
     private func setupDidLoad() {
-        navigationItem.titleView = juls
+        self.title = "Новости"
+        self.navigationController?.navigationBar.prefersLargeTitles = true
+        self.navigationItem.largeTitleDisplayMode = .automatic
         
         refreshControle.attributedTitle = NSAttributedString(string: "Обновление")
         refreshControle.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
@@ -86,21 +88,13 @@ class NewsListController: UIViewController {
     }
     
     func layout() {
-        [background, activityView,tableView].forEach { view.addSubview($0) }
+        [tableView].forEach { view.addSubview($0) }
         
         NSLayoutConstraint.activate([
-            background.topAnchor.constraint(equalTo: view.topAnchor),
-            background.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            background.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            background.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            activityView.centerXAnchor.constraint(equalTo: background.centerXAnchor),
-            activityView.centerYAnchor.constraint(equalTo: background.centerYAnchor),
-            
-            tableView.topAnchor.constraint(equalTo: background.topAnchor),
-            tableView.leadingAnchor.constraint(equalTo: background.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: background.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: background.bottomAnchor)
+            tableView.topAnchor.constraint(equalTo: view.topAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
 }

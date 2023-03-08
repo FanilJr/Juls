@@ -26,14 +26,37 @@ class HomeTableViewCell: UITableViewCell {
         return imageView
     }()
     
+    lazy var whiteView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = .systemGray6
+        view.layer.cornerRadius = 20
+        view.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        view.clipsToBounds = true
+        return view
+    }()
+    
     lazy var postImage: CustomImageView = {
         let imageView = CustomImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.backgroundColor = .gray
         imageView.layer.cornerRadius = 20
+        imageView.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.clipsToBounds = true
         return imageView
+    }()
+    
+    lazy var containerView: UIView = {
+        let view = UIView()
+        view.clipsToBounds = true
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.layer.cornerRadius = 20
+        view.layer.shadowColor = UIColor.darkGray.cgColor
+        view.layer.shadowOffset = CGSize(width: 10, height: 10)
+        view.layer.shadowRadius = 17
+        view.layer.shadowOpacity = 1
+        return view
     }()
     
     var blure: UIVisualEffectView = {
@@ -59,8 +82,8 @@ class HomeTableViewCell: UITableViewCell {
     lazy var descriptionText: UILabel = {
         let name = UILabel()
         name.numberOfLines = 0
-        name.textColor = UIColor.createColor(light: .white, dark: .white)
-        name.shadowColor = .black
+        name.textColor = UIColor.createColor(light: .black, dark: .white)
+        name.shadowColor = UIColor.createColor(light: .white, dark: .black)
         name.font = .systemFont(ofSize: 14, weight: .thin)
         name.shadowOffset = CGSize(width: 1, height: 1)
         name.layer.shadowOpacity = 1
@@ -75,7 +98,7 @@ class HomeTableViewCell: UITableViewCell {
         let name = UILabel()
         name.font = UIFont.systemFont(ofSize: 12, weight: .light)
         name.translatesAutoresizingMaskIntoConstraints = false
-        name.textColor = .gray
+        name.textColor = UIColor.createColor(light: .black, dark: .white)
         name.backgroundColor = .clear
         return name
     }()
@@ -84,12 +107,24 @@ class HomeTableViewCell: UITableViewCell {
         let name = UILabel()
         name.font = UIFont.systemFont(ofSize: 13, weight: .light)
         name.translatesAutoresizingMaskIntoConstraints = false
-        name.textColor = .gray
+        name.textColor = .systemGray
         name.text = "Комментарии"
         let gesture = UITapGestureRecognizer()
         gesture.addTarget(self, action: #selector(tapComment))
         name.addGestureRecognizer(gesture)
         name.isUserInteractionEnabled = true
+        name.backgroundColor = .clear
+        return name
+    }()
+    
+    lazy var likeCount: UILabel = {
+        let name = UILabel()
+        name.textColor = UIColor.createColor(light: .systemGray5, dark: .white)
+        name.shadowColor = UIColor.createColor(light: .black, dark: .gray)
+        name.font = .systemFont(ofSize: 15, weight: .bold)
+        name.shadowOffset = CGSize(width: 1, height: 1)
+        name.clipsToBounds = true
+        name.translatesAutoresizingMaskIntoConstraints = false
         name.backgroundColor = .clear
         return name
     }()
@@ -131,7 +166,7 @@ class HomeTableViewCell: UITableViewCell {
     }
     
     func layout() {
-        [authorImage, nameAuthor, postImage, commentButton, likeButton, descriptionText, datePost].forEach { contentView.addSubview($0) }
+        [containerView,authorImage, nameAuthor, postImage, whiteView, commentButton, likeButton,likeCount, descriptionText,commentCountLabel, datePost].forEach { contentView.addSubview($0) }
         
         NSLayoutConstraint.activate([
             authorImage.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10),
@@ -142,10 +177,21 @@ class HomeTableViewCell: UITableViewCell {
             nameAuthor.centerYAnchor.constraint(equalTo: authorImage.centerYAnchor),
             nameAuthor.leadingAnchor.constraint(equalTo: authorImage.trailingAnchor,constant: 10),
             
+            containerView.topAnchor.constraint(equalTo: postImage.topAnchor),
+            containerView.heightAnchor.constraint(equalTo: postImage.heightAnchor),
+            containerView.widthAnchor.constraint(equalTo: postImage.widthAnchor),
+            containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 3),
+            containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -3),
+            
             postImage.topAnchor.constraint(equalTo: authorImage.bottomAnchor,constant: 10),
-            postImage.heightAnchor.constraint(lessThanOrEqualToConstant: 600),
+            postImage.heightAnchor.constraint(lessThanOrEqualToConstant: 500),
             postImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 5),
             postImage.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -5),
+            
+            whiteView.topAnchor.constraint(equalTo: postImage.bottomAnchor),
+            whiteView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 5),
+            whiteView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -5),
+            whiteView.bottomAnchor.constraint(equalTo: datePost.bottomAnchor,constant: 15),
             
             commentButton.topAnchor.constraint(equalTo: postImage.bottomAnchor,constant: 10),
             commentButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
@@ -157,19 +203,31 @@ class HomeTableViewCell: UITableViewCell {
             likeButton.heightAnchor.constraint(equalToConstant: 30),
             likeButton.widthAnchor.constraint(equalToConstant: 30),
             
-            descriptionText.topAnchor.constraint(equalTo: likeButton.bottomAnchor,constant: 20),
+            likeCount.centerYAnchor.constraint(equalTo: likeButton.centerYAnchor),
+            likeCount.leadingAnchor.constraint(equalTo: likeButton.trailingAnchor,constant: 10),
+            
+            descriptionText.topAnchor.constraint(equalTo: commentButton.bottomAnchor,constant: 10),
             descriptionText.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
             descriptionText.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             
-            datePost.topAnchor.constraint(equalTo: descriptionText.bottomAnchor,constant: 10),
+            commentCountLabel.topAnchor.constraint(equalTo: descriptionText.bottomAnchor,constant: 10),
+            commentCountLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
+            
+            datePost.topAnchor.constraint(equalTo: commentCountLabel.bottomAnchor,constant: 5),
             datePost.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
-            datePost.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -20),
+            datePost.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -25)
         ])
     }
     
     func configureHomeTable(post: Post?) {
         guard let postImageUrl = post?.imageUrl else { return }
         guard let authorImageUrl = post?.user.picture else { return }
+        guard let likes = post?.likes else { return }
+        guard let comments = post?.comments else { return }
+        
+        self.likeCount.text = "\(likes)"
+        self.commentCountLabel.text = "Комментарии (\(comments))"
+        
         postImage.loadImage(urlString: postImageUrl)
         authorImage.loadImage(urlString: authorImageUrl)
 

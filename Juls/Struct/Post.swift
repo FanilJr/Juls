@@ -17,7 +17,7 @@ struct Post {
     var hasLiked = true
     
     var likes: Int = 0
-    var likedByCurrentUser = false
+    var comments: Int = 0
     
     init(user: User, dictionary: [String: Any]) {
         self.user = user

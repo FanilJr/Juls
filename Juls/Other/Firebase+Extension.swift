@@ -111,6 +111,70 @@ extension Database {
         }
     }
     
+    func fetchPost(withUID uid: String, postId: String, completion: @escaping (Post) -> (), withCancel cancel: ((Error) -> ())? = nil) {
+        guard let currentLoggedInUser = Auth.auth().currentUser?.uid else { return }
+        
+        let ref = Database.database().reference().child("posts").child(uid).child(postId)
+        
+        ref.observeSingleEvent(of: .value, with: { (snapshot) in
+            
+            guard let postDictionary = snapshot.value as? [String: Any] else { return }
+            
+            Database.database().fetchUser(withUID: uid, completion: { (user) in
+                var post = Post(user: user, dictionary: postDictionary)
+                post.id = postId
+                
+                //check likes
+                Database.database().reference().child("likes").child(postId).child(currentLoggedInUser).observeSingleEvent(of: .value, with: { (snapshot) in
+                    if let value = snapshot.value as? Int, value == 1 {
+                        post.hasLiked = true
+                    } else {
+                        post.hasLiked = false
+                    }
+                    
+                    Database.database().numberOfLikesForPost(withPostId: postId, completion: { (count) in
+                        post.likes = count
+                        
+                        Database.database().fetchCommetsCount(withPostId: postId) { count in
+                            post.comments = count
+                            completion(post)
+                        }
+                    })
+                    
+                }, withCancel: { (err) in
+                    print("Failed to fetch like info for post:", err)
+                    cancel?(err)
+                })
+            })
+        })
+    }
+    
+    func fetchAllPosts(withUID uid: String, completion: @escaping ([Post]) -> (), withCancel cancel: ((Error) -> ())?) {
+        let ref = Database.database().reference().child("posts").child(uid)
+        
+        ref.observeSingleEvent(of: .value, with: { (snapshot) in
+            guard let dictionaries = snapshot.value as? [String: Any] else {
+                completion([])
+                return
+            }
+
+            var posts = [Post]()
+
+            dictionaries.forEach({ (postId, value) in
+                Database.database().fetchPost(withUID: uid, postId: postId, completion: { (post) in
+                    posts.append(post)
+                    
+                    if posts.count == dictionaries.count {
+                        completion(posts)
+                    }
+                })
+            })
+        }) { (err) in
+            print("Failed to fetch posts:", err)
+            cancel?(err)
+        }
+    }
+    
     func createPost(withImage image: UIImage, caption: String, completion: @escaping (Error?) -> ()) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         

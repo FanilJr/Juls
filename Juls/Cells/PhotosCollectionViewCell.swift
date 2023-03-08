@@ -21,6 +21,7 @@ class PhotosCollectionViewCell: UICollectionViewCell {
     let image: CustomImageView = {
         let image = CustomImageView()
         image.contentMode = .scaleAspectFill
+        image.backgroundColor = .systemGray
         image.translatesAutoresizingMaskIntoConstraints = false
         image.clipsToBounds = true
         return image
@@ -38,14 +39,9 @@ class PhotosCollectionViewCell: UICollectionViewCell {
     
     private func setupCell() {
         
-        [blureForCell, image].forEach { addSubview($0) }
+        [image].forEach { addSubview($0) }
         
         NSLayoutConstraint.activate([
-            blureForCell.topAnchor.constraint(equalTo: topAnchor),
-            blureForCell.leadingAnchor.constraint(equalTo: leadingAnchor),
-            blureForCell.trailingAnchor.constraint(equalTo: trailingAnchor),
-            blureForCell.bottomAnchor.constraint(equalTo: bottomAnchor),
-            
             image.topAnchor.constraint(equalTo: topAnchor),
             image.leadingAnchor.constraint(equalTo: leadingAnchor),
             image.trailingAnchor.constraint(equalTo: trailingAnchor),
@@ -56,8 +52,8 @@ class PhotosCollectionViewCell: UICollectionViewCell {
     }
     
     func configureCell(post: Post?) {
-        guard let imageURL = post?.imageUrl else { return }
         DispatchQueue.main.async {
+            guard let imageURL = post?.imageUrl else { return }
             self.image.loadImage(urlString: imageURL)
         }
     }

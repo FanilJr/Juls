@@ -37,12 +37,13 @@ class ArticleViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        navigationController?.hidesBarsOnSwipe = true
     }
     
     private func setupDidLoad() {
-        navigationItem.titleView = juls
+        view.backgroundColor = .white
+        title = articles.title
         layout()
+        self.navigationItem.largeTitleDisplayMode = .never
         tableView.dataSource = self
         tableView.delegate = self
     }

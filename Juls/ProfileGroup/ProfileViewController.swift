@@ -32,25 +32,6 @@ class ProfileViewController: UIViewController {
     let systemSoundID: SystemSoundID = 1016
     let systemSoundID2: SystemSoundID = 1018
     
-    lazy var blureForCell: UIVisualEffectView = {
-        let bluereEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
-        let blure = UIVisualEffectView()
-        blure.effect = bluereEffect
-        blure.translatesAutoresizingMaskIntoConstraints = false
-        blure.clipsToBounds = true
-        return blure
-    }()
-    
-    lazy var imageBack: CustomImageView = {
-        let imageView = CustomImageView()
-        imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
-        imageView.backgroundColor = .gray
-        imageView.layer.cornerRadius = 50/2
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        return imageView
-    }()
-    
     private let spinnerView: UIActivityIndicatorView = {
         let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .large)
         activityView.color = .white
@@ -88,8 +69,6 @@ class ProfileViewController: UIViewController {
     private lazy var collectionView: UICollectionView = {
         let flowLayout = CollectionViewFlowLayout()
         flowLayout.scrollDirection = .vertical
-        flowLayout.minimumLineSpacing = 1.0
-        flowLayout.minimumInteritemSpacing = 1.0
         
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: flowLayout)
         collectionView.dataSource = self
@@ -114,33 +93,41 @@ class ProfileViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        fetchUser()
+        view.backgroundColor = .systemGray6
         setupDidLoad()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        navigationController?.hidesBarsOnSwipe = false
         setupWillAppear()
     }
     
     private func setupDidLoad() {
         cgfloatTabBar = tabBarController?.tabBar.frame.origin.y
         tabBarController?.tabBar.isHidden = false
+        
+        self.navigationController?.navigationBar.prefersLargeTitles = true
+        self.navigationItem.largeTitleDisplayMode = .automatic
+        
         navigationController?.setNavigationBarHidden(false, animated: false)
         refreshController.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
         setupTableView()
         imagePicker.delegate = self
         messagePostViewController.delegatePost = self
+        fetchUser()
+        self.posts.sort { p1, p2 in
+            return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+        }
     }
     
     private func setupWillAppear() {
-        let height = tabBarController?.tabBar.frame.height
+        let height = self.tabBarController?.tabBar.frame.height
         if self.tabBarController?.tabBar.frame.origin.y != self.cgfloatTabBar {
             UIView.animate(withDuration: 0.3) {
                 self.tabBarController?.tabBar.frame.origin.y -= height!
             }
         }
-        self.navigationController?.hidesBarsOnSwipe = false
         self.tabBarController?.tabBar.isHidden = false
         self.navigationController?.setNavigationBarHidden(false, animated: false)
     }
@@ -148,6 +135,64 @@ class ProfileViewController: UIViewController {
     @objc func didTapRefresh() {
         self.fetchUser()
         print("refresh Profile")
+    }
+    
+    func setupNavigationButton(user: User) {
+        
+        let plusButton: UIBarButtonItem = {
+            let barButtonMenu = UIMenu(title: "Выберите действие", children: [
+                UIAction(title: NSLocalizedString("Создать пост", comment: ""), image: UIImage(systemName: "square.and.pencil"), handler: { _ in
+                    self.addPostInCollection()
+                })
+            ])
+            let plus = UIBarButtonItem()
+            plus.image = UIImage(systemName: "plus")
+            plus.tintColor = UIColor.createColor(light: .black, dark: .white)
+            plus.menu = barButtonMenu
+            return plus
+        }()
+        
+        let ellipsisButton: UIBarButtonItem = {
+            let barButtonMenu = UIMenu(title: "Выберите действие", children: [
+                UIAction(title: NSLocalizedString("Изменить аватар", comment: ""), image: UIImage(systemName: "person.fill.viewfinder"), handler: { _ in
+                    self.presentImagePickerForUser()
+                }),
+                UIAction(title: NSLocalizedString("Изменить статус", comment: ""), image: UIImage(systemName: "heart.text.square.fill"), handler: { _ in
+                    self.addStatus()
+                }),
+                UIAction(title: NSLocalizedString("Выйти из аккаунта", comment: ""), image: UIImage(systemName: "hands.sparkles.fill"), attributes: .destructive, handler: { _ in
+                    self.logOut()
+                })
+            ])
+            
+            let ellipsis = UIBarButtonItem()
+            ellipsis.image = UIImage(systemName: "ellipsis")
+            ellipsis.tintColor = UIColor.createColor(light: .black, dark: .white)
+            ellipsis.menu = barButtonMenu
+            return ellipsis
+        }()
+        
+        let messageButton = UIBarButtonItem(image: UIImage(systemName: "bubble.left.and.bubble.right.fill"), style: .plain, target: self, action: #selector(noname))
+        messageButton.tintColor = UIColor.createColor(light: .black, dark: .white)
+        
+        let starButton = UIBarButtonItem(image: UIImage(systemName: "star"), style: .plain, target: self, action: #selector(addFavorites))
+        starButton.tintColor = UIColor.createColor(light: .black, dark: .white)
+        
+        if user.uid == Auth.auth().currentUser?.uid {
+            navigationItem.rightBarButtonItems = [ellipsisButton,plusButton]
+            navigationItem.leftBarButtonItem = messageButton
+        } else {
+            navigationItem.rightBarButtonItem = starButton
+        }
+    }
+    
+    @objc func noname() {
+        let messageVC = MessagesViewController()
+        navigationController?.pushViewController(messageVC, animated: true)
+    }
+    
+    @objc func addFavorites() {
+        print("add Favorites")
     }
 
     func waitingSpinnerEnable(_ active: Bool) {
@@ -159,28 +204,13 @@ class ProfileViewController: UIViewController {
     }
         
     func setupTableView() {
-        [background, imageBack, blureForCell, collectionView, spinnerView].forEach({ view.addSubview($0) })
+        [collectionView, spinnerView].forEach({ view.addSubview($0) })
             
         NSLayoutConstraint.activate([
-            background.topAnchor.constraint(equalTo: view.topAnchor),
-            background.leftAnchor.constraint(equalTo: view.leftAnchor),
-            background.rightAnchor.constraint(equalTo: view.rightAnchor),
-            background.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            imageBack.topAnchor.constraint(equalTo: view.topAnchor),
-            imageBack.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            imageBack.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            imageBack.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            blureForCell.topAnchor.constraint(equalTo: imageBack.topAnchor),
-            blureForCell.leadingAnchor.constraint(equalTo: imageBack.leadingAnchor),
-            blureForCell.trailingAnchor.constraint(equalTo: imageBack.trailingAnchor),
-            blureForCell.bottomAnchor.constraint(equalTo: imageBack.bottomAnchor),
-                
-            collectionView.topAnchor.constraint(equalTo: background.topAnchor),
-            collectionView.leftAnchor.constraint(equalTo: background.leftAnchor),
-            collectionView.rightAnchor.constraint(equalTo: background.rightAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: background.bottomAnchor),
+            collectionView.topAnchor.constraint(equalTo: view.topAnchor),
+            collectionView.leftAnchor.constraint(equalTo: view.leftAnchor),
+            collectionView.rightAnchor.constraint(equalTo: view.rightAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
             spinnerView.topAnchor.constraint(equalTo: collectionView.topAnchor,constant: 300),
             spinnerView.centerXAnchor.constraint(equalTo: view.centerXAnchor)
@@ -220,16 +250,19 @@ extension ProfileViewController {
         Database.database().fetchUser(withUID: uid) { user in
             DispatchQueue.main.async {
                 self.user = user
-                self.imageBack.loadImage(urlString: user.picture)
+                self.title = user.username
+                self.setupNavigationButton(user: user)
                 self.header?.user = user
                 self.loadDatabase()
-                self.fetchPostWithUserPost(user: user) { posts in
-                    self.posts.removeAll()
+                Database.database().fetchAllPosts(withUID: uid) { posts in
+                    self.collectionView.refreshControl?.endRefreshing()
                     self.posts = posts
                     self.posts.sort { p1, p2 in
                         return p1.creationDate.compare(p2.creationDate) == .orderedDescending
                     }
                     self.collectionView.reloadData()
+                } withCancel: { error in
+                    print(error)
                 }
             }
         }
@@ -239,44 +272,14 @@ extension ProfileViewController {
         let uid = userId ?? (Auth.auth().currentUser?.uid ?? "")
         
         Database.database().numberOfPostsForUser(withUID: uid) { number in
-            DispatchQueue.main.async {
-                self.postsCount = number
-            }
+            self.postsCount = number
         }
         Database.database().numberOfFollowingForUser(withUID: uid) { number in
-            DispatchQueue.main.async {
-                self.iFollowUsers = number
-            }
+            self.iFollowUsers = number
         }
         Database.database().numberOfFollowersForUser(withUID: uid) { number in
-            DispatchQueue.main.async {
-                self.followMeUsers = number
-            }
+            self.followMeUsers = number
         }
-    }
-    
-    func fetchPostWithUserPost(user: User, completion: @escaping ([Post]) -> ()) {
-        let ref = Database.database().reference().child("posts").child(user.uid)
-        var posts = [Post]()
-        ref.observeSingleEvent(of: .value, with: { snapshot in
-            self.collectionView.refreshControl?.endRefreshing()
-            guard let dictionaries = snapshot.value as? [String: Any] else { return }
-            dictionaries.forEach { key, value in
-                guard let dictionary = value as? [String: Any] else { return }
-                var post = Post(user: user, dictionary: dictionary)
-                post.id = key
-                guard let uid = Auth.auth().currentUser?.uid else { return }
-                Database.database().reference().child("likes").child(key).child(uid).observeSingleEvent(of:.value, with: { snapshot in
-                    if let value = snapshot.value as? Int, value == 1 {
-                        post.hasLiked = true
-                    } else {
-                        post.hasLiked = false
-                    }
-                    posts.append(post)
-                    completion(posts)
-                })
-            }
-        })
     }
     
     func saveChanges() {
@@ -364,6 +367,64 @@ extension ProfileViewController {
                 }
             }
         }
+    }
+    
+    func addStatus() {
+        let alert = UIAlertController(title: "Введите статус", message: "", preferredStyle: .alert)
+        let alertOK = UIAlertAction(title: "Ok", style: .default)  { [self] _ in
+            let text = alert.textFields?.first?.text
+            header?.statusLabel.text = text
+            AudioServicesPlaySystemSound(self.systemSoundID)
+            if let urlText = header?.statusLabel.text {
+                DispatchQueue.main.async {
+                    Database.database().reference().child("users").child(Auth.auth().currentUser?.uid ?? "").updateChildValues(["status" : urlText]) { error, ref in
+                        if let error {
+                            print(error)
+                            return
+                        }
+                        print("succes download Status in Firebase Library")
+                    }
+                }
+            }
+        }
+        let alertCancel = UIAlertAction(title: "Cancel", style: .destructive)
+        alert.addTextField()
+        [alertOK,alertCancel].forEach { alert.addAction($0) }
+        present(alert, animated: true)
+    }
+    
+    func presentImagePickerForUser() {
+        print("Проверка presentImage")
+        currentImage = header?.userImage
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
+            self.present(self.imagePicker, animated: true)
+        })
+    }
+    
+    func logOut() {
+        print("Выход из аккаунта")
+        let alert = UIAlertController(title: "Выход из аккаунта", message: "Вы уверены?", preferredStyle: .alert)
+        let alertOK = UIAlertAction(title: "Выйти", style: .destructive)  { [self] _ in
+            do {
+                try Auth.auth().signOut()
+                viewModel.send(.showLoginVc)
+            } catch {
+                print("error")
+            }
+        }
+        let alertCancel = UIAlertAction(title: "Отмена", style: .default)
+        [alertOK,alertCancel].forEach { alert.addAction($0) }
+        present(alert, animated: true)
+    }
+    
+    func addPostInCollection() {
+        if let sheet = messagePostViewController.sheetPresentationController {
+            sheet.detents = [.medium(), .large()]
+            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
+            sheet.largestUndimmedDetentIdentifier = .medium
+            sheet.prefersGrabberVisible = true
+        }
+        present(messagePostViewController, animated: true)
     }
 }
 
@@ -488,77 +549,14 @@ extension ProfileViewController: MessagePostDelegate {
     }
 }
 
-extension ProfileViewController: StretchyDelegate {
-    
-    func goMessage() {
-        let messageVC = MessagesViewController()
-        navigationController?.pushViewController(messageVC, animated: true)
-    }
-    
-    func backUp() {
-        navigationController?.popViewController(animated: true)
-    }
-    
-    func addStatus() {
-        let alert = UIAlertController(title: "Введите статус", message: "", preferredStyle: .alert)
-        let alertOK = UIAlertAction(title: "Ok", style: .default)  { [self] _ in
-            let text = alert.textFields?.first?.text
-            header?.statusLabel.text = text
-            AudioServicesPlaySystemSound(self.systemSoundID)
-            if let urlText = header?.statusLabel.text {
-                DispatchQueue.main.async {
-                    Database.database().reference().child("users").child(Auth.auth().currentUser?.uid ?? "").updateChildValues(["status" : urlText]) { error, ref in
-                        if let error {
-                            print(error)
-                            return
-                        }
-                        print("succes download Status in Firebase Library")
-                    }
-                }
-            }
-        }
-        let alertCancel = UIAlertAction(title: "Cancel", style: .destructive)
-        alert.addTextField()
-        [alertOK,alertCancel].forEach { alert.addAction($0) }
-        present(alert, animated: true)
-    }
-    
-    func presentImagePickerForUser() {
-        print("Проверка presentImage")
-        currentImage = header?.userImage
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
-            self.present(self.imagePicker, animated: true)
-        })
-    }
-    
-    func logOut() {
-        print("Выход из аккаунта")
-        let alert = UIAlertController(title: "Выход из аккаунта", message: "Вы уверены?", preferredStyle: .alert)
-        let alertOK = UIAlertAction(title: "Выйти", style: .destructive)  { [self] _ in
-            do {
-                try Auth.auth().signOut()
-                viewModel.send(.showLoginVc)
-            } catch {
-                print("error")
-            }
-        }
-        let alertCancel = UIAlertAction(title: "Отмена", style: .default)
-        [alertOK,alertCancel].forEach { alert.addAction($0) }
-        present(alert, animated: true)
-    }
-    
-    func addPostInCollection() {
-        if let sheet = messagePostViewController.sheetPresentationController {
-            sheet.detents = [.medium(), .large()]
-            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
-            sheet.largestUndimmedDetentIdentifier = .medium
-            sheet.prefersGrabberVisible = true
-        }
-        present(messagePostViewController, animated: true)
-    }
-}
-
 extension ProfileViewController: MainCollectionDelegate {
+    func hideCell(for cell: MainCollectionViewCell) {
+        guard let indexPath = collectionView.indexPath(for: cell) else { return }
+        UIView.animate(withDuration: 0.3) {
+            print(indexPath)
+        }
+    }
+    
     
     func tapPosts(for cell: MainCollectionViewCell) {
         guard let indexPath = collectionView.indexPath(for: cell) else { return }
@@ -629,7 +627,7 @@ extension ProfileViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         switch indexPath.section {
-            
+
         case 0:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "MainCollectionViewCell", for: indexPath) as! MainCollectionViewCell
             cell.configureMain(user: self.user)
@@ -637,7 +635,7 @@ extension ProfileViewController: UICollectionViewDataSource {
             cell.iFollowButton.setTitle("\(iFollowUsers ?? 0)", for: .normal)
             cell.followMeButton.setTitle("\(followMeUsers ?? 0)", for: .normal)
             cell.delegate = self
-            cell.backgroundColor = .clear
+            cell.backgroundColor = .systemGray2
             return cell
         case 1:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotosCollectionViewCell", for: indexPath) as! PhotosCollectionViewCell
@@ -653,7 +651,6 @@ extension ProfileViewController: UICollectionViewDataSource {
         switch indexPath.section {
         case 0:
             header = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "StretchyCollectionHeaderView", for: indexPath) as? StretchyCollectionHeaderView
-            header?.delegate = self
             return header!
         default:
             return UICollectionReusableView()
@@ -666,6 +663,7 @@ extension ProfileViewController: UICollectionViewDataSource {
             let postVC = PostTableViewController()
             postVC.post = posts[indexPath.row]
             self.navigationController?.pushViewController(postVC, animated: true)
+            
         default:
             print(indexPath.section)
         }
@@ -673,29 +671,15 @@ extension ProfileViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         
-        var indexPaths = posts[indexPath.row]
             switch indexPath.section {
             case 1:
                 let configuration = UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
-                    let _ = UIAction(title: "Нравится",  image: UIImage(systemName: "heart")) { _ in
-                        //MARK: Работает но только в моем профиле
-                        let uid = self.user?.uid
-                        let values = [uid: indexPaths.hasLiked == true ? 0 : 1]
-                        DispatchQueue.main.async {
-                            Database.database().reference().child("likes").child(indexPaths.id ?? "").updateChildValues(values) { error, _ in
-                                if let error {
-                                    print(error)
-                                    return
-                                }
-                                print("successfully liked post")
-                                indexPaths.hasLiked = !indexPaths.hasLiked
-                            }
-                        }
-                    }
+                    
                     let shared = UIAction(title: "Поделится", image: UIImage(systemName:"square.and.arrow.up")) { _ in
                         let avc = UIActivityViewController(activityItems: [self.posts[indexPath.row].user.username as Any, self.posts[indexPath.row].message as Any], applicationActivities: nil)
                         self.present(avc, animated: true)
                     }
+                    
                     let remove = UIAction(title: "Удалить", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
                         let alert = UIAlertController(title: "", message: "Вы точно хотите удалить?", preferredStyle: .alert)
                         let removeAction = UIAlertAction(title: "Удалить", style: .destructive) { _ in
@@ -741,15 +725,11 @@ extension ProfileViewController: UICollectionViewDataSource {
             }
         })
     }
-    
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let contentOffsetY = scrollView.contentOffset.y
-        if contentOffsetY == 200 {
-        }
-    }
 }
 
 extension ProfileViewController: UICollectionViewDelegateFlowLayout {
+    
+    var spacing: CGFloat { return 3 }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         switch section {
@@ -769,10 +749,30 @@ extension ProfileViewController: UICollectionViewDelegateFlowLayout {
             let height = CGFloat(220)
             return CGSize(width: width, height: height)
         case 1:
-            let width = (view.frame.width - 3) / 3
+            let width = (view.frame.width - spacing * 4) / 3
             return CGSize(width: width, height: width)
         default:
             return CGSize()
         }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        
+        switch section {
+        case 0:
+            return UIEdgeInsets(top: spacing, left: spacing, bottom: spacing, right: spacing)
+        case 1:
+            return UIEdgeInsets(top: 0, left: spacing, bottom: spacing, right: spacing)
+        default:
+            return UIEdgeInsets()
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        return spacing
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return spacing
     }
 }

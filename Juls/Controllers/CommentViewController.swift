@@ -121,6 +121,7 @@ class CommentViewController: UIViewController {
         guard let postId = self.post?.id else { return }
         Database.database().fetchCommentsForPost(withId: postId) { comments in
             DispatchQueue.main.async {
+                self.comments.removeAll()
                 self.comments = comments
                 self.tableView.reloadData()
             }
@@ -129,7 +130,6 @@ class CommentViewController: UIViewController {
     
     private func setupWillAppear() {
         addObserver()
-        navigationController?.hidesBarsOnSwipe = true
         tabBarController?.tabBar.isHidden = true
     }
     
@@ -154,6 +154,7 @@ class CommentViewController: UIViewController {
                 return
             }
             print("success insert comment")
+            self.fetchCommentsPost()
         }
         textfield.text = ""
     }
@@ -228,6 +229,17 @@ class CommentViewController: UIViewController {
         ])
     }
     
+    func getAllKeys() {
+        guard let uid = post?.id else { return }
+        Database.database().reference().child("comments").child(uid).observeSingleEvent(of: .value) { snapshot in
+            snapshot.children.forEach { child in
+                let snap = child as! DataSnapshot
+                let key = snap.key
+                self.commentKeyArray.append(key)
+            }
+        }
+    }
+    
     static func showComment(_ viewController: UIViewController, post: Post?) {
         let ac = CommentViewController()
         ac.post = post
@@ -258,14 +270,14 @@ extension CommentViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         tableView.beginUpdates()
-        getAllKaysPost()
+        getAllKeys()
         if Auth.auth().currentUser?.uid == comments[indexPath.row].uid {
-            comments.remove(at: indexPath.row)
-            tableView.deleteRows(at: [indexPath], with: .fade)
             guard let uid = post?.id else { return }
-            print(post?.id as Any)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
                 Database.database().reference().child("comments").child(uid).child(self.commentKeyArray[indexPath.item]).removeValue()
+                print("remove",self.comments[indexPath.item].text)
+                self.comments.remove(at: indexPath.item)
+                self.tableView.deleteRows(at: [indexPath], with: .automatic)
             })
             tableView.endUpdates()
         } else {
@@ -275,17 +287,6 @@ extension CommentViewController: UITableViewDataSource {
             present(alertController, animated: true)
             tableView.endUpdates()
         }
-    }
-    
-    func getAllKaysPost() {
-        guard let uid = post?.id else { return }
-        Database.database().reference().child("comments").child(uid).observeSingleEvent(of: .value, with: { snapshot in
-            for child in snapshot.children {
-                let snap = child as! Firebase.DataSnapshot
-                let key = snap.key
-                self.commentKeyArray.insert(key, at: 0)
-            }
-        })
     }
 
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {

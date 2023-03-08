@@ -51,7 +51,7 @@ class MessagesViewController: UIViewController {
     
     private func setupDidLoad() {
         view.backgroundColor = .white
-        navigationItem.titleView = juls
+        title = "Сообщения"
         navigationItem.searchController = searchController
         layout()
         refreshControler.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)

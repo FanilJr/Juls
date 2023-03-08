@@ -11,14 +11,11 @@ import Firebase
 
 class PostTableViewController: UIViewController {
     
-    var post: Post? {
-        didSet {
-            fetchPost()
-        }
-    }
+    var post: Post?
     var juls = JulsView()
     var commentArray = [String]()
     var commentCount: Int?
+    var likeCount: Int?
     
     lazy var blureForCell: UIVisualEffectView = {
         let bluereEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
@@ -58,6 +55,8 @@ class PostTableViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        fetchPost()
+        view.backgroundColor = .systemGray
         setupDidLoad()
     }
     
@@ -72,14 +71,14 @@ class PostTableViewController: UIViewController {
     }
     
     private func setupDidLoad() {
-        navigationItem.titleView = juls
+        self.title = "Juls"
         layout()
         tableView.delegate = self
         tableView.dataSource = self
     }
     
     private func setupWillAppear() {
-        self.navigationController?.hidesBarsOnSwipe = true
+        self.navigationItem.largeTitleDisplayMode = .never
         let height = self.tabBarController?.tabBar.frame.height
         UIView.animate(withDuration: 0.3) {
             self.tabBarController?.tabBar.frame.origin.y += height!
@@ -93,37 +92,38 @@ class PostTableViewController: UIViewController {
         }
     }
     
+    
     func fetchPost() {
         guard let imageUrl = self.post?.imageUrl else { return }
-        DispatchQueue.main.async {
-            self.imageBack.loadImage(urlString: imageUrl)
-            Database.database().fetchCommetsCount(withPostId: self.post?.id ?? "") { count in
-                DispatchQueue.main.async {
-                    self.commentCount = count
-                    self.tableView.reloadData()
-                }
-            }
+        self.imageBack.loadImage(urlString: imageUrl)
+        Database.database().numberOfLikesForPost(withPostId: self.post?.id ?? "") { count in
+            self.likeCount = count
         }
+        Database.database().fetchCommetsCount(withPostId: self.post?.id ?? "") { count in
+            self.commentCount = count
+            self.tableView.reloadData()
+        }
+    }
+    
+    static func showPost(_ viewController: UIViewController, post: Post) {
+        let ac = PostTableViewController()
+        ac.post = post
+        viewController.navigationController?.pushViewController(ac, animated: true)
     }
 
     func layout() {
-        [background,imageBack,blureForCell,tableView].forEach { view.addSubview($0) }
+        [imageBack,blureForCell,tableView].forEach { view.addSubview($0) }
         
         NSLayoutConstraint.activate([
-            background.topAnchor.constraint(equalTo: view.topAnchor),
-            background.leftAnchor.constraint(equalTo: view.leftAnchor),
-            background.rightAnchor.constraint(equalTo: view.rightAnchor),
-            background.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
             imageBack.topAnchor.constraint(equalTo: view.topAnchor),
             imageBack.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             imageBack.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             imageBack.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            blureForCell.topAnchor.constraint(equalTo: imageBack.topAnchor),
-            blureForCell.leadingAnchor.constraint(equalTo: imageBack.leadingAnchor),
-            blureForCell.trailingAnchor.constraint(equalTo: imageBack.trailingAnchor),
-            blureForCell.bottomAnchor.constraint(equalTo: imageBack.bottomAnchor),
+            blureForCell.topAnchor.constraint(equalTo: view.topAnchor),
+            blureForCell.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            blureForCell.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            blureForCell.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.leftAnchor.constraint(equalTo: view.leftAnchor),
@@ -148,7 +148,6 @@ extension PostTableViewController: UITableViewDataSource {
         cell.selectionStyle = UITableViewCell.SelectionStyle.none
         cell.backgroundColor = .clear
         cell.delegate = self
-        cell.commentCountLabel.text = "Комментарии (\(commentCount ?? 0))"
         cell.configureTable(post: self.post)
         return cell
     }
@@ -161,21 +160,38 @@ extension PostTableViewController: UITableViewDataSource {
 extension PostTableViewController: CommentDelegate {
     
     func didTapLike(for cell: PostTableViewCell) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
         guard let indexPath = self.tableView.indexPath(for: cell) else { return }
         guard let postId = self.post?.id else { return }
         if var post = self.post {
-            guard let uid = Auth.auth().currentUser?.uid else { return }
-            let values = [uid: post.hasLiked == true ? 0 : 1]
-            Database.database().reference().child("likes").child(postId).updateChildValues(values) { [self] error, _ in
-                if let error {
-                    print(error)
-                    return
+            if post.hasLiked == false {
+            
+                let values = [uid : 1]
+                Database.database().reference().child("likes").child(postId).updateChildValues(values) { [self] error, _ in
+                    if let error {
+                        print(error)
+                        return
+                    }
+                    print("successfully liked post:", post.message)
+                    post.hasLiked = !post.hasLiked
+                    post.likes = post.likes + 1
+                    self.post = post
+                    print(post.likes)
+                    self.tableView.reloadRows(at: [indexPath], with: .automatic)
+                    self.fetchPost()
                 }
-                print("successfully liked post:", post.message)
-                post.hasLiked = !post.hasLiked
-                self.post = post
-                DispatchQueue.main.async {
-                    self.tableView.reloadRows(at: [indexPath], with: .fade)
+            } else {
+                Database.database().reference().child("likes").child(postId).child(uid).removeValue { (err, _) in
+                    if let err = err {
+                        print("Failed to unlike post:", err)
+                        return
+                    }
+                    post.hasLiked = !post.hasLiked
+                    post.likes = post.likes - 1
+                    self.post = post
+                    print(post.likes)
+                    self.tableView.reloadRows(at: [indexPath], with: .automatic)
+                    self.fetchPost()
                 }
             }
         }

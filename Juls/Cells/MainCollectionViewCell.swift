@@ -14,24 +14,19 @@ protocol MainCollectionDelegate: AnyObject {
     func getUsersIFollow()
     func getUsersFollowMe()
     func tapPosts(for cell: MainCollectionViewCell)
+    func hideCell(for cell: MainCollectionViewCell)
 }
 
 class MainCollectionViewCell: UICollectionViewCell {
     
-    var usersFollowMe = [String]()
-    var countUser = [String]()
-    var countFollowWithUser = [String]()
-    
     weak var delegate: MainCollectionDelegate?
     
-    lazy var blureForCell: UIVisualEffectView = {
-        let bluereEffect = UIBlurEffect(style: .systemUltraThinMaterialLight)
-        let blure = UIVisualEffectView()
-        blure.effect = bluereEffect
-        blure.translatesAutoresizingMaskIntoConstraints = false
-        blure.layer.cornerRadius = 14
-        blure.clipsToBounds = true
-        return blure
+    let background: UIImageView = {
+        let back = UIImageView()
+        back.image = UIImage(named: "back")
+        back.clipsToBounds = true
+        back.translatesAutoresizingMaskIntoConstraints = false
+        return back
     }()
     
     private lazy var info: UILabel = {
@@ -200,6 +195,16 @@ class MainCollectionViewCell: UICollectionViewCell {
         return button
     }()
     
+    private lazy var hideButton: UIButton = {
+        let button = UIButton()
+        button.setTitle("скрыть", for: .normal)
+        button.tintColor = UIColor.createColor(light: .black, dark: .white)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(hideCell), for: .touchUpInside)
+        button.showsMenuAsPrimaryAction = true
+        return button
+    }()
+    
     lazy var iFollowButton: UIButton = {
         let button = UIButton()
         button.setTitle("-", for: .normal)
@@ -236,10 +241,15 @@ class MainCollectionViewCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupCell()
+        self.layer.cornerRadius = 14
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    @objc func hideCell() {
+        delegate?.hideCell(for: self)
     }
     
     @objc func tapPosts() {
@@ -263,15 +273,9 @@ class MainCollectionViewCell: UICollectionViewCell {
     }
     
     func setupCell() {
-        [blureForCell,postsButton,iFollowButton,followMeButton,postsCount,iFollow,followMe,info,first,two,three,four, name,ageUser,statusLife,heightUser,editButton].forEach { addSubview($0) }
+        [postsButton,iFollowButton,followMeButton,postsCount,iFollow,followMe,info,first,two,three,four, name,ageUser,statusLife,heightUser,editButton].forEach { addSubview($0) }
         
         NSLayoutConstraint.activate([
-            
-            blureForCell.topAnchor.constraint(equalTo: topAnchor,constant: 5),
-            blureForCell.leadingAnchor.constraint(equalTo: leadingAnchor),
-            blureForCell.trailingAnchor.constraint(equalTo: trailingAnchor),
-            blureForCell.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -5),
-            
             postsButton.topAnchor.constraint(equalTo: topAnchor,constant: 10),
             postsButton.leadingAnchor.constraint(equalTo: leadingAnchor,constant: 80),
             postsButton.heightAnchor.constraint(equalToConstant: 30),

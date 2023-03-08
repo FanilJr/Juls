@@ -66,9 +66,9 @@ class FollowersUsersWithMeController: UIViewController {
         tableView.keyboardDismissMode = .onDrag
 
         checkFollowMeKeys(user: user!) { massive in
-            self.checkCountKeys(item: massive) { item in
-                self.ktoImennoKeys(item: item)
-                DispatchQueue.main.async {
+            DispatchQueue.main.async {
+                self.checkCountKeys(item: massive) { item in
+                    self.ktoImennoKeys(item: item)
                     self.tableView.reloadData()
                 }
             }
@@ -76,7 +76,6 @@ class FollowersUsersWithMeController: UIViewController {
     }
     
     private func setupWillAppear() {
-        navigationController?.hidesBarsOnSwipe = true
         searchController.searchBar.isHidden = false
         searchController.searchBar.resignFirstResponder()
         navigationItem.searchController = searchController
@@ -84,12 +83,12 @@ class FollowersUsersWithMeController: UIViewController {
     
     @objc func didTapRefresh() {
         
-        self.refreshControler.endRefreshing()
+        self.tableView.refreshControl?.endRefreshing()
         
         checkFollowMeKeys(user: user!) { massive in
-            self.checkCountKeys(item: massive) { item in
-                DispatchQueue.main.async {
-                    self.ktoImennoKeys(item: item)
+            DispatchQueue.main.async {
+                self.checkCountKeys(item: massive) { item in
+                self.ktoImennoKeys(item: item)
                 }
             }
         }
@@ -166,15 +165,29 @@ extension FollowersUsersWithMeController: UISearchBarDelegate {
 extension FollowersUsersWithMeController {
  
     func checkFollowMeKeys(user: User?, completion: @escaping ([String]) -> ()) {
-        dispatchMain.async {
-            guard let userId = user?.uid else { return }
-            let ref = Database.database().reference().child("following")
+        guard let userId = user?.uid else { return }
+        let ref = Database.database().reference().child("following")
+        ref.observeSingleEvent(of: .value, with: { snapshot in
+            guard let iFollowUsers = snapshot.value as? [String: Any] else { return }
+            iFollowUsers.forEach { key, value in
+                if key != userId {
+                    var massive = [String]()
+                    massive.append(key)
+                    completion(massive)
+                }
+            }
+        })
+    }
+    
+    func checkCountKeys(item: [String], completion: @escaping ([String]) -> ()) {
+        for i in item {
+            let ref = Database.database().reference().child("following").child(i)
             ref.observeSingleEvent(of: .value, with: { snapshot in
-                guard let iFollowUsers = snapshot.value as? [String: Any] else { return }
-                iFollowUsers.forEach { key, value in
-                    if key != userId {
+                guard let usersCountFollowMe = snapshot.value as? [String: Any] else { return }
+                usersCountFollowMe.forEach { key, value in
+                    if key == self.user?.uid {
                         var massive = [String]()
-                        massive.append(key)
+                        massive.append(i)
                         completion(massive)
                     }
                 }
@@ -182,47 +195,27 @@ extension FollowersUsersWithMeController {
         }
     }
     
-    func checkCountKeys(item: [String], completion: @escaping ([String]) -> ()) {
-        for i in item {
-            dispatchMain.async {
-                let ref = Database.database().reference().child("following").child(i)
-                ref.observeSingleEvent(of: .value, with: { snapshot in
-                    guard let usersCountFollowMe = snapshot.value as? [String: Any] else { return }
-                    usersCountFollowMe.forEach { key, value in
-                        if key == self.user?.uid {
-                            var massive = [String]()
-                            massive.append(i)
-                            completion(massive)
-                        }
-                    }
-                })
-            }
-        }
-    }
-    
     func ktoImennoKeys(item: [String]) {
         self.users = []
         self.filteredUsers = []
         for i in item {
-            dispatchMain.async {
-                let ref = Database.database().reference().child("users")
-                ref.observeSingleEvent(of: .value, with: { snapshot in
-                    
-                    guard let dictionaries = snapshot.value as? [String: Any] else { return }
-                    
-                    dictionaries.forEach { key, value in
-                        if key == i {
-                            guard let userDictionary = value as? [String: Any] else { return }
-                            let user = User(uid: key, dictionary: userDictionary)
-                            self.users.append(user)
-                            self.filteredUsers = self.users
-                            DispatchQueue.main.async {
-                                self.tableView.reloadData()
-                            }
+            let ref = Database.database().reference().child("users")
+            ref.observeSingleEvent(of: .value, with: { snapshot in
+                
+                guard let dictionaries = snapshot.value as? [String: Any] else { return }
+                
+                dictionaries.forEach { key, value in
+                    if key == i {
+                        guard let userDictionary = value as? [String: Any] else { return }
+                        let user = User(uid: key, dictionary: userDictionary)
+                        self.users.append(user)
+                        self.filteredUsers = self.users
+                        DispatchQueue.main.async {
+                            self.tableView.reloadData()
                         }
                     }
-                })
-            }
+                }
+            })
         }
     }
 }

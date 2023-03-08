@@ -65,12 +65,13 @@ class MyFollowersUserViewController: UIViewController {
 
         guard let user = user else { return }
         getKeyIFollowUser(user: user) { key in
-            self.getUsersIFollow(keys: key)
+            DispatchQueue.main.async {
+                self.getUsersIFollow(keys: key)
+            }
         }
     }
     
     private func setupWillAppear() {
-        navigationController?.hidesBarsOnSwipe = true
         searchController.searchBar.isHidden = false
         searchController.searchBar.resignFirstResponder()
         navigationItem.searchController = searchController
@@ -159,47 +160,43 @@ extension MyFollowersUserViewController: UISearchBarDelegate {
 extension MyFollowersUserViewController {
     
     func getKeyIFollowUser(user: User, completion: @escaping ([String]) -> ()) {
-        DispatchQueue.main.async {
-            let ref = Database.database().reference().child("following").child(user.uid)
-            ref.observeSingleEvent(of: .value, with: { snapshot in
-                self.tableView.refreshControl?.endRefreshing()
-                guard let dictionaries = snapshot.value as? [String: Any] else { return }
+        let ref = Database.database().reference().child("following").child(user.uid)
+        ref.observeSingleEvent(of: .value, with: { snapshot in
+            self.tableView.refreshControl?.endRefreshing()
+            guard let dictionaries = snapshot.value as? [String: Any] else { return }
                 
-                dictionaries.forEach { key, value in
-                    if key == user.uid {
-                        return
-                    }
-                    var massiveKey = [String]()
-                    massiveKey.append(key)
-                    completion(massiveKey)
+            dictionaries.forEach { key, value in
+                if key == user.uid {
+                    return
                 }
-            })
-        }
+                var massiveKey = [String]()
+                massiveKey.append(key)
+                completion(massiveKey)
+            }
+        })
     }
     
     func getUsersIFollow(keys: [String]) {
         for i in keys {
-            DispatchQueue.main.async {
-                let ref = Database.database().reference().child("users")
-                ref.observeSingleEvent(of: .value, with: { snapshot in
+            let ref = Database.database().reference().child("users")
+            ref.observeSingleEvent(of: .value, with: { snapshot in
                     
-                    guard let dictionaries = snapshot.value as? [String: Any] else { return }
+                guard let dictionaries = snapshot.value as? [String: Any] else { return }
                     
-                    dictionaries.forEach { key, value in
+                dictionaries.forEach { key, value in
                         
-                        if key == i {
-                            guard let userDictionary = value as? [String: Any] else { return }
+                    if key == i {
+                        guard let userDictionary = value as? [String: Any] else { return }
                             
-                            let user = User(uid: key, dictionary: userDictionary)
-                            self.users.append(user)
-                        }
-                        self.filteredUsers = self.users
-                        DispatchQueue.main.async {
-                            self.tableView.reloadData()
-                        }
+                        let user = User(uid: key, dictionary: userDictionary)
+                        self.users.append(user)
                     }
-                })
-            }
+                    self.filteredUsers = self.users
+                    DispatchQueue.main.async {
+                        self.tableView.reloadData()
+                    }
+                }
+            })
         }
     }
 }

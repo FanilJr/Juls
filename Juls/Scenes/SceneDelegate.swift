@@ -21,19 +21,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         if #available(iOS 15, *) {
             let appearance = UINavigationBarAppearance()
             appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = .clear
+            appearance.backgroundColor = .systemGray6
             appearance.backgroundEffect = nil
             appearance.shadowImage = nil
             appearance.shadowColor = nil
 
             UINavigationBar.appearance().standardAppearance = appearance
             UINavigationBar.appearance().scrollEdgeAppearance = appearance
+            UINavigationBar.appearance().compactAppearance = appearance
             UINavigationBar.appearance().setBackgroundImage(UIImage(), for: .any, barMetrics: .default)
             UINavigationBar.appearance().shadowImage = UIImage()
             
             UITabBar.appearance().backgroundColor = .clear
             UITabBar.appearance().tintColor = #colorLiteral(red: 0.9294139743, green: 0.2863991261, blue: 0.3659052849, alpha: 1)
-            UITabBar.appearance().unselectedItemTintColor = UIColor.createColor(light: .black, dark: .white)
+            UITabBar.appearance().unselectedItemTintColor = UIColor.createColor(light: .black, dark: .black)
         }
         
         guard let windowScene = (scene as? UIWindowScene) else { return }
@@ -74,6 +75,4 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 //        self.saveContext()
 //        (UIApplication.shared.delegate as? AppDelegate)?.saveContext()
     }
-
-
 }

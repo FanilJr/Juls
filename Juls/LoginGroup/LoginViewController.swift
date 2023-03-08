@@ -58,6 +58,7 @@ class LogInViewController: UIViewController {
     }
     
     private func setupDidLoad() {
+        self.navigationController?.navigationBar.backgroundColor = .clear
         view.backgroundColor = .white
         layout()
         loginView.delegate = self
@@ -75,7 +76,6 @@ class LogInViewController: UIViewController {
         view.addSubview(loginView)
         
         NSLayoutConstraint.activate([
-            
             background.topAnchor.constraint(equalTo: view.topAnchor),
             background.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             background.trailingAnchor.constraint(equalTo: view.trailingAnchor),

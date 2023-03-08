@@ -52,7 +52,7 @@ class SearchViewController: UIViewController {
     
     private func setupDidLoad() {
         view.backgroundColor = .white
-        navigationItem.titleView = juls
+        title = "Поиск"
         navigationItem.searchController = searchController
         layout()
         refreshControler.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)

@@ -13,7 +13,10 @@ class HomeViewController: UIViewController {
     
     var posts = [Post]()
     var juls = JulsView()
+    var user: User?
     var commentArray = [String]()
+    var commentCount: Int?
+    var likeCount: Int?
     var postIndexPath = 0
     var refreshControler = UIRefreshControl()
     
@@ -48,6 +51,7 @@ class HomeViewController: UIViewController {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
+        tableView.backgroundView = HomeEmptyStateView()
         tableView.refreshControl = refreshControler
         tableView.register(HomeTableViewCell.self, forCellReuseIdentifier: "HomeTableViewCell")
         return tableView
@@ -64,8 +68,8 @@ class HomeViewController: UIViewController {
     }
     
     private func setupDidLoad() {
-        navigationItem.titleView = juls
-
+        title = "Лента"
+        fetchUserForImageBack()
         tableView.delegate = self
         tableView.dataSource = self
         layout()
@@ -76,18 +80,85 @@ class HomeViewController: UIViewController {
     
     private func setupWillAppear() {
         tabBarController?.tabBar.isHidden = false
-        navigationController?.hidesBarsOnSwipe = true
     }
     
     @objc func didTapRefresh() {
-        posts.removeAll()
         self.fetchAllPosts()
     }
     
+    func fetchUserForImageBack() {
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+        Database.database().fetchUser(withUID: userId) { user in
+            self.user = user
+            self.imageBack.loadImage(urlString: user.picture)
+        }
+    }
+    
     fileprivate func fetchAllPosts() {
-        fetchPosts()
-        fetchFollowingUserUids()
-        self.tableView.reloadData()
+        self.posts.removeAll()
+        showEmptyStateViewIfNeeded()
+        fetchPostsForCurrentUser()
+        fetchFollowingUserPosts()
+    }
+    
+    private func fetchPostsForCurrentUser() {
+        guard let currentLoggedInUserId = Auth.auth().currentUser?.uid else { return }
+
+        tableView.refreshControl?.beginRefreshing()
+
+        Database.database().fetchAllPosts(withUID: currentLoggedInUserId, completion: { (posts) in
+            self.posts.append(contentsOf: posts)
+            self.posts.sort(by: { (p1, p2) -> Bool in
+                return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+            })
+
+            self.tableView.reloadData()
+            self.tableView.refreshControl?.endRefreshing()
+        }) { (err) in
+            self.tableView.refreshControl?.endRefreshing()
+        }
+    }
+
+    private func fetchFollowingUserPosts() {
+        guard let currentLoggedInUserId = Auth.auth().currentUser?.uid else { return }
+        tableView.refreshControl?.beginRefreshing()
+
+        Database.database().reference().child("following").child(currentLoggedInUserId).observeSingleEvent(of: .value, with: { (snapshot) in
+            guard let userIdsDictionary = snapshot.value as? [String: Any] else { return }
+
+            userIdsDictionary.forEach({ (uid, value) in
+                Database.database().fetchAllPosts(withUID: uid, completion: { (posts) in
+                    self.posts.append(contentsOf: posts)
+                    self.posts.sort(by: { (p1, p2) -> Bool in
+                        return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+                    })
+                    self.tableView.reloadData()
+                    self.tableView.refreshControl?.endRefreshing()
+
+                }, withCancel: { (err) in
+                    self.tableView.refreshControl?.endRefreshing()
+                })
+            })
+        }) { (err) in
+            self.tableView.refreshControl?.endRefreshing()
+        }
+    }
+
+    func showEmptyStateViewIfNeeded() {
+        guard let currentLoggedInUserId = Auth.auth().currentUser?.uid else { return }
+        Database.database().numberOfFollowingForUser(withUID: currentLoggedInUserId) { (followingCount) in
+            Database.database().numberOfPostsForUser(withUID: currentLoggedInUserId, completion: { (postCount) in
+
+                if followingCount == 0 && postCount == 0 {
+                    UIView.animate(withDuration: 0.5, delay: 0.5, options: .curveEaseOut, animations: {
+                        self.tableView.backgroundView?.alpha = 1
+                    }, completion: nil)
+
+                } else {
+                    self.tableView.backgroundView?.alpha = 0
+                }
+            })
+        }
     }
     
     func layout() {
@@ -130,7 +201,9 @@ extension HomeViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "HomeTableViewCell", for: indexPath) as! HomeTableViewCell
         cell.selectionStyle = UITableViewCell.SelectionStyle.none
-        cell.configureHomeTable(post: posts[indexPath.row])
+        if indexPath.row < posts.count {
+            cell.configureHomeTable(post: posts[indexPath.row])
+        }
         cell.delegate = self
         cell.backgroundColor = .clear
         return cell
@@ -148,71 +221,8 @@ extension HomeViewController: UITableViewDelegate {
     }
 }
 
-extension HomeViewController {
-    
-    func fetchPosts() {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        Database.database().fetchUser(withUID: uid) { user in
-            DispatchQueue.main.async {
-                self.imageBack.loadImage(urlString: user.picture)
-                self.fetchPostsWithUser(user: user)
-            }
-        }
-    }
-    
-    func fetchPostsWithUser(user: User) {
-        let ref = Database.database().reference().child("posts").child(user.uid)
-        DispatchQueue.main.async {
-            ref.observeSingleEvent(of: .value, with: { (snapshot) in
-                self.tableView.refreshControl?.endRefreshing()
-                guard let dictionaries = snapshot.value as? [String: Any] else { return }
-        
-                dictionaries.forEach ({ (key, value) in
-                    guard let dictionary = value as? [String: Any] else { return }
-                    var post = Post(user: user, dictionary: dictionary)
-                    post.id = key
-                    guard let uid = Auth.auth().currentUser?.uid else { return }
-                    Database.database().reference().child("likes").child(key).child(uid).observeSingleEvent(of: .value, with: { (snapshot) in
-                        if let value = snapshot.value as? Int, value == 1 {
-                            post.hasLiked = true
-                        } else {
-                            post.hasLiked = false
-                        }
-                        self.posts.append(post)
-                        self.posts.sort { p1, p2 in
-                            return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-                        }
-                        DispatchQueue.main.async {
-                            self.tableView.reloadData()
-                        }
-                    }, withCancel: { (error) in
-                        print(error)
-                    })
-                })
-            }) { error in
-                print("Failed to fetch posts:", error)
-            }
-        }
-    }
-    
-    func fetchFollowingUserUids() {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        DispatchQueue.main.async {
-            Database.database().reference().child("following").child(uid).observeSingleEvent(of: .value, with: { snapshot in
-                guard let userIdsDictionary = snapshot.value as? [String: Any] else { return }
-                userIdsDictionary.forEach ({ (key, value) in
-                    Database.database().fetchUser(withUID: key) { user in
-                        self.fetchPostsWithUser(user: user)
-                    }
-                })
-            }) { (error) in
-                print("error")
-            }
-        }
-    }
-}
-
 extension HomeViewController: HomeTableDelegate {
+    
     
     func tapComment(for cell: HomeTableViewCell) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
@@ -226,16 +236,31 @@ extension HomeViewController: HomeTableDelegate {
         
         guard let postId = post.id else { return }
         guard let uid = Auth.auth().currentUser?.uid else { return }
-        let values = [uid: post.hasLiked == true ? 0 : 1]
-        Database.database().reference().child("likes").child(postId).updateChildValues(values) { error, ref in
-            if let error {
-                print(error)
-                return
+        if post.hasLiked {
+            Database.database().reference().child("likes").child(postId).child(uid).removeValue { (err, _) in
+                if let err = err {
+                    print("Failed to unlike post:", err)
+                    return
+                }
+                post.hasLiked = false
+                post.likes = post.likes - 1
+                self.posts[indexPath.item] = post
+                print(post.likes)
+                self.tableView.reloadRows(at: [indexPath], with: .automatic)
             }
-            print("successfully liked post")
-            post.hasLiked = !post.hasLiked
-            self.posts[indexPath.row] = post
-            self.tableView.reloadRows(at: [indexPath], with: .fade)
+        } else {
+            let values = [uid: post.hasLiked == true ? 0 : 1]
+            Database.database().reference().child("likes").child(postId).updateChildValues(values) { (err, _) in
+                if let err = err {
+                    print("Failed to like post:", err)
+                    return
+                }
+                post.hasLiked = true
+                post.likes = post.likes + 1
+                self.posts[indexPath.item] = post
+                print(post.likes)
+                self.tableView.reloadRows(at: [indexPath], with: .automatic)
+            }
         }
     }
 }

@@ -56,7 +56,7 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
         
         //MARK: NEWS
         let newsVc = viewControllerFactory.viewController(for: .news)
-        let navNewsVC = createNavController(for: newsVc, title: String("Новости").localized, image: UIImage(systemName: Constants.newsImageName)!, selectImage: UIImage(systemName: ConstantsSelect.newsImageName)!)
+        let navNewsVC = createNavController(for: newsVc, title: String("Новости"), image: UIImage(systemName: Constants.newsImageName)!, selectImage: UIImage(systemName: ConstantsSelect.newsImageName)!)
         let newsCoordinator = NewsCoordinator(navigationController: navNewsVC, viewControllerFactory: viewControllerFactory)
         
         //MARK: SEARCH
@@ -82,7 +82,7 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
             let logInVc = viewControllerFactory.viewController(for: .login(viewModel: loginViewModel))
             let navLogInVc = createNavController(
                 for: logInVc,
-                title: String("Авторизация").localized,
+                title: String("Авторизация"),
                 image: UIImage(systemName: Constants.profileImageName)!, selectImage: (UIImage(systemName: ConstantsSelect.profileImageName) ?? UIImage()
             ))
             let logInCoordinator = LogInCoordinator(navigationController: navLogInVc, viewControllerFactory: viewControllerFactory)
@@ -95,7 +95,7 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
         let profileVc = viewControllerFactory.viewController(for: .profile(viewModel: profileViewModel)) as! ProfileViewController
         let navProfileInVc = createNavController(
             for: profileVc,
-            title: String("Профиль").localized,
+            title: String("Профиль"),
             image: UIImage(systemName: Constants.profileImageName)!, selectImage: (UIImage(systemName: ConstantsSelect.profileImageName) ?? UIImage()))
         let profileCoordinator = ProfileCoordinator(navigationController: navProfileInVc, viewControllerFactory: viewControllerFactory)
         
