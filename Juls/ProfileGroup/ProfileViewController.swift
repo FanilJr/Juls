@@ -143,6 +143,9 @@ class ProfileViewController: UIViewController {
             let barButtonMenu = UIMenu(title: "Выберите действие", children: [
                 UIAction(title: NSLocalizedString("Создать пост", comment: ""), image: UIImage(systemName: "square.and.pencil"), handler: { _ in
                     self.addPostInCollection()
+                }),
+                UIAction(title: NSLocalizedString("Создать историю", comment: ""), image: UIImage(systemName: "hand.tap"), handler: { _ in
+                    print("Story's")
                 })
             ])
             let plus = UIBarButtonItem()
@@ -188,6 +191,7 @@ class ProfileViewController: UIViewController {
     
     @objc func noname() {
         let messageVC = MessagesViewController()
+        messageVC.user = user
         navigationController?.pushViewController(messageVC, animated: true)
     }
     
@@ -255,12 +259,12 @@ extension ProfileViewController {
                 self.header?.user = user
                 self.loadDatabase()
                 Database.database().fetchAllPosts(withUID: uid) { posts in
-                    self.collectionView.refreshControl?.endRefreshing()
-                    self.posts = posts
-                    self.posts.sort { p1, p2 in
-                        return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-                    }
-                    self.collectionView.reloadData()
+                        self.collectionView.refreshControl?.endRefreshing()
+                        self.posts = posts
+                        self.posts.sort { p1, p2 in
+                            return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+                        }
+                        self.collectionView.reloadData()
                 } withCancel: { error in
                     print(error)
                 }
@@ -325,46 +329,6 @@ extension ProfileViewController {
                         }
                     }
                 })
-            }
-        }
-    }
-    
-    //MARK: Отправка поста
-    func saveToDatabaseWithImageUrl(imageUrl: String) {
-        
-        print("PUSH PUSH PUSH")
-        
-        guard let postImage = messagePostViewController.customImage.image else { return }
-        guard let caption = messagePostViewController.customTextfield.text else { return }
-        
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        let userPostRef = Database.database().reference().child("posts").child(uid)
-            
-        let ref = userPostRef.childByAutoId()
-        let values = ["imageUrl": imageUrl, "caption": caption, "imageWidth": postImage.size.width, "imageHeight": postImage.size.height, "creationDate": Date().timeIntervalSince1970] as [String : Any]
-        DispatchQueue.main.async {
-            ref.updateChildValues(values) { error, ref in
-                if let error {
-                    print("Error", error)
-                    return
-                }
-                print("succes upload Post in Firebase")
-                self.messagePostViewController.waitingSpinnerPostEnable(false)
-                self.messagePostViewController.sendPostButton.setTitle("Отправить", for: .normal)
-                self.messagePostViewController.sendPostButton.setImage(UIImage(systemName: "paperplane.fill"), for: .normal)
-                
-                AudioServicesPlaySystemSound(self.systemSoundID2)
-                self.dismiss(animated: true)
-                self.tabBarController?.tabBar.isHidden = false
-                
-                UIView.animate(withDuration: 0.5, animations: {
-                    self.didTapRefresh()
-                })
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self.messagePostViewController.customImage.image = nil
-                    self.messagePostViewController.customTextfield.text = ""
-                }
             }
         }
     }
@@ -523,28 +487,25 @@ extension ProfileViewController: MessagePostDelegate {
     }
 
     func pushPostDelegate() {
-        guard let caption = messagePostViewController.customTextfield.text, caption.count > 0 else { return }
-        let imageName = NSUUID().uuidString
-        DispatchQueue.main.async {
-            let storedImage = Storage.storage().reference().child("posts").child(imageName)
-            
-            if let uploadData = self.messagePostViewController.customImage.image?.jpegData(compressionQuality: 0.3) {
-                storedImage.putData(uploadData, metadata: nil) { metadata, error in
-                    if let error {
-                        print("error upload", error)
-                        return
-                    }
-                    storedImage.downloadURL(completion: { url, error in
-                        if let error {
-                            print(error)
-                            return
-                        }
-                        guard let imageURL = url?.absoluteString else { return }
-                        print("succes download Photo in Firebase Library")
-                        self.saveToDatabaseWithImageUrl(imageUrl: imageURL)
-                    })
-                }
+        Database.database().createPost(withImage: messagePostViewController.customImage.image ?? UIImage(), caption: messagePostViewController.customTextfield.text) { error in
+            if let error {
+                print(error)
             }
+            AudioServicesPlaySystemSound(self.systemSoundID2)
+            self.messagePostViewController.waitingSpinnerPostEnable(false)
+            self.messagePostViewController.sendPostButton.setTitle("Отправить", for: .normal)
+            self.messagePostViewController.sendPostButton.setImage(UIImage(systemName: "paperplane.fill"), for: .normal)
+
+            
+            UIView.animate(withDuration: 0.5, animations: {
+                self.didTapRefresh()
+            })
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.messagePostViewController.customImage.image = nil
+                self.messagePostViewController.customTextfield.text = ""
+            }
+            self.dismiss(animated: true)
         }
     }
 }
@@ -662,6 +623,7 @@ extension ProfileViewController: UICollectionViewDataSource {
         case 1:
             let postVC = PostTableViewController()
             postVC.post = posts[indexPath.row]
+            postVC.delegate = self
             self.navigationController?.pushViewController(postVC, animated: true)
             
         default:
@@ -680,29 +642,8 @@ extension ProfileViewController: UICollectionViewDataSource {
                         self.present(avc, animated: true)
                     }
                     
-                    let remove = UIAction(title: "Удалить", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
-                        let alert = UIAlertController(title: "", message: "Вы точно хотите удалить?", preferredStyle: .alert)
-                        let removeAction = UIAlertAction(title: "Удалить", style: .destructive) { _ in
-                            guard let uid = self.user?.uid else { return }
-                            self.getAllKaysPost()
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
-                                Database.database().reference().child("posts").child(uid).child(self.postsKeyArray[indexPath.item]).removeValue()
-                                self.posts.remove(at: indexPath.item)
-                                self.collectionView.deleteItems(at: [indexPath])
-                                self.postsKeyArray = []
-                                DispatchQueue.main.async {
-                                    self.collectionView.reloadData()
-                                }
-                            })
-                        }
-                        let cancelAction = UIAlertAction(title: "Отмена", style: .default) { _ in
-                            self.dismiss(animated: true)
-                        }
-                        [removeAction, cancelAction].forEach { alert.addAction($0) }
-                        self.present(alert, animated: true)
-                    }
                     if Auth.auth().currentUser?.uid == self.user?.uid {
-                        let menu = UIMenu(title: "", children: [shared,remove])
+                        let menu = UIMenu(title: "", children: [shared])
                         return menu
                     } else {
                         let menu = UIMenu(title: "", children: [shared])
@@ -774,5 +715,11 @@ extension ProfileViewController: UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return spacing
+    }
+}
+
+extension ProfileViewController: PostViewControllerDelegate {
+    func reloadTable() {
+        self.fetchUser()
     }
 }

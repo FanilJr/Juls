@@ -1,20 +1,36 @@
 //
-//  CommentViewController.swift
+//  ChatViewController.swift
 //  Juls
 //
-//  Created by Fanil_Jr on 11.02.2023.
+//  Created by Fanil_Jr on 09.03.2023.
 //
 
-import Foundation
 import UIKit
 import Firebase
 
-class CommentViewController: UIViewController {
-    var myUserComment: User?
-    var post: Post?
-    var comments = [Comment]()
-    var headerComment = HeaderCommment()
-    var commentKeyArray = [String]()
+class ChatViewController: UIViewController {
+
+    var userFriend: User? {
+        didSet {
+            guard let username = userFriend?.username else { return }
+            title = "Чат с \(username)"
+        }
+    }
+    
+    var user: User? {
+        didSet {
+            guard let image = user?.picture else { return }
+            self.authorComment.loadImage(urlString: image)
+        }
+    }
+    
+    var chatKey: String? {
+        didSet {
+            
+        }
+    }
+    
+    var messages = [Message]()
     private let nc = NotificationCenter.default
 
     lazy var containerView: UIView = {
@@ -69,12 +85,12 @@ class CommentViewController: UIViewController {
     lazy var sendCommentButton: UIButton = {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.addTarget(self, action: #selector(pushComment), for: .touchUpInside)
         button.setImage(UIImage(systemName: "paperplane.fill"), for: .normal)
         button.tintColor = .systemBlue
         button.setTitleColor(.createColor(light: .black, dark: .white), for: .normal)
         button.clipsToBounds = true
         button.layer.cornerRadius = 10
+        button.addTarget(self, action: #selector(pushMessage), for: .touchUpInside)
         return button
     }()
     
@@ -92,13 +108,14 @@ class CommentViewController: UIViewController {
         tableView.separatorStyle = .none
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.register(CommentsTableViewCell.self, forCellReuseIdentifier: "CommentsTableViewCell")
+        tableView.register(LocalChatTableViewCell.self, forCellReuseIdentifier: "LocalChatTableViewCell")
         return tableView
     }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupDidLoad()
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -107,25 +124,12 @@ class CommentViewController: UIViewController {
     }
     
     private func setupDidLoad() {
-        headerComment.post = post
-        guard let imageUrl = post?.imageUrl else { return }
-        imageBack.loadImage(urlString: imageUrl)
-        title = "Комментарии"
         setupLayout()
         tapScreen()
-        fetchCommentsPost()
-        loadImageCurrentUser()
-    }
-    
-    func fetchCommentsPost() {
-        guard let postId = self.post?.id else { return }
-        Database.database().fetchCommentsForPost(withId: postId) { comments in
-            DispatchQueue.main.async {
-                self.comments.removeAll()
-                self.comments = comments
-                self.tableView.reloadData()
-            }
-        }
+        guard let username = user?.username else { return }
+        guard let friendsUsername = userFriend?.username else { return }
+        print(username, "with", friendsUsername)
+        fetchChat()
     }
     
     private func setupWillAppear() {
@@ -133,29 +137,27 @@ class CommentViewController: UIViewController {
         tabBarController?.tabBar.isHidden = true
     }
     
-    func loadImageCurrentUser() {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
+    @objc func pushMessage() {
+        guard let textMessage = textfield.text else { return }
+        guard let userId = user?.uid else { return }
+        guard let friendId = userFriend?.uid else { return }
         
-        Database.database().fetchUser(withUID: uid) { user in
-            DispatchQueue.main.async {
-                self.myUserComment = user
-                self.authorComment.loadImage(urlString: user.picture)
-            }
-        }
-    }
-    
-    @objc func pushComment() {
-        guard let postId = post?.id else { return }
-        guard let textComment = textfield.text else { return }
-        
-        Database.database().addCommentToPost(withId: postId, text: textComment) { error in
+        Database.database().pushMessageWithChatId(userUID: userId, userFriendUID: friendId, textMessage: textMessage) { error in
             if let error {
                 print(error)
             }
-            print("success insert comment:", textComment)
-            self.fetchCommentsPost()
+            self.textfield.text = ""
+            self.fetchChat()
         }
-        textfield.text = ""
+    }
+    
+    func fetchChat() {
+        guard let userId = user?.uid else { return }
+        guard let friendId = userFriend?.uid else { return }
+        Database.database().fetchMessageWithChatId(userUID: userId, userFriendUID: friendId) { messages in
+            self.messages = messages
+            self.tableView.reloadData()
+        }
     }
     
     func addObserver() {
@@ -227,93 +229,31 @@ class CommentViewController: UIViewController {
             sendCommentButton.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
-    
-    func getAllKeys() {
-        guard let uid = post?.id else { return }
-        Database.database().reference().child("comments").child(uid).observeSingleEvent(of: .value) { snapshot in
-            snapshot.children.forEach { child in
-                let snap = child as! DataSnapshot
-                let key = snap.key
-                self.commentKeyArray.append(key)
-            }
-        }
-    }
-    
-    static func showComment(_ viewController: UIViewController, post: Post?) {
-        let ac = CommentViewController()
-        ac.post = post
-        viewController.navigationController?.pushViewController(ac, animated: true)
-    }
 }
 
-extension CommentViewController: UITableViewDataSource {
+extension ChatViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableView.automaticDimension
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return comments.count
+        return messages.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CommentsTableViewCell", for: indexPath) as! CommentsTableViewCell
-        cell.comments = comments[indexPath.row]
+        let cell = tableView.dequeueReusableCell(withIdentifier: "LocalChatTableViewCell", for: indexPath) as! LocalChatTableViewCell
         cell.selectionStyle = .none
+        cell.messages = messages[indexPath.row]
         cell.backgroundColor = .clear
         return cell
     }
-    
-    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
-        return .delete
-    }
-    
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        tableView.beginUpdates()
-        getAllKeys()
-        if Auth.auth().currentUser?.uid == comments[indexPath.row].uid {
-            guard let uid = post?.id else { return }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
-                Database.database().reference().child("comments").child(uid).child(self.commentKeyArray[indexPath.item]).removeValue()
-                self.commentKeyArray.remove(at: indexPath.row)
-                print("remove",self.comments[indexPath.item].text)
-                self.comments.remove(at: indexPath.item)
-                self.tableView.deleteRows(at: [indexPath], with: .automatic)
-            })
-            tableView.endUpdates()
-        } else {
-            let alertController = UIAlertController(title: "Нельзя удалить чужой комментарий", message: "Sorry", preferredStyle: .alert)
-            let actionCancel = UIAlertAction(title: "ок", style: .cancel)
-            alertController.addAction(actionCancel)
-            present(alertController, animated: true)
-            tableView.endUpdates()
-        }
-    }
-
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        return headerComment
-    }
 }
 
-extension CommentViewController: UITableViewDelegate {
+extension ChatViewController: UITableViewDelegate {
     
 }
 
-extension UITextField {
-    func setupLeftView() {
-        let imageView = UIImageView(frame: CGRect(x: 10, y: 10, width: 20, height: 20))
-        imageView.image = UIImage(systemName: "ellipsis.message.fill")
-        imageView.tintColor = .black
-        imageView.clipsToBounds = true
-        imageView.layer.cornerRadius = 10
-        
-        let imageViewContrainerView = UIView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
-        imageViewContrainerView.addSubview(imageView)
-        leftView = imageViewContrainerView
-        leftViewMode = .always
-    }
-}
-
-extension CommentViewController: UITextFieldDelegate {
+extension ChatViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         view.endEditing(true)
         self.containerView.transform = CGAffineTransform(translationX: 0, y: 0)
@@ -321,7 +261,7 @@ extension CommentViewController: UITextFieldDelegate {
     }
 }
 
-extension CommentViewController {
+extension ChatViewController {
     func tapScreen() {
         let recognizer: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         recognizer.cancelsTouchesInView = false

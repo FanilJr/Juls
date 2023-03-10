@@ -31,6 +31,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             UINavigationBar.appearance().compactAppearance = appearance
             UINavigationBar.appearance().setBackgroundImage(UIImage(), for: .any, barMetrics: .default)
             UINavigationBar.appearance().shadowImage = UIImage()
+            UINavigationBar.appearance().tintColor = UIColor.createColor(light: .black, dark: .white)
             
             UITabBar.appearance().backgroundColor = .clear
             UITabBar.appearance().tintColor = #colorLiteral(red: 0.9294139743, green: 0.2863991261, blue: 0.3659052849, alpha: 1)

@@ -44,15 +44,6 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         return stackView
     }()
     
-//    var nickNameLabel: UILabel = {
-//        let fullNameLabel = UILabel()
-//        fullNameLabel.textColor = UIColor.createColor(light: .white, dark: .white)
-//        fullNameLabel.numberOfLines = 0
-//        fullNameLabel.font = .systemFont(ofSize: 55, weight: .bold)
-//        fullNameLabel.translatesAutoresizingMaskIntoConstraints = false
-//        return fullNameLabel
-//    }()
-    
     let statusLabel: UILabel = {
         let statusLabel = UILabel()
         statusLabel.textColor = UIColor.createColor(light: .white, dark: .white)
@@ -135,7 +126,6 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         guard let userId = user?.uid else { return }
         
         Database.database().reference().child("following").child(myId).child(userId).observe(.value) { snapshot in
-            
             if let isFollowing = snapshot.value as? Int, isFollowing == 1 {
                 self.followButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100x"), for: .normal)
                 self.followButton.tintColor = .red
@@ -159,12 +149,12 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
             stackViewVertical.leadingAnchor.constraint(equalTo: leadingAnchor,constant: 10),
             stackViewVertical.heightAnchor.constraint(equalToConstant: 120),
             stackViewVertical.trailingAnchor.constraint(equalTo: trailingAnchor),
-            stackViewVertical.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -80),
+            stackViewVertical.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -40),
             
-            followButton.centerXAnchor.constraint(equalTo: centerXAnchor),
-            followButton.heightAnchor.constraint(equalToConstant: 70),
-            followButton.widthAnchor.constraint(equalToConstant: 70),
-            followButton.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -30),
+            followButton.topAnchor.constraint(equalTo: topAnchor,constant: 10),
+            followButton.trailingAnchor.constraint(equalTo: trailingAnchor,constant: -10),
+            followButton.heightAnchor.constraint(equalToConstant: 35),
+            followButton.widthAnchor.constraint(equalToConstant: 35),
         ])
     }
 }

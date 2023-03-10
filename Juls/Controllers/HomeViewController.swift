@@ -107,13 +107,14 @@ class HomeViewController: UIViewController {
         tableView.refreshControl?.beginRefreshing()
 
         Database.database().fetchAllPosts(withUID: currentLoggedInUserId, completion: { (posts) in
-            self.posts.append(contentsOf: posts)
-            self.posts.sort(by: { (p1, p2) -> Bool in
-                return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-            })
-
-            self.tableView.reloadData()
-            self.tableView.refreshControl?.endRefreshing()
+            DispatchQueue.main.async {
+                self.posts.append(contentsOf: posts)
+                self.posts.sort(by: { (p1, p2) -> Bool in
+                    return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+                })
+                self.tableView.reloadData()
+                self.tableView.refreshControl?.endRefreshing()
+            }
         }) { (err) in
             self.tableView.refreshControl?.endRefreshing()
         }
@@ -128,13 +129,14 @@ class HomeViewController: UIViewController {
 
             userIdsDictionary.forEach({ (uid, value) in
                 Database.database().fetchAllPosts(withUID: uid, completion: { (posts) in
-                    self.posts.append(contentsOf: posts)
-                    self.posts.sort(by: { (p1, p2) -> Bool in
-                        return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-                    })
-                    self.tableView.reloadData()
-                    self.tableView.refreshControl?.endRefreshing()
-
+                    DispatchQueue.main.async {
+                        self.posts.append(contentsOf: posts)
+                        self.posts.sort(by: { (p1, p2) -> Bool in
+                            return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+                        })
+                        self.tableView.reloadData()
+                        self.tableView.refreshControl?.endRefreshing()
+                    }
                 }, withCancel: { (err) in
                     self.tableView.refreshControl?.endRefreshing()
                 })
@@ -148,14 +150,15 @@ class HomeViewController: UIViewController {
         guard let currentLoggedInUserId = Auth.auth().currentUser?.uid else { return }
         Database.database().numberOfFollowingForUser(withUID: currentLoggedInUserId) { (followingCount) in
             Database.database().numberOfPostsForUser(withUID: currentLoggedInUserId, completion: { (postCount) in
-
-                if followingCount == 0 && postCount == 0 {
-                    UIView.animate(withDuration: 0.5, delay: 0.5, options: .curveEaseOut, animations: {
-                        self.tableView.backgroundView?.alpha = 1
-                    }, completion: nil)
-
-                } else {
-                    self.tableView.backgroundView?.alpha = 0
+                DispatchQueue.main.async {
+                    if followingCount == 0 && postCount == 0 {
+                        UIView.animate(withDuration: 0.5, delay: 0.5, options: .curveEaseOut, animations: {
+                            self.tableView.backgroundView?.alpha = 1
+                        }, completion: nil)
+                        
+                    } else {
+                        self.tableView.backgroundView?.alpha = 0
+                    }
                 }
             })
         }
@@ -238,28 +241,32 @@ extension HomeViewController: HomeTableDelegate {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         if post.hasLiked {
             Database.database().reference().child("likes").child(postId).child(uid).removeValue { (err, _) in
-                if let err = err {
-                    print("Failed to unlike post:", err)
-                    return
+                DispatchQueue.main.async {
+                    if let err = err {
+                        print("Failed to unlike post:", err)
+                        return
+                    }
+                    post.hasLiked = false
+                    post.likes = post.likes - 1
+                    self.posts[indexPath.item] = post
+                    print(post.likes)
+                    self.tableView.reloadRows(at: [indexPath], with: .automatic)
                 }
-                post.hasLiked = false
-                post.likes = post.likes - 1
-                self.posts[indexPath.item] = post
-                print(post.likes)
-                self.tableView.reloadRows(at: [indexPath], with: .automatic)
             }
         } else {
             let values = [uid: post.hasLiked == true ? 0 : 1]
             Database.database().reference().child("likes").child(postId).updateChildValues(values) { (err, _) in
-                if let err = err {
-                    print("Failed to like post:", err)
-                    return
+                DispatchQueue.main.async {
+                    if let err = err {
+                        print("Failed to like post:", err)
+                        return
+                    }
+                    post.hasLiked = true
+                    post.likes = post.likes + 1
+                    self.posts[indexPath.item] = post
+                    print(post.likes)
+                    self.tableView.reloadRows(at: [indexPath], with: .automatic)
                 }
-                post.hasLiked = true
-                post.likes = post.likes + 1
-                self.posts[indexPath.item] = post
-                print(post.likes)
-                self.tableView.reloadRows(at: [indexPath], with: .automatic)
             }
         }
     }

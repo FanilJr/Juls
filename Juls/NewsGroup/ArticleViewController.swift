@@ -13,14 +13,6 @@ class ArticleViewController: UIViewController {
     var articles: Article!
     var downloadManager = DownloadManager()
     let juls = JulsView()
-
-    let background: UIImageView = {
-        let back = UIImageView()
-        back.clipsToBounds = true
-        back.image = UIImage(named: "back")
-        back.translatesAutoresizingMaskIntoConstraints = false
-        return back
-    }()
     
     private lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .insetGrouped)
@@ -40,7 +32,7 @@ class ArticleViewController: UIViewController {
     }
     
     private func setupDidLoad() {
-        view.backgroundColor = .white
+        view.backgroundColor = .systemBackground
         title = articles.title
         layout()
         self.navigationItem.largeTitleDisplayMode = .never
@@ -49,19 +41,13 @@ class ArticleViewController: UIViewController {
     }
     
     func layout() {
-        [background, tableView].forEach { view.addSubview($0) }
+        [tableView].forEach { view.addSubview($0) }
         
         NSLayoutConstraint.activate([
-            
-            background.topAnchor.constraint(equalTo: view.topAnchor),
-            background.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            background.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            background.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            tableView.topAnchor.constraint(equalTo: background.topAnchor),
-            tableView.leadingAnchor.constraint(equalTo: background.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: background.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: background.bottomAnchor)
+            tableView.topAnchor.constraint(equalTo: view.topAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
     

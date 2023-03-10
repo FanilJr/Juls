@@ -12,6 +12,8 @@ import FirebaseStorage
 
 extension Database {
     
+    //MARK: USER & USERS
+    
     func fetchUser(withUID uid: String, completion: @escaping (User) -> ()) {
         Database.database().reference().child("users").child(uid).observeSingleEvent(of: .value, with: { (snapshot) in
             guard let userDictionary = snapshot.value as? [String: Any] else { return }
@@ -52,6 +54,8 @@ extension Database {
             cancel?(err)
         }
     }
+    
+    //MARK: Проверка подписки на юзера и методы подписки
     
     func isFollowingUser(withUID uid: String, completion: @escaping (Bool) -> (), withCancel cancel: ((Error) -> ())?) {
         guard let currentLoggedInUserId = Auth.auth().currentUser?.uid else { return }
@@ -110,6 +114,8 @@ extension Database {
             })
         }
     }
+    
+    //MARK: Посты и комментарии
     
     func fetchPost(withUID uid: String, postId: String, completion: @escaping (Post) -> (), withCancel cancel: ((Error) -> ())? = nil) {
         guard let currentLoggedInUser = Auth.auth().currentUser?.uid else { return }
@@ -278,7 +284,8 @@ extension Database {
         })
     }
     
-    //MARK: Utilities
+    //MARK: количество комментариев, постов, лайков, подписчиков
+    
     func fetchCommetsCount(withPostId uid: String, completion: @escaping (Int) -> ()) {
         Database.database().reference().child("comments").child(uid).observeSingleEvent(of: .value) { snapshot in
             if let dictionaries = snapshot.value as? [String: Any] {
@@ -330,6 +337,8 @@ extension Database {
     }
 }
 
+//MARK: Загрузки аватара и картинки поста
+
 extension Storage {
     
     fileprivate func uploadUserProfileImage(image: UIImage, completion: @escaping (String) -> ()) {
@@ -372,6 +381,82 @@ extension Storage {
                 guard let postImageUrl = downloadURL?.absoluteString else { return }
                 completion(postImageUrl)
             })
+        })
+    }
+}
+
+//MARK: CHAT ~
+extension Database {
+    
+    func pushMessageWithChatId(userUID uid: String, userFriendUID uidFriend: String, textMessage text: String, completion: @escaping (Error?) -> ()) {
+        
+        let values = ["message": text, "creationDate": Date().timeIntervalSince1970, "uid": uid] as [String: Any]
+        
+        let messageReference = Database.database().reference().child("messages").child(uid).child(uidFriend).childByAutoId()
+        
+        messageReference.updateChildValues(values) { (err, _) in
+            if let err {
+                print(err)
+                completion(err)
+                return
+            }
+            let values = ["message": text, "creationDate": Date().timeIntervalSince1970, "uid": uid] as [String: Any]
+            let messageReference = Database.database().reference().child("messages").child(uidFriend).child(uid).childByAutoId()
+            messageReference.updateChildValues(values) { (err, _) in
+                if let err {
+                    print(err)
+                    completion(err)
+                    return
+                }
+                completion(nil)
+            }
+        }
+    }
+    
+    func fetchMessageWithChatId(userUID uid: String, userFriendUID uidFriend: String, completion: @escaping ([Message]) -> ()) {
+        
+        let commentsReference = Database.database().reference().child("messages").child(uid).child(uidFriend)
+        
+        commentsReference.observeSingleEvent(of: .value, with: { (snapshot) in
+            guard let dictionaries = snapshot.value as? [String: Any] else {
+                completion([])
+                return
+            }
+            
+            var messages = [Message]()
+            
+            dictionaries.forEach({ (key, value) in
+                guard let messageCitionary = value as? [String: Any] else { return }
+                guard let uid = messageCitionary["uid"] as? String else { return }
+                
+                Database.database().fetchUser(withUID: uid) { (user) in
+                    let message = Message(user: user, dictionary: messageCitionary)
+                    messages.append(message)
+                    
+                    if messages.count == dictionaries.count {
+                        messages.sort(by: { (message1, message2) -> Bool in
+                            return message1.creationDate.compare(message2.creationDate) == .orderedAscending
+                        })
+                        completion(messages)
+                    }
+                }
+            })
+        })
+    }
+    
+    func fetchAllMessages(userUID uid: String, completion: @escaping ([User]) -> ()) {
+        let ref = Database.database().reference().child("messages").child(uid)
+        ref.observeSingleEvent(of: .value, with: { snapshot in
+            guard let dictionaries = snapshot.value as? [String: Any] else { return }
+                
+            var users = [User]()
+                
+            dictionaries.forEach { key, value in
+                Database.database().fetchUser(withUID: key) { user in
+                    users.append(user)
+                    completion(users)
+                }
+            }
         })
     }
 }

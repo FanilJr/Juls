@@ -9,13 +9,14 @@ import Foundation
 
 struct Message {
     
+    var id: String?
     let user: User
     let text: String
     let uid: String
     let creationDate: Date
     
     init(user: User, dictionary: [String: Any]) {
-        self.text = dictionary["text"] as? String ?? ""
+        self.text = dictionary["message"] as? String ?? ""
         self.uid = dictionary["uid"] as? String ?? ""
         self.user = user
         let secondsFrom1970 = dictionary["creationDate"] as? Double ?? 0

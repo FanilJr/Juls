@@ -9,13 +9,17 @@ import Foundation
 import UIKit
 import Firebase
 
+protocol PostViewControllerDelegate: AnyObject {
+    func reloadTable()
+}
+
 class PostTableViewController: UIViewController {
+    
+    weak var delegate: PostViewControllerDelegate?
     
     var post: Post?
     var juls = JulsView()
     var commentArray = [String]()
-    var commentCount: Int?
-    var likeCount: Int?
     
     lazy var blureForCell: UIVisualEffectView = {
         let bluereEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
@@ -25,6 +29,8 @@ class PostTableViewController: UIViewController {
         blure.clipsToBounds = true
         return blure
     }()
+    
+    
     
     lazy var imageBack: CustomImageView = {
         let imageView = CustomImageView()
@@ -72,6 +78,7 @@ class PostTableViewController: UIViewController {
     
     private func setupDidLoad() {
         self.title = "Juls"
+        setupNavButton()
         layout()
         tableView.delegate = self
         tableView.dataSource = self
@@ -92,17 +99,30 @@ class PostTableViewController: UIViewController {
         }
     }
     
+    private func setupNavButton() {
+        if post?.user.uid == Auth.auth().currentUser?.uid {
+            let deleteButton = UIBarButtonItem(image: UIImage(systemName: "trash"), style: .plain, target: self, action: #selector(deleteAction))
+            deleteButton.tintColor = UIColor.createColor(light: .black, dark: .white)
+            navigationItem.rightBarButtonItem = deleteButton
+        }
+    }
+    
+    @objc func deleteAction() {
+        let alertController = UIAlertController(title: "Удалить пост", message: "Вы действительно хотите удалить пост?", preferredStyle: .alert)
+        let alertDelete = UIAlertAction(title: "Удалить", style: .destructive, handler: { _ in
+            Database.database().deletePost(withUID: self.post?.user.uid ?? "", postId: self.post?.id ?? "")
+            self.navigationController?.popViewController(animated: true)
+            self.delegate?.reloadTable()
+        })
+        let alertCancel = UIAlertAction(title: "Отмена", style: .cancel)
+        [alertCancel,alertDelete].forEach { alertController.addAction($0) }
+        present(alertController, animated: true)
+    }
+    
     
     func fetchPost() {
         guard let imageUrl = self.post?.imageUrl else { return }
         self.imageBack.loadImage(urlString: imageUrl)
-        Database.database().numberOfLikesForPost(withPostId: self.post?.id ?? "") { count in
-            self.likeCount = count
-        }
-        Database.database().fetchCommetsCount(withPostId: self.post?.id ?? "") { count in
-            self.commentCount = count
-            self.tableView.reloadData()
-        }
     }
     
     static func showPost(_ viewController: UIViewController, post: Post) {
@@ -147,8 +167,8 @@ extension PostTableViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: "PostTableViewCell", for: indexPath) as! PostTableViewCell
         cell.selectionStyle = UITableViewCell.SelectionStyle.none
         cell.backgroundColor = .clear
+        cell.post = self.post
         cell.delegate = self
-        cell.configureTable(post: self.post)
         return cell
     }
     

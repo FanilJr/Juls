@@ -13,7 +13,33 @@ protocol CommentDelegate: AnyObject {
     func didTapComment()
     func didTapLike(for cell: PostTableViewCell)
 }
+
 class PostTableViewCell: UITableViewCell {
+    
+    var post: Post? {
+        didSet {
+            guard let authorImageUrl = post?.user.picture else { return }
+            guard let postImageUrl = post?.imageUrl else { return }
+            guard let likes = post?.likes else { return }
+            guard let comments = post?.comments else { return }
+            
+            self.commentCount.text = "\(comments)"
+            self.likeCount.text = "\(likes)"
+            self.nameAuthor.text = post?.user.username
+            self.datePost.text = post?.creationDate.timeAgoDisplay()
+                
+            let attributedText = NSMutableAttributedString(string: post?.user.username ?? "")
+            attributedText.addAttribute(.font, value: UIFont.systemFont(ofSize: 14, weight: .bold), range: NSRange(location: 0, length: post?.user.username.count ?? 0))
+            let attributeComment = NSAttributedString(string: "  \(post?.message ?? "")")
+            attributedText.append(attributeComment)
+            self.descriptionText.attributedText = attributedText
+            
+            likeButton.setBackgroundImage(post?.hasLiked == true ? UIImage(named: "heart.circle.fill@100x") : UIImage(systemName: "heart.circle.fill"), for: .normal)
+            
+            self.authorImage.loadImage(urlString: authorImageUrl)
+            self.postImage.loadImage(urlString: postImageUrl)
+        }
+    }
     
     weak var delegate: CommentDelegate?
     
@@ -100,7 +126,7 @@ class PostTableViewCell: UITableViewCell {
     
     lazy var likeCount: UILabel = {
         let name = UILabel()
-        name.textColor = UIColor.createColor(light: .gray, dark: .white)
+        name.textColor = UIColor.createColor(light: .systemGray5, dark: .white)
         name.shadowColor = UIColor.createColor(light: .black, dark: .gray)
         name.font = .systemFont(ofSize: 15, weight: .bold)
         name.shadowOffset = CGSize(width: 1, height: 1)
@@ -117,6 +143,18 @@ class PostTableViewCell: UITableViewCell {
         button.addTarget(self, action: #selector(tapComment), for: .touchUpInside)
         button.tintColor = .white
         return button
+    }()
+    
+    lazy var commentCount: UILabel = {
+        let name = UILabel()
+        name.textColor = UIColor.createColor(light: .systemGray5, dark: .white)
+        name.shadowColor = UIColor.createColor(light: .black, dark: .gray)
+        name.font = .systemFont(ofSize: 15, weight: .bold)
+        name.shadowOffset = CGSize(width: 1, height: 1)
+        name.clipsToBounds = true
+        name.translatesAutoresizingMaskIntoConstraints = false
+        name.backgroundColor = .clear
+        return name
     }()
     
     lazy var likeButton: UIButton = {
@@ -147,18 +185,10 @@ class PostTableViewCell: UITableViewCell {
     }
     
     func constraints() {
-         [authorImage, nameAuthor, postImage, whiteView, commentButton, likeButton,likeCount, descriptionText, commentCountLabel, datePost].forEach { contentView.addSubview($0) }
+         [postImage,whiteView,commentButton,commentCount,likeButton,likeCount,descriptionText,commentCountLabel,datePost].forEach { contentView.addSubview($0) }
         
         NSLayoutConstraint.activate([
-            authorImage.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10),
-            authorImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
-            authorImage.heightAnchor.constraint(equalToConstant: 50),
-            authorImage.widthAnchor.constraint(equalToConstant: 50),
-            
-            nameAuthor.centerYAnchor.constraint(equalTo: authorImage.centerYAnchor),
-            nameAuthor.leadingAnchor.constraint(equalTo: authorImage.trailingAnchor,constant: 10),
-            
-            postImage.topAnchor.constraint(equalTo: authorImage.bottomAnchor,constant: 10),
+            postImage.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10),
             postImage.heightAnchor.constraint(lessThanOrEqualToConstant: 600),
             postImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 5),
             postImage.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -5),
@@ -168,52 +198,32 @@ class PostTableViewCell: UITableViewCell {
             whiteView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -5),
             whiteView.bottomAnchor.constraint(equalTo: datePost.bottomAnchor,constant: 15),
             
-            commentButton.topAnchor.constraint(equalTo: postImage.bottomAnchor,constant: 10),
-            commentButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
+            commentButton.bottomAnchor.constraint(equalTo: likeButton.topAnchor,constant: -10),
+            commentButton.trailingAnchor.constraint(equalTo: postImage.trailingAnchor,constant: -10),
             commentButton.heightAnchor.constraint(equalToConstant: 30),
             commentButton.widthAnchor.constraint(equalToConstant: 30),
             
-            likeButton.topAnchor.constraint(equalTo: postImage.bottomAnchor,constant: 10),
-            likeButton.leadingAnchor.constraint(equalTo: commentButton.trailingAnchor,constant: 10),
+            commentCount.centerYAnchor.constraint(equalTo: commentButton.centerYAnchor),
+            commentCount.trailingAnchor.constraint(equalTo: commentButton.leadingAnchor,constant: -10),
+            
+            likeButton.bottomAnchor.constraint(equalTo: postImage.bottomAnchor,constant: -10),
+            likeButton.trailingAnchor.constraint(equalTo: postImage.trailingAnchor,constant: -10),
             likeButton.heightAnchor.constraint(equalToConstant: 30),
             likeButton.widthAnchor.constraint(equalToConstant: 30),
             
             likeCount.centerYAnchor.constraint(equalTo: likeButton.centerYAnchor),
-            likeCount.leadingAnchor.constraint(equalTo: likeButton.trailingAnchor,constant: 10),
+            likeCount.trailingAnchor.constraint(equalTo: likeButton.leadingAnchor,constant: -10),
             
-            descriptionText.topAnchor.constraint(equalTo: commentButton.bottomAnchor,constant: 10),
-            descriptionText.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
+            descriptionText.topAnchor.constraint(equalTo: postImage.bottomAnchor,constant: 10),
+            descriptionText.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 15),
             descriptionText.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             
             commentCountLabel.topAnchor.constraint(equalTo: descriptionText.bottomAnchor,constant: 10),
-            commentCountLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
+            commentCountLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 15),
             
             datePost.topAnchor.constraint(equalTo: commentCountLabel.bottomAnchor,constant: 5),
-            datePost.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
+            datePost.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 15),
             datePost.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -25)
         ])
-    }
-    
-    func configureTable(post: Post?) {
-        guard let authorImageUrl = post?.user.picture else { return }
-        guard let postImageUrl = post?.imageUrl else { return }
-        guard let likes = post?.likes else { return }
-        guard let comments = post?.comments else { return }
-        
-        self.commentCountLabel.text = "Комментарии (\(comments))"
-        self.likeCount.text = "\(likes)"
-        self.nameAuthor.text = post?.user.username
-        self.datePost.text = post?.creationDate.timeAgoDisplay()
-            
-        let attributedText = NSMutableAttributedString(string: post?.user.username ?? "")
-        attributedText.addAttribute(.font, value: UIFont.systemFont(ofSize: 14, weight: .bold), range: NSRange(location: 0, length: post?.user.username.count ?? 0))
-        let attributeComment = NSAttributedString(string: "  \(post?.message ?? "")")
-        attributedText.append(attributeComment)
-        self.descriptionText.attributedText = attributedText
-        
-        likeButton.setBackgroundImage(post?.hasLiked == true ? UIImage(named: "heart.circle.fill@100x") : UIImage(systemName: "heart.circle.fill"), for: .normal)
-        
-        self.authorImage.loadImage(urlString: authorImageUrl)
-        self.postImage.loadImage(urlString: postImageUrl)
     }
 }

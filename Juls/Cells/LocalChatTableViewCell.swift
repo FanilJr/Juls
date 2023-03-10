@@ -1,22 +1,22 @@
 //
-//  CommentsTableViewCell.swift
+//  LocalChatTableViewCell.swift
 //  Juls
 //
-//  Created by Fanil_Jr on 11.02.2023.
+//  Created by Fanil_Jr on 09.03.2023.
 //
 
+import Foundation
 import UIKit
-import Firebase
 
-class CommentsTableViewCell: UITableViewCell {
-
-    var comments: Comment? {
+class LocalChatTableViewCell: UITableViewCell {
+    
+    var messages: Message? {
         didSet {
-            guard let image = comments?.user.picture else { return }
-            profileImageView.loadImage(urlString: image)
-            descriptionNameandText.text = comments?.text
-            nameCommentUser.text = comments?.user.username
-            timeAgo.text = comments?.creationDate.timeAgoDisplay()
+            guard let userImage = messages?.user.picture else { return }
+            profileImageView.loadImage(urlString: userImage)
+            nameCommentUser.text = messages?.user.username
+            descriptionNameandText.text = messages?.text
+            timeAgo.text = messages?.creationDate.timeAgoDisplay()
         }
     }
     

@@ -47,7 +47,7 @@ class MessagePostViewController: UIViewController {
         return textField
     }()
     
-    let customImage: UIImageView = {
+    lazy var customImage: UIImageView = {
         let image = UIImageView()
         image.translatesAutoresizingMaskIntoConstraints = false
         image.contentMode = .scaleAspectFill
