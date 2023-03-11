@@ -137,19 +137,13 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
     }
     
     func layout() {
-        [statusLabel].forEach { stackViewVertical.addArrangedSubview($0) }
-        [userImage,stackViewVertical,followButton].forEach { addSubview($0) }
+        [userImage,followButton].forEach { addSubview($0) }
         
         NSLayoutConstraint.activate([
             userImage.topAnchor.constraint(equalTo: topAnchor),
             userImage.leadingAnchor.constraint(equalTo: leadingAnchor),
             userImage.trailingAnchor.constraint(equalTo: trailingAnchor),
             userImage.bottomAnchor.constraint(equalTo: bottomAnchor),
-            
-            stackViewVertical.leadingAnchor.constraint(equalTo: leadingAnchor,constant: 10),
-            stackViewVertical.heightAnchor.constraint(equalToConstant: 120),
-            stackViewVertical.trailingAnchor.constraint(equalTo: trailingAnchor),
-            stackViewVertical.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -40),
             
             followButton.topAnchor.constraint(equalTo: topAnchor,constant: 10),
             followButton.trailingAnchor.constraint(equalTo: trailingAnchor,constant: -10),

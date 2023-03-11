@@ -19,28 +19,21 @@ class MessagePostViewController: UIViewController {
     weak var delegatePost: MessagePostDelegate?
     
     private let spinnerViewForPost: UIActivityIndicatorView = {
-        let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .large)
-        activityView.color = .white
+        let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .medium)
+        activityView.color = UIColor.createColor(light: .black, dark: .white)
         activityView.hidesWhenStopped = true
         activityView.translatesAutoresizingMaskIntoConstraints = false
         return activityView
-    }()
-    
-    let background: UIImageView = {
-        let background = UIImageView()
-        background.image = UIImage(named: "back")
-        background.translatesAutoresizingMaskIntoConstraints = false
-        return background
     }()
     
     lazy var customTextfield: UITextView = {
         let textField = UITextView()
         textField.font = UIFont.systemFont(ofSize: 18, weight: .light)
         textField.backgroundColor = .systemGray6
-        textField.tintColor = UIColor(named: "#4885CC")
+        textField.textColor = UIColor.createColor(light: .black, dark: .white)
         textField.returnKeyType = .done
         textField.layer.borderWidth = 0.5
-        textField.layer.cornerRadius = 12
+        textField.layer.cornerRadius = 10
         textField.addDoneButton(title: "Done", target: self, selector: #selector(tapDone))
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.delegate = self
@@ -90,8 +83,9 @@ class MessagePostViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .clear
+        view.backgroundColor = .systemBackground
         layout()
+        tapScreen()
     }
     
     @objc func tapDone() {
@@ -122,29 +116,24 @@ class MessagePostViewController: UIViewController {
     }
     
     func layout() {
-        [background,cancelButton,sendPostButton,customTextfield,customImage,customAddPhotoButton,spinnerViewForPost].forEach { view.addSubview($0) }
+        [cancelButton,sendPostButton,customTextfield,customImage,customAddPhotoButton,spinnerViewForPost].forEach { view.addSubview($0) }
         
         NSLayoutConstraint.activate([
-            background.topAnchor.constraint(equalTo: view.topAnchor),
-            background.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            background.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            background.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            cancelButton.topAnchor.constraint(equalTo: background.topAnchor,constant: 20),
-            cancelButton.leadingAnchor.constraint(equalTo: background.leadingAnchor,constant: 20),
+            cancelButton.topAnchor.constraint(equalTo: view.topAnchor,constant: 20),
+            cancelButton.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 20),
             
             sendPostButton.centerYAnchor.constraint(equalTo: cancelButton.centerYAnchor),
-            sendPostButton.trailingAnchor.constraint(equalTo: background.trailingAnchor,constant: -20),
+            sendPostButton.trailingAnchor.constraint(equalTo: view.trailingAnchor,constant: -20),
             sendPostButton.heightAnchor.constraint(equalToConstant: 40),
             sendPostButton.widthAnchor.constraint(equalToConstant: 120),
             
             customTextfield.topAnchor.constraint(equalTo: cancelButton.bottomAnchor,constant: 20),
-            customTextfield.leadingAnchor.constraint(equalTo: background.leadingAnchor,constant: 20),
-            customTextfield.trailingAnchor.constraint(equalTo: background.trailingAnchor,constant: -20),
-            customTextfield.heightAnchor.constraint(equalToConstant: 44),
+            customTextfield.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 20),
+            customTextfield.trailingAnchor.constraint(equalTo: view.trailingAnchor,constant: -20),
+            customTextfield.heightAnchor.constraint(equalToConstant: 38),
             
             customImage.topAnchor.constraint(equalTo: customTextfield.bottomAnchor,constant: 20),
-            customImage.centerXAnchor.constraint(equalTo: background.centerXAnchor),
+            customImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             customImage.heightAnchor.constraint(equalToConstant: 280),
             customImage.widthAnchor.constraint(equalToConstant: 150),
             
@@ -152,7 +141,7 @@ class MessagePostViewController: UIViewController {
             spinnerViewForPost.centerYAnchor.constraint(equalTo: sendPostButton.centerYAnchor),
   
             customAddPhotoButton.topAnchor.constraint(equalTo: customTextfield.bottomAnchor,constant: 20),
-            customAddPhotoButton.leadingAnchor.constraint(equalTo: background.leadingAnchor,constant: 20)
+            customAddPhotoButton.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 20)
         ])
     }
 }
@@ -177,5 +166,17 @@ extension UITextView {
         let barButton = UIBarButtonItem(title: title, style: .plain, target: target, action: selector)
         toolBar.setItems([flexible, barButton], animated: false)
         self.inputAccessoryView = toolBar
+    }
+}
+
+extension MessagePostViewController {
+    func tapScreen() {
+        let recognizer: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        recognizer.cancelsTouchesInView = false
+        view.addGestureRecognizer(recognizer)
+    }
+    
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
     }
 }

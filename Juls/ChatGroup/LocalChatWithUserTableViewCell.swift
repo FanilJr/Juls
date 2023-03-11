@@ -1,14 +1,15 @@
 //
-//  LocalChatTableViewCell.swift
+//  LocalChatWithUserTableViewCell.swift
 //  Juls
 //
-//  Created by Fanil_Jr on 09.03.2023.
+//  Created by Fanil_Jr on 11.03.2023.
 //
 
 import Foundation
 import UIKit
+import Firebase
 
-class LocalChatTableViewCell: UITableViewCell {
+class LocalChatWithUserTableViewCell: UITableViewCell {
     
     var messages: Message? {
         didSet {
@@ -74,13 +75,14 @@ class LocalChatTableViewCell: UITableViewCell {
             nameCommentUser.heightAnchor.constraint(equalToConstant: 20),
             nameCommentUser.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor,constant: 10),
             
-            timeAgo.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -10),
+            timeAgo.leadingAnchor.constraint(equalTo: nameCommentUser.trailingAnchor,constant: 5),
             timeAgo.centerYAnchor.constraint(equalTo: nameCommentUser.centerYAnchor),
             
             descriptionNameandText.topAnchor.constraint(equalTo: nameCommentUser.bottomAnchor),
             descriptionNameandText.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor,constant: 10),
-            descriptionNameandText.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -30),
+            descriptionNameandText.widthAnchor.constraint(lessThanOrEqualToConstant: 250),
             descriptionNameandText.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -10),
         ])
     }
 }
+

@@ -22,7 +22,6 @@ class MessagesTableViewCell: UITableViewCell {
     
     let usernameLabel: UILabel = {
         let user = UILabel()
-        user.text = "username"
         user.font = UIFont.boldSystemFont(ofSize: 14)
         user.translatesAutoresizingMaskIntoConstraints = false
         return user

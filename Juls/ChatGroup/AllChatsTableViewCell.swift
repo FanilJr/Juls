@@ -24,6 +24,12 @@ class AllChatsTableViewCell: UITableViewCell {
         }
     }
     
+    var message: Message? {
+        didSet {
+            
+        }
+    }
+    
     let profileImageView: CustomImageView = {
         let pi = CustomImageView()
         pi.contentMode = .scaleAspectFill
@@ -43,7 +49,7 @@ class AllChatsTableViewCell: UITableViewCell {
     
     let lastMessage: UILabel = {
         let message = UILabel()
-        message.font = UIFont.boldSystemFont(ofSize: 14)
+        message.font = UIFont.boldSystemFont(ofSize: 12)
         message.text = "Последнее сообщение"
         message.translatesAutoresizingMaskIntoConstraints = false
         return message

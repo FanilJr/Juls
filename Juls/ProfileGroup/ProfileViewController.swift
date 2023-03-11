@@ -93,7 +93,7 @@ class ProfileViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemGray6
+        view.backgroundColor = .systemBackground
         setupDidLoad()
     }
     
@@ -596,7 +596,6 @@ extension ProfileViewController: UICollectionViewDataSource {
             cell.iFollowButton.setTitle("\(iFollowUsers ?? 0)", for: .normal)
             cell.followMeButton.setTitle("\(followMeUsers ?? 0)", for: .normal)
             cell.delegate = self
-            cell.backgroundColor = .systemGray2
             return cell
         case 1:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotosCollectionViewCell", for: indexPath) as! PhotosCollectionViewCell
@@ -687,7 +686,7 @@ extension ProfileViewController: UICollectionViewDelegateFlowLayout {
         switch indexPath.section {
         case 0:
             let width = collectionView.bounds.width
-            let height = CGFloat(220)
+            let height = CGFloat(160)
             return CGSize(width: width, height: height)
         case 1:
             let width = (view.frame.width - spacing * 4) / 3

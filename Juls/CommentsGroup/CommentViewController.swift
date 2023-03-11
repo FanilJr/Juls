@@ -19,9 +19,17 @@ class CommentViewController: UIViewController {
 
     lazy var containerView: UIView = {
         let containterView = UIView()
-        containterView.backgroundColor = .white
+        containterView.backgroundColor = .systemGray6
         containterView.translatesAutoresizingMaskIntoConstraints = false
         return containterView
+    }()
+    
+    private let spinnerView: UIActivityIndicatorView = {
+        let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .medium)
+        activityView.color = UIColor.createColor(light: .black, dark: .white)
+        activityView.hidesWhenStopped = true
+        activityView.translatesAutoresizingMaskIntoConstraints = false
+        return activityView
     }()
     
     lazy var blureForCell: UIVisualEffectView = {
@@ -49,6 +57,8 @@ class CommentViewController: UIViewController {
         textfield.placeholder = "Enter comment"
         textfield.layer.cornerRadius = 16
         textfield.clipsToBounds = true
+        textfield.backgroundColor = .systemBackground
+        textfield.textColor = UIColor.createColor(light: .black, dark: .white)
         textfield.layer.borderColor = UIColor.black.cgColor
         textfield.layer.borderWidth = 0.5
         textfield.setLeftPaddingPoints(12)
@@ -90,6 +100,9 @@ class CommentViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
         tableView.separatorStyle = .none
+        let recognizer: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        recognizer.cancelsTouchesInView = false
+        tableView.addGestureRecognizer(recognizer)
         tableView.dataSource = self
         tableView.delegate = self
         tableView.register(CommentsTableViewCell.self, forCellReuseIdentifier: "CommentsTableViewCell")
@@ -112,9 +125,13 @@ class CommentViewController: UIViewController {
         imageBack.loadImage(urlString: imageUrl)
         title = "Комментарии"
         setupLayout()
-        tapScreen()
         fetchCommentsPost()
         loadImageCurrentUser()
+    }
+    
+    private func setupWillAppear() {
+        addObserver()
+        tabBarController?.tabBar.isHidden = true
     }
     
     func fetchCommentsPost() {
@@ -123,14 +140,18 @@ class CommentViewController: UIViewController {
             DispatchQueue.main.async {
                 self.comments.removeAll()
                 self.comments = comments
+                self.tableView.setContentOffset(CGPointMake(0, self.containerView.center.y-60), animated: true)
                 self.tableView.reloadData()
             }
         }
     }
     
-    private func setupWillAppear() {
-        addObserver()
-        tabBarController?.tabBar.isHidden = true
+    func waitingSpinnerEnable(_ active: Bool) {
+        if active {
+            spinnerView.startAnimating()
+        } else {
+            spinnerView.stopAnimating()
+        }
     }
     
     func loadImageCurrentUser() {
@@ -145,6 +166,9 @@ class CommentViewController: UIViewController {
     }
     
     @objc func pushComment() {
+        self.sendCommentButton.isEnabled = false
+        self.sendCommentButton.alpha = 0
+        self.waitingSpinnerEnable(true)
         guard let postId = post?.id else { return }
         guard let textComment = textfield.text else { return }
         
@@ -154,6 +178,9 @@ class CommentViewController: UIViewController {
             }
             print("success insert comment:", textComment)
             self.fetchCommentsPost()
+            self.sendCommentButton.isEnabled = true
+            self.sendCommentButton.alpha = 1
+            self.waitingSpinnerEnable(false)
         }
         textfield.text = ""
     }
@@ -174,6 +201,7 @@ class CommentViewController: UIViewController {
             tableView.contentInset.bottom = kdbSize.height
             tableView.verticalScrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: kdbSize.height, right: 0)
             self.containerView.transform = CGAffineTransform(translationX: 0, y: -kdbSize.height)
+            tableView.setContentOffset(CGPointMake(0, containerView.center.y-60), animated: true)
         }
     }
 
@@ -185,7 +213,7 @@ class CommentViewController: UIViewController {
     
     func setupLayout() {
         [background,imageBack,blureForCell,tableView,containerView].forEach { view.addSubview($0) }
-        [authorComment, textfield, sendCommentButton].forEach { containerView.addSubview($0) }
+        [authorComment, textfield, sendCommentButton,spinnerView].forEach { containerView.addSubview($0) }
         
         NSLayoutConstraint.activate([
             background.topAnchor.constraint(equalTo: view.topAnchor),
@@ -223,8 +251,11 @@ class CommentViewController: UIViewController {
             textfield.heightAnchor.constraint(equalToConstant: 35),
             
             sendCommentButton.centerYAnchor.constraint(equalTo: authorComment.centerYAnchor),
-            sendCommentButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor,constant: -15),
-            sendCommentButton.heightAnchor.constraint(equalToConstant: 50)
+            sendCommentButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor,constant: -20),
+            sendCommentButton.heightAnchor.constraint(equalToConstant: 50),
+            
+            spinnerView.centerYAnchor.constraint(equalTo: sendCommentButton.centerYAnchor),
+            spinnerView.centerXAnchor.constraint(equalTo: sendCommentButton.centerXAnchor)
         ])
     }
     

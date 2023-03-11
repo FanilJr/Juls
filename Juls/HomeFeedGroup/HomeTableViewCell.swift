@@ -203,7 +203,7 @@ class HomeTableViewCell: UITableViewCell {
             nameAuthor.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             
             postImage.topAnchor.constraint(equalTo: nameAuthor.bottomAnchor,constant: 10),
-            postImage.heightAnchor.constraint(lessThanOrEqualToConstant: 600),
+            postImage.heightAnchor.constraint(lessThanOrEqualToConstant: 530),
             postImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 5),
             postImage.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -5),
             
@@ -212,13 +212,13 @@ class HomeTableViewCell: UITableViewCell {
             whiteViewForDescription.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -5),
             whiteViewForDescription.bottomAnchor.constraint(equalTo: datePost.bottomAnchor,constant: 15),
             
-            commentButton.bottomAnchor.constraint(equalTo: postImage.bottomAnchor,constant: -10),
-            commentButton.leadingAnchor.constraint(equalTo: postImage.leadingAnchor,constant: 10),
+            commentButton.bottomAnchor.constraint(equalTo: likeButton.topAnchor,constant: -10),
+            commentButton.trailingAnchor.constraint(equalTo: postImage.trailingAnchor,constant: -10),
             commentButton.heightAnchor.constraint(equalToConstant: 30),
-            commentButton.widthAnchor.constraint(equalToConstant: 30),
+            commentButton.widthAnchor.constraint(equalToConstant: 30),              
             
             commentCount.centerYAnchor.constraint(equalTo: commentButton.centerYAnchor),
-            commentCount.leadingAnchor.constraint(equalTo: commentButton.trailingAnchor,constant: 10),
+            commentCount.trailingAnchor.constraint(equalTo: commentButton.leadingAnchor,constant: -10),
             
             likeButton.bottomAnchor.constraint(equalTo: postImage.bottomAnchor,constant: -10),
             likeButton.trailingAnchor.constraint(equalTo: postImage.trailingAnchor,constant: -10),

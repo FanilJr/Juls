@@ -1,21 +1,21 @@
 //
-//  MessagesViewController.swift
+//  SearchController.swift
 //  Juls
 //
-//  Created by Fanil_Jr on 24.02.2023.
+//  Created by Fanil_Jr on 06.01.2023.
 //
 
+import Foundation
 import UIKit
 import Firebase
 
-class MessagesViewController: UIViewController {
+class SearchViewController: UIViewController {
     
-    var user: User?
-    var users = [User]()
     var filteredUsers = [User]()
+    var users = [User]()
+    var experimentUser = [User]()
     var post = [Post]()
     let juls = JulsView()
-    var chats: String?
     var refreshControler = UIRefreshControl()
     
     var searchController: UISearchController = {
@@ -36,27 +36,23 @@ class MessagesViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
         tableView.refreshControl = refreshControler
-        tableView.register(AllChatsTableViewCell.self, forCellReuseIdentifier: "AllChatsTableViewCell")
+        tableView.register(CellIdTableViewCell.self, forCellReuseIdentifier: "CellIdTableViewCell")
         return tableView
     }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupDidLoad()
-        
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.users = []
-        fetchAllMessages()
         searchController.searchBar.isHidden = false
     }
     
     private func setupDidLoad() {
-        setupNavButton()
         view.backgroundColor = .systemBackground
-        title = "Сообщения"
+        title = "Поиск"
         navigationItem.searchController = searchController
         layout()
         refreshControler.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
@@ -66,32 +62,40 @@ class MessagesViewController: UIViewController {
         tableView.dataSource = self
         tableView.alwaysBounceVertical = true
         tableView.keyboardDismissMode = .onDrag
-    }
-    
-    func fetchAllMessages() {
-        guard let uid = user?.uid else { return }
-        Database.database().fetchAllMessages(userUID: uid) { users in
-            self.tableView.refreshControl?.endRefreshing()
-            self.users = users
-            self.tableView.reloadData()
-        }
+        self.fetchUsers()
     }
     
     @objc func didTapRefresh() {
-        self.users = []
-        self.fetchAllMessages()
+        self.users.removeAll()
+        self.filteredUsers.removeAll()
+        self.experimentUser.removeAll()
+        self.fetchUsers()
     }
 
-    func setupNavButton() {
-        let addButton = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(addContact))
-        addButton.tintColor = UIColor.createColor(light: .black, dark: .white)
-        navigationItem.rightBarButtonItem = addButton
-    }
-    
-    @objc func addContact() {
-        let contactMessagesVC = ContactsMessagesViewController()
-        contactMessagesVC.delegate = self
-        navigationController?.present(contactMessagesVC, animated: true)
+    func fetchUsers() {
+        let ref = Database.database().reference().child("users")
+        DispatchQueue.main.async {
+            ref.observeSingleEvent(of: .value, with: { snapshot in
+                self.tableView.refreshControl?.endRefreshing()
+                guard let dictionaries = snapshot.value as? [String: Any] else { return }
+                
+                dictionaries.forEach { key, value in
+                    if key == Auth.auth().currentUser?.uid {
+                        return
+                    }
+                    guard let userDictionary = value as? [String: Any] else { return }
+                    
+                    let user = User(uid: key, dictionary: userDictionary)
+                    self.users.append(user)
+                }
+                self.filteredUsers = self.users
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
+                }
+            }) { err in
+                print("Failed to fetch users", err)
+            }
+        }
     }
     
     func layout() {
@@ -106,59 +110,55 @@ class MessagesViewController: UIViewController {
     }
 }
 
-extension MessagesViewController: UITableViewDataSource {
+extension SearchViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableView.automaticDimension
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return users.count
+        return experimentUser.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "AllChatsTableViewCell", for: indexPath) as! AllChatsTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "CellIdTableViewCell", for: indexPath) as! CellIdTableViewCell
         cell.backgroundColor = .clear
+        cell.configureTable(user: experimentUser[indexPath.row])
         cell.selectionStyle = UITableViewCell.SelectionStyle.none
-        cell.user = users[indexPath.row]
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let user = users[indexPath.row]
-        let chatWithUserVC = ChatViewController()
-        chatWithUserVC.userFriend = user
-        chatWithUserVC.user = self.user
-        self.navigationController?.pushViewController(chatWithUserVC, animated: true)
+        let user = experimentUser[indexPath.item]
+        guard let myUserId = Auth.auth().currentUser?.uid else { return }
+        if myUserId == user.uid {
+            print("hello myUser")
+        } else {
+            let profileVcUser = ProfileViewController(viewModel: ProfileViewModel())
+            profileVcUser.userId = user.uid
+            navigationController?.pushViewController(profileVcUser, animated: true)
+            searchController.searchBar.isHidden = true
+            searchController.searchBar.resignFirstResponder()
+        }
     }
 }
 
-extension MessagesViewController: UITableViewDelegate {
+extension SearchViewController: UITableViewDelegate {
     
 }
 
-extension MessagesViewController: UISearchBarDelegate {
+extension SearchViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         
         if searchText.isEmpty {
-            print(searchText)
+            experimentUser = []
         } else {
-           filteredUsers = users.filter { user -> Bool in
+            self.experimentUser = self.users
+            self.experimentUser = self.users.filter { user -> Bool in
                 return user.username.lowercased().contains(searchText.lowercased())
             }
         }
-        tableView.reloadData()
-    }
-}
-
-extension MessagesViewController: ContactsDelegate {
-    
-    func dismisAndPushChat(user: User) {
-        self.dismiss(animated: true)
-        let chatWithUserVC = ChatViewController()
-        chatWithUserVC.userFriend = user
-        chatWithUserVC.user = self.user
-        self.navigationController?.pushViewController(chatWithUserVC, animated: true)
+        self.tableView.reloadData()
     }
 }
 

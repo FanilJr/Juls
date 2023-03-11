@@ -10,7 +10,6 @@ import Firebase
 
 class HomeViewController: UIViewController {
 
-    
     var posts = [Post]()
     var juls = JulsView()
     var user: User?
@@ -51,8 +50,10 @@ class HomeViewController: UIViewController {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
+        tableView.separatorStyle = .none
         tableView.backgroundView = HomeEmptyStateView()
         tableView.refreshControl = refreshControler
+        tableView.register(StorysTableViewCell.self, forCellReuseIdentifier: "StorysTableViewCell")
         tableView.register(HomeTableViewCell.self, forCellReuseIdentifier: "HomeTableViewCell")
         return tableView
     }()
@@ -69,6 +70,7 @@ class HomeViewController: UIViewController {
     
     private func setupDidLoad() {
         title = "Лента"
+        view.backgroundColor = .systemBackground
         fetchUserForImageBack()
         tableView.delegate = self
         tableView.dataSource = self
@@ -83,6 +85,7 @@ class HomeViewController: UIViewController {
     }
     
     @objc func didTapRefresh() {
+        self.fetchUserForImageBack()
         self.fetchAllPosts()
     }
     
@@ -198,22 +201,47 @@ extension HomeViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return posts.count
+        
+//        switch section {
+//        case 0:
+//            return 0
+//        case 1:
+            return posts.count
+//        default:
+//            return 0
+//        }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "HomeTableViewCell", for: indexPath) as! HomeTableViewCell
-        cell.selectionStyle = UITableViewCell.SelectionStyle.none
-        if indexPath.row < posts.count {
-            cell.configureHomeTable(post: posts[indexPath.row])
-        }
-        cell.delegate = self
-        cell.backgroundColor = .clear
-        return cell
+        
+//        switch indexPath.section {
+//        case 0:
+//            let cell = tableView.dequeueReusableCell(withIdentifier: "StorysTableViewCell", for: indexPath) as! StorysTableViewCell
+//            cell.backgroundColor = .red
+//            return cell
+//        case 1:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "HomeTableViewCell", for: indexPath) as! HomeTableViewCell
+            cell.selectionStyle = UITableViewCell.SelectionStyle.none
+            if indexPath.row < posts.count {
+                cell.configureHomeTable(post: posts[indexPath.row])
+            }
+            cell.delegate = self
+            cell.backgroundColor = .clear
+            return cell
+//        default:
+//            return UITableViewCell()
+//        }
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        CommentViewController.showComment(self, post: posts[indexPath.row])
+//        switch indexPath.section {
+//        case 0:
+//            print("hui")
+//        case 1:
+            CommentViewController.showComment(self, post: posts[indexPath.row])
+//        default:
+//            print("nothing")
+//        }
     }
 }
 
@@ -225,7 +253,6 @@ extension HomeViewController: UITableViewDelegate {
 }
 
 extension HomeViewController: HomeTableDelegate {
-    
     
     func tapComment(for cell: HomeTableViewCell) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }

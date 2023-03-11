@@ -14,6 +14,8 @@ class ChatViewController: UIViewController {
         didSet {
             guard let username = userFriend?.username else { return }
             title = "Чат с \(username)"
+            guard let imageBack = userFriend?.picture else { return }
+            self.imageBack.loadImage(urlString: imageBack)
         }
     }
     
@@ -35,9 +37,17 @@ class ChatViewController: UIViewController {
 
     lazy var containerView: UIView = {
         let containterView = UIView()
-        containterView.backgroundColor = .white
+        containterView.backgroundColor = .systemGray6
         containterView.translatesAutoresizingMaskIntoConstraints = false
         return containterView
+    }()
+    
+    private let spinnerView: UIActivityIndicatorView = {
+        let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .medium)
+        activityView.color = UIColor.createColor(light: .black, dark: .white)
+        activityView.hidesWhenStopped = true
+        activityView.translatesAutoresizingMaskIntoConstraints = false
+        return activityView
     }()
     
     lazy var blureForCell: UIVisualEffectView = {
@@ -65,6 +75,8 @@ class ChatViewController: UIViewController {
         textfield.placeholder = "Enter comment"
         textfield.layer.cornerRadius = 16
         textfield.clipsToBounds = true
+        textfield.textColor = UIColor.createColor(light: .black, dark: .white)
+        textfield.backgroundColor = .systemBackground
         textfield.layer.borderColor = UIColor.black.cgColor
         textfield.layer.borderWidth = 0.5
         textfield.setLeftPaddingPoints(12)
@@ -94,13 +106,6 @@ class ChatViewController: UIViewController {
         return button
     }()
     
-    let background: UIImageView = {
-        let back = UIImageView()
-        back.image = UIImage(named: "back")
-        back.translatesAutoresizingMaskIntoConstraints = false
-        return back
-    }()
-    
     private lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .grouped)
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -108,7 +113,11 @@ class ChatViewController: UIViewController {
         tableView.separatorStyle = .none
         tableView.dataSource = self
         tableView.delegate = self
+        let recognizer: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        recognizer.cancelsTouchesInView = false
+        tableView.addGestureRecognizer(recognizer)
         tableView.register(LocalChatTableViewCell.self, forCellReuseIdentifier: "LocalChatTableViewCell")
+        tableView.register(LocalChatWithUserTableViewCell.self, forCellReuseIdentifier: "LocalChatWithUserTableViewCell")
         return tableView
     }()
     
@@ -124,11 +133,12 @@ class ChatViewController: UIViewController {
     }
     
     private func setupDidLoad() {
+        view.backgroundColor = .systemBackground
         setupLayout()
-        tapScreen()
+        setupNavButton()
         guard let username = user?.username else { return }
         guard let friendsUsername = userFriend?.username else { return }
-        print(username, "with", friendsUsername)
+        print("open Chat", username, "with", friendsUsername, "            ~~~~~JULS~~~~~")
         fetchChat()
     }
     
@@ -137,17 +147,43 @@ class ChatViewController: UIViewController {
         tabBarController?.tabBar.isHidden = true
     }
     
+    func setupNavButton() {
+        let addButton = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(addAction))
+        addButton.tintColor = UIColor.createColor(light: .black, dark: .white)
+        navigationItem.rightBarButtonItem = addButton
+    }
+    
+    func waitingSpinnerEnable(_ active: Bool) {
+        if active {
+            spinnerView.startAnimating()
+        } else {
+            spinnerView.stopAnimating()
+        }
+    }
+    
+    @objc func addAction() {
+        
+    }
+    
     @objc func pushMessage() {
         guard let textMessage = textfield.text else { return }
         guard let userId = user?.uid else { return }
         guard let friendId = userFriend?.uid else { return }
+        self.sendCommentButton.isEnabled = false
+        self.sendCommentButton.alpha = 0
+        self.waitingSpinnerEnable(true)
         
         Database.database().pushMessageWithChatId(userUID: userId, userFriendUID: friendId, textMessage: textMessage) { error in
-            if let error {
-                print(error)
+            DispatchQueue.main.async {
+                if let error {
+                    print(error)
+                }
+                self.textfield.text = ""
+                self.fetchChat()
+                self.sendCommentButton.isEnabled = true
+                self.sendCommentButton.alpha = 1
+                self.waitingSpinnerEnable(false)
             }
-            self.textfield.text = ""
-            self.fetchChat()
         }
     }
     
@@ -155,8 +191,11 @@ class ChatViewController: UIViewController {
         guard let userId = user?.uid else { return }
         guard let friendId = userFriend?.uid else { return }
         Database.database().fetchMessageWithChatId(userUID: userId, userFriendUID: friendId) { messages in
-            self.messages = messages
-            self.tableView.reloadData()
+            DispatchQueue.main.async {
+                self.messages = messages
+                self.tableView.setContentOffset(CGPointMake(0, self.containerView.center.y-60), animated: true)
+                self.tableView.reloadData()
+            }
         }
     }
     
@@ -175,7 +214,9 @@ class ChatViewController: UIViewController {
         if let kdbSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
             tableView.contentInset.bottom = kdbSize.height
             tableView.verticalScrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: kdbSize.height, right: 0)
+            
             self.containerView.transform = CGAffineTransform(translationX: 0, y: -kdbSize.height)
+            tableView.setContentOffset(CGPointMake(0, containerView.center.y-60), animated: true)
         }
     }
 
@@ -186,29 +227,14 @@ class ChatViewController: UIViewController {
     }
     
     func setupLayout() {
-        [background,imageBack,blureForCell,tableView,containerView].forEach { view.addSubview($0) }
-        [authorComment, textfield, sendCommentButton].forEach { containerView.addSubview($0) }
+        [tableView,containerView].forEach { view.addSubview($0) }
+        [authorComment, textfield, sendCommentButton,spinnerView].forEach { containerView.addSubview($0) }
         
         NSLayoutConstraint.activate([
-            background.topAnchor.constraint(equalTo: view.topAnchor),
-            background.leftAnchor.constraint(equalTo: view.leftAnchor),
-            background.rightAnchor.constraint(equalTo: view.rightAnchor),
-            background.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            imageBack.topAnchor.constraint(equalTo: view.topAnchor),
-            imageBack.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            imageBack.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            imageBack.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            blureForCell.topAnchor.constraint(equalTo: imageBack.topAnchor),
-            blureForCell.leadingAnchor.constraint(equalTo: imageBack.leadingAnchor),
-            blureForCell.trailingAnchor.constraint(equalTo: imageBack.trailingAnchor),
-            blureForCell.bottomAnchor.constraint(equalTo: imageBack.bottomAnchor),
-            
-            tableView.topAnchor.constraint(equalTo: background.topAnchor),
-            tableView.leftAnchor.constraint(equalTo: background.leftAnchor),
-            tableView.rightAnchor.constraint(equalTo: background.rightAnchor),
-            tableView.bottomAnchor.constraint(equalTo: background.bottomAnchor),
+            tableView.topAnchor.constraint(equalTo: view.topAnchor),
+            tableView.leftAnchor.constraint(equalTo: view.leftAnchor),
+            tableView.rightAnchor.constraint(equalTo: view.rightAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
             containerView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             containerView.widthAnchor.constraint(equalTo: view.widthAnchor),
@@ -225,8 +251,11 @@ class ChatViewController: UIViewController {
             textfield.heightAnchor.constraint(equalToConstant: 35),
             
             sendCommentButton.centerYAnchor.constraint(equalTo: authorComment.centerYAnchor),
-            sendCommentButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor,constant: -15),
-            sendCommentButton.heightAnchor.constraint(equalToConstant: 50)
+            sendCommentButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor,constant: -20),
+            sendCommentButton.heightAnchor.constraint(equalToConstant: 50),
+            
+            spinnerView.centerXAnchor.constraint(equalTo: sendCommentButton.centerXAnchor),
+            spinnerView.centerYAnchor.constraint(equalTo: sendCommentButton.centerYAnchor)
         ])
     }
 }
@@ -241,11 +270,20 @@ extension ChatViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "LocalChatTableViewCell", for: indexPath) as! LocalChatTableViewCell
-        cell.selectionStyle = .none
-        cell.messages = messages[indexPath.row]
-        cell.backgroundColor = .clear
-        return cell
+        let isComing = user?.uid == messages[indexPath.row].uid
+        if isComing {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "LocalChatTableViewCell", for: indexPath) as! LocalChatTableViewCell
+            cell.selectionStyle = .none
+            cell.messages = messages[indexPath.row]
+            cell.backgroundColor = .clear
+            return cell
+        } else {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "LocalChatWithUserTableViewCell", for: indexPath) as! LocalChatWithUserTableViewCell
+            cell.selectionStyle = .none
+            cell.messages = messages[indexPath.row]
+            cell.backgroundColor = .clear
+            return cell
+        }
     }
 }
 
