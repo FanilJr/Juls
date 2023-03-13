@@ -65,7 +65,7 @@ class MessagePostViewController: UIViewController {
         button.addTarget(self, action: #selector(pushPost), for: .touchUpInside)
         button.setTitle("Отправить", for: .normal)
         button.setImage(UIImage(systemName: "paperplane.fill"), for: .normal)
-        button.tintColor = .systemBlue
+        button.tintColor = #colorLiteral(red: 0.1758851111, green: 0.5897727013, blue: 0.9195605516, alpha: 1)
         button.setTitleColor(.createColor(light: .black, dark: .white), for: .normal)
         button.clipsToBounds = true
         button.layer.cornerRadius = 10

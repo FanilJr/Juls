@@ -241,7 +241,7 @@ class LoginView: UIView {
             self.registerButton.isEnabled = true
             guard let uid = user?.user.uid else { return }
             
-            let allValues = ["username": nicknameText, "name": "","secondName": "","picture": "", "years": "", "status": "", "life status": "", "height": ""]
+            let allValues = ["username": nicknameText, "name": "","secondName": "","picture": "", "years": "", "status": "", "life status": "", "height": "", "official": Bool()]
             let values = [uid: allValues]
             
             Database.database().reference().child("users").updateChildValues(values) { error, ref in

@@ -66,34 +66,16 @@ class SearchViewController: UIViewController {
     }
     
     @objc func didTapRefresh() {
-        self.users.removeAll()
-        self.filteredUsers.removeAll()
-        self.experimentUser.removeAll()
         self.fetchUsers()
     }
 
     func fetchUsers() {
-        let ref = Database.database().reference().child("users")
-        DispatchQueue.main.async {
-            ref.observeSingleEvent(of: .value, with: { snapshot in
+        Database.database().feetchUsersForSearch { users in
+            DispatchQueue.main.async {
                 self.tableView.refreshControl?.endRefreshing()
-                guard let dictionaries = snapshot.value as? [String: Any] else { return }
-                
-                dictionaries.forEach { key, value in
-                    if key == Auth.auth().currentUser?.uid {
-                        return
-                    }
-                    guard let userDictionary = value as? [String: Any] else { return }
-                    
-                    let user = User(uid: key, dictionary: userDictionary)
-                    self.users.append(user)
-                }
-                self.filteredUsers = self.users
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
-                }
-            }) { err in
-                print("Failed to fetch users", err)
+                self.users = users
+                self.filteredUsers = users
+                self.tableView.reloadData()
             }
         }
     }

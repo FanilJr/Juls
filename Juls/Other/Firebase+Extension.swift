@@ -400,15 +400,43 @@ extension Database {
                 completion(err)
                 return
             }
-            let values = ["message": text, "creationDate": Date().timeIntervalSince1970, "uid": uid] as [String: Any]
-            let messageReference = Database.database().reference().child("messages").child(uidFriend).child(uid).childByAutoId()
-            messageReference.updateChildValues(values) { (err, _) in
+            
+            let value = ["creationDateLastMessage": Date().timeIntervalSince1970] as [String: Any]
+            Database.database().reference().child("users").child(uid).updateChildValues(value) { (err, _) in
                 if let err {
                     print(err)
                     completion(err)
                     return
                 }
-                completion(nil)
+                
+                let value = ["creationDateLastMessage": Date().timeIntervalSince1970] as [String: Any]
+                Database.database().reference().child("users").child(uidFriend).updateChildValues(value) { (err, _) in
+                    if let err {
+                        print(err)
+                        completion(err)
+                        return
+                    }
+                    
+                    let values = ["message": text, "creationDate": Date().timeIntervalSince1970, "uid": uid] as [String: Any]
+                    let messageReference = Database.database().reference().child("messages").child(uidFriend).child(uid).childByAutoId()
+                    messageReference.updateChildValues(values) { (err, _) in
+                        if let err {
+                            print(err)
+                            completion(err)
+                            return
+                        }
+                        let value = ["isRead": false] as [String: Any]
+                        Database.database().reference().child("messages").child(uid).updateChildValues(value) { (err, _) in
+                            if let err {
+                                print(err)
+                                completion(err)
+                                return
+                            }
+                            completion(nil)
+                        }
+                        
+                    }
+                }
             }
         }
     }
@@ -455,6 +483,61 @@ extension Database {
                 Database.database().fetchUser(withUID: key) { user in
                     users.append(user)
                     completion(users)
+                }
+            }
+        })
+    }
+    
+    func feetchUsersForSearch(completion: @escaping ([User]) -> ()) {
+        
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        
+        let ref = Database.database().reference().child("users")
+        ref.observeSingleEvent(of: .value, with: { snapshot in
+            guard let dictionaries = snapshot.value as? [String: Any] else { return }
+            
+            var users = [User]()
+            
+            dictionaries.forEach { key, value in
+                if key == uid {
+                    return
+                }
+                guard let userDictionary = value as? [String: Any] else { return }
+                
+                let user = User(uid: key, dictionary: userDictionary)
+                users.append(user)
+            }
+            completion(users)
+        })
+    }
+    
+    func getUsersIFollow(myUserId userId: String, completion: @escaping ([User]) ->()) {
+        let ref = Database.database().reference().child("following").child(userId)
+        ref.observeSingleEvent(of: .value, with: { snapshot in
+            guard let dictionaries = snapshot.value as? [String: Any] else { return }
+            
+            var myUsers = [User]()
+            
+            dictionaries.forEach { key, value in
+                Database.database().fetchUser(withUID: key) { users in
+                    myUsers.append(users)
+                    completion(myUsers)
+                }
+            }
+        })
+    }
+    
+    func getUsersFollowMe(myUserId userId: String, completion: @escaping ([User]) ->()) {
+        let ref = Database.database().reference().child("followers").child(userId)
+        ref.observeSingleEvent(of: .value, with: { snapshot in
+            guard let dictionaries = snapshot.value as? [String: Any] else { return }
+            
+            var myUsers = [User]()
+            
+            dictionaries.forEach { key, value in
+                Database.database().fetchUser(withUID: key) { users in
+                    myUsers.append(users)
+                    completion(myUsers)
                 }
             }
         })

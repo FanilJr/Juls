@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import Firebase
 
 class AllChatsTableViewCell: UITableViewCell {
     
@@ -21,12 +22,8 @@ class AllChatsTableViewCell: UITableViewCell {
                 }
             }
             usernameLabel.text = user?.username
-        }
-    }
-    
-    var message: Message? {
-        didSet {
-            
+            guard let officialUser = user else { return }
+            fetchLastMessage(user: officialUser)
         }
     }
     
@@ -49,8 +46,14 @@ class AllChatsTableViewCell: UITableViewCell {
     
     let lastMessage: UILabel = {
         let message = UILabel()
-        message.font = UIFont.boldSystemFont(ofSize: 12)
-        message.text = "Последнее сообщение"
+        message.font = UIFont.systemFont(ofSize: 12)
+        message.translatesAutoresizingMaskIntoConstraints = false
+        return message
+    }()
+    
+    let dateMassage: UILabel = {
+        let message = UILabel()
+        message.font = UIFont.systemFont(ofSize: 10)
         message.translatesAutoresizingMaskIntoConstraints = false
         return message
     }()
@@ -64,8 +67,21 @@ class AllChatsTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    func fetchLastMessage(user: User) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        Database.database().fetchMessageWithChatId(userUID: uid, userFriendUID: user.uid) { messages in
+            guard let last = messages.last?.text else { return }
+            self.lastMessage.text = last
+        }
+        
+        Database.database().fetchMessageWithChatId(userUID: uid, userFriendUID: user.uid) { date in
+            guard let date = date.last?.creationDate.timeAgoDisplay() else { return }
+            self.dateMassage.text = date
+        }
+    }
+    
     func constraints() {
-        [profileImageView, usernameLabel,lastMessage].forEach { contentView.addSubview($0) }
+        [profileImageView, usernameLabel,lastMessage, dateMassage].forEach { contentView.addSubview($0) }
         
         NSLayoutConstraint.activate([
             profileImageView.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10),
@@ -74,11 +90,15 @@ class AllChatsTableViewCell: UITableViewCell {
             profileImageView.widthAnchor.constraint(equalToConstant: 80),
             
             usernameLabel.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor,constant: 10),
-            usernameLabel.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor),
-            usernameLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -42),
+            usernameLabel.topAnchor.constraint(equalTo: profileImageView.topAnchor),
+            usernameLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -72),
             
-            lastMessage.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -10),
+            lastMessage.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor,constant: 10),
+            lastMessage.widthAnchor.constraint(equalToConstant: 230),
             lastMessage.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor),
+            
+            dateMassage.centerYAnchor.constraint(equalTo: lastMessage.centerYAnchor),
+            dateMassage.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -10),
         ])
     }
 }

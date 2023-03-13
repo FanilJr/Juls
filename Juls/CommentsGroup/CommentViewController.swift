@@ -62,7 +62,7 @@ class CommentViewController: UIViewController {
         textfield.layer.borderColor = UIColor.black.cgColor
         textfield.layer.borderWidth = 0.5
         textfield.setLeftPaddingPoints(12)
-        textfield.setRightPaddingPoints(36)
+        textfield.setRightPaddingPoints(40)
         textfield.translatesAutoresizingMaskIntoConstraints = false
         return textfield
     }()
@@ -81,7 +81,7 @@ class CommentViewController: UIViewController {
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(pushComment), for: .touchUpInside)
         button.setImage(UIImage(systemName: "paperplane.fill"), for: .normal)
-        button.tintColor = .systemBlue
+        button.tintColor = #colorLiteral(red: 0.1758851111, green: 0.5897727013, blue: 0.9195605516, alpha: 1)
         button.setTitleColor(.createColor(light: .black, dark: .white), for: .normal)
         button.clipsToBounds = true
         button.layer.cornerRadius = 10

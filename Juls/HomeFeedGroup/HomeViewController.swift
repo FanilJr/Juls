@@ -71,7 +71,6 @@ class HomeViewController: UIViewController {
     private func setupDidLoad() {
         title = "Лента"
         view.backgroundColor = .systemBackground
-        fetchUserForImageBack()
         tableView.delegate = self
         tableView.dataSource = self
         layout()
@@ -99,6 +98,7 @@ class HomeViewController: UIViewController {
     
     fileprivate func fetchAllPosts() {
         self.posts.removeAll()
+        fetchUserForImageBack()
         showEmptyStateViewIfNeeded()
         fetchPostsForCurrentUser()
         fetchFollowingUserPosts()

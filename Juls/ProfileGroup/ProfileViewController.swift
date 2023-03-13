@@ -32,6 +32,19 @@ class ProfileViewController: UIViewController {
     let systemSoundID: SystemSoundID = 1016
     let systemSoundID2: SystemSoundID = 1018
     
+    private lazy var titleImage: UIImageView = {
+        let imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.image = UIImage(named: "pngwing.com-2")
+        imageView.layer.cornerRadius = Const.ImageSizeForLargeState / 2
+        let gesture = UITapGestureRecognizer()
+        gesture.addTarget(self, action: #selector(openInfoForOfficial))
+        imageView.isUserInteractionEnabled = true
+        imageView.addGestureRecognizer(gesture)
+        imageView.clipsToBounds = true
+        return imageView
+    }()
+    
     private let spinnerView: UIActivityIndicatorView = {
         let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .large)
         activityView.color = .white
@@ -103,6 +116,16 @@ class ProfileViewController: UIViewController {
         setupWillAppear()
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        showImage(false)
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        showImage(true)
+    }
+    
     private func setupDidLoad() {
         cgfloatTabBar = tabBarController?.tabBar.frame.origin.y
         tabBarController?.tabBar.isHidden = false
@@ -132,9 +155,25 @@ class ProfileViewController: UIViewController {
         self.navigationController?.setNavigationBarHidden(false, animated: false)
     }
     
+    /// Show or hide the image from NavBar while going to next screen or back to initial screen
+    ///
+    /// - Parameter show: show or hide the image from NavBar
+    private func showImage(_ show: Bool) {
+        UIView.animate(withDuration: 0.1) {
+            self.titleImage.alpha = show ? 1.0 : 0.0
+        }
+    }
+    
     @objc func didTapRefresh() {
         self.fetchUser()
         print("refresh Profile")
+    }
+    
+    @objc func openInfoForOfficial() {
+        let alertController = UIAlertController(title: "Подтверждающая галочка", message: "Статус: *Известная личность*", preferredStyle: .alert)
+        let alertOk = UIAlertAction(title: "OK", style: .default)
+        alertController.addAction(alertOk)
+        present(alertController, animated: true)
     }
     
     func setupNavigationButton(user: User) {
@@ -175,21 +214,37 @@ class ProfileViewController: UIViewController {
             return ellipsis
         }()
         
-        let messageButton = UIBarButtonItem(image: UIImage(systemName: "bubble.left.and.bubble.right.fill"), style: .plain, target: self, action: #selector(noname))
-        messageButton.tintColor = UIColor.createColor(light: .black, dark: .white)
+        let messageButton = UIBarButtonItem(image: UIImage(systemName: "paperplane.fill"), style: .plain, target: self, action: #selector(pushMessageController))
+        messageButton.tintColor = #colorLiteral(red: 0.1758851111, green: 0.5897727013, blue: 0.9195605516, alpha: 1)
+        
+        let messageButtonForFriend = UIBarButtonItem(image: UIImage(systemName: "paperplane.fill"), style: .plain, target: self, action: #selector(pushMessageFriendController))
+        messageButtonForFriend.tintColor = #colorLiteral(red: 0.1758851111, green: 0.5897727013, blue: 0.9195605516, alpha: 1)
+
         
         let starButton = UIBarButtonItem(image: UIImage(systemName: "star"), style: .plain, target: self, action: #selector(addFavorites))
         starButton.tintColor = UIColor.createColor(light: .black, dark: .white)
         
         if user.uid == Auth.auth().currentUser?.uid {
             navigationItem.rightBarButtonItems = [ellipsisButton,plusButton]
-            navigationItem.leftBarButtonItem = messageButton
+            navigationItem.leftBarButtonItems = [messageButton]
         } else {
-            navigationItem.rightBarButtonItem = starButton
+            navigationItem.rightBarButtonItems = [messageButtonForFriend,starButton]
         }
     }
     
-    @objc func noname() {
+    @objc func pushMessageFriendController() {
+        let chatVC = ChatViewController()
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        Database.database().fetchUser(withUID: uid) { user in
+            DispatchQueue.main.async {
+                chatVC.user = user
+                chatVC.userFriend = self.user
+                self.navigationController?.pushViewController(chatVC, animated: true)
+            }
+        }
+    }
+    
+    @objc func pushMessageController() {
         let messageVC = MessagesViewController()
         messageVC.user = user
         navigationController?.pushViewController(messageVC, animated: true)
@@ -248,26 +303,93 @@ extension ProfileViewController: UIImagePickerControllerDelegate & UINavigationC
 //MARK: FETCH USER, FETCH POSTS, SAVE CHANGE
 extension ProfileViewController {
     
+    private func moveAndResizeImage(for height: CGFloat) {
+        let coeff: CGFloat = {
+            let delta = height - Const.NavBarHeightSmallState
+            let heightDifferenceBetweenStates = (Const.NavBarHeightLargeState - Const.NavBarHeightSmallState)
+            return delta / heightDifferenceBetweenStates
+        }()
+        
+        let factor = Const.ImageSizeForSmallState / Const.ImageSizeForLargeState
+        
+        let scale: CGFloat = {
+            let sizeAddendumFactor = coeff * (1.0 - factor)
+            return min(1.0, sizeAddendumFactor + factor)
+        }()
+        
+        // Value of difference between icons for large and small states
+        let sizeDiff = Const.ImageSizeForLargeState * (1.0 - factor) // 8.0
+        
+        let yTranslation: CGFloat = {
+            /// This value = 14. It equals to difference of 12 and 6 (bottom margin for large and small states). Also it adds 8.0 (size difference when the image gets smaller size)
+            let maxYTranslation = Const.ImageBottomMarginForLargeState - Const.ImageBottomMarginForSmallState + sizeDiff
+            return max(0, min(maxYTranslation, (maxYTranslation - coeff * (Const.ImageBottomMarginForSmallState + sizeDiff))))
+        }()
+        
+        let xTranslation: CGFloat?
+        
+        guard let viewTitle = title else { return }
+        if viewTitle.count >= 9 {
+            xTranslation = max(0, 50 - coeff * 50)
+        } else {
+            xTranslation = max(0, 100 - coeff * 100)
+        }
+        
+        titleImage.transform = CGAffineTransform.identity
+            .scaledBy(x: scale, y: scale)
+            .translatedBy(x: xTranslation!, y: yTranslation)
+    }
+    
+    func fetchTick() {
+        guard let navBar = navigationController?.navigationBar else { return }
+        navBar.addSubview(titleImage)
+        guard let viewTitle = title else { return }
+        
+        if viewTitle.count >= 9 {
+            NSLayoutConstraint.activate([
+                titleImage.centerXAnchor.constraint(equalTo: navBar.centerXAnchor, constant: 25),
+                titleImage.bottomAnchor.constraint(equalTo: navBar.bottomAnchor, constant: -Const.ImageBottomMarginForLargeState),
+                titleImage.heightAnchor.constraint(equalToConstant: Const.ImageSizeForLargeState),
+                titleImage.widthAnchor.constraint(equalTo: titleImage.heightAnchor)
+            ])
+        } else {
+            guard let navBar = navigationController?.navigationBar else { return }
+            navBar.addSubview(titleImage)
+            NSLayoutConstraint.activate([
+                titleImage.centerXAnchor.constraint(equalTo: navBar.centerXAnchor,constant: -30),
+                titleImage.bottomAnchor.constraint(equalTo: navBar.bottomAnchor, constant: -Const.ImageBottomMarginForLargeState),
+                titleImage.heightAnchor.constraint(equalToConstant: Const.ImageSizeForLargeState),
+                titleImage.widthAnchor.constraint(equalTo: titleImage.heightAnchor)
+            ])
+        }
+    }
+    
     func fetchUser() {
         let uid = userId ?? (Auth.auth().currentUser?.uid ?? "")
         
         Database.database().fetchUser(withUID: uid) { user in
-            DispatchQueue.main.async {
-                self.user = user
-                self.title = user.username
-                self.setupNavigationButton(user: user)
-                self.header?.user = user
-                self.loadDatabase()
-                Database.database().fetchAllPosts(withUID: uid) { posts in
-                        self.collectionView.refreshControl?.endRefreshing()
-                        self.posts = posts
-                        self.posts.sort { p1, p2 in
-                            return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-                        }
-                        self.collectionView.reloadData()
-                } withCancel: { error in
-                    print(error)
+            self.user = user
+            self.title = user.username
+            self.setupNavigationButton(user: user)
+            self.header?.user = user
+            self.loadDatabase()
+            if user.official {
+                print(user.username, "- official status <Public person>")
+                self.fetchTick()
+            } else {
+                print(user.username, "- not have status <Public person>")
+            }
+            Database.database().fetchAllPosts(withUID: uid) { posts in
+                DispatchQueue.main.async {
+                    self.collectionView.refreshControl?.endRefreshing()
+                    self.posts = posts
+                    self.posts.sort { p1, p2 in
+                        return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+                    }
+                    self.collectionView.reloadData()
                 }
+            } withCancel: { error in
+                print(error)
             }
         }
     }
@@ -664,6 +786,11 @@ extension ProfileViewController: UICollectionViewDataSource {
                 self.postsKeyArray.insert(key, at: 0)
             }
         })
+    }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        guard let height = navigationController?.navigationBar.frame.height else { return }
+        moveAndResizeImage(for: height)
     }
 }
 

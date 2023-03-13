@@ -11,14 +11,11 @@ import Firebase
 
 class FollowersUsersWithMeController: UIViewController {
     
-    var usersKeyFollowMe = [String]()
-    var countUserFollowMe = [String]()
     var user: User?
     var filteredUsers = [User]()
     var users = [User]()
     let juls = JulsView()
     var refreshControler = UIRefreshControl()
-    let dispatchMain = DispatchQueue.main
     
     var searchController: UISearchController = {
         let search = UISearchController(searchResultsController: nil)
@@ -64,15 +61,7 @@ class FollowersUsersWithMeController: UIViewController {
         tableView.dataSource = self
         tableView.alwaysBounceVertical = true
         tableView.keyboardDismissMode = .onDrag
-
-        checkFollowMeKeys(user: user!) { massive in
-            DispatchQueue.main.async {
-                self.checkCountKeys(item: massive) { item in
-                    self.ktoImennoKeys(item: item)
-                    self.tableView.reloadData()
-                }
-            }
-        }
+        fetchUsers()
     }
     
     private func setupWillAppear() {
@@ -81,17 +70,20 @@ class FollowersUsersWithMeController: UIViewController {
         navigationItem.searchController = searchController
     }
     
-    @objc func didTapRefresh() {
-        
-        self.tableView.refreshControl?.endRefreshing()
-        
-        checkFollowMeKeys(user: user!) { massive in
+    func fetchUsers() {
+        guard let uid = user?.uid else { return }
+        Database.database().getUsersFollowMe(myUserId: uid) { users in
             DispatchQueue.main.async {
-                self.checkCountKeys(item: massive) { item in
-                self.ktoImennoKeys(item: item)
-                }
+                self.tableView.refreshControl?.endRefreshing()
+                self.users = users
+                self.filteredUsers = users
+                self.tableView.reloadData()
             }
         }
+    }
+    
+    @objc func didTapRefresh() {
+        fetchUsers()
     }
     
     func layout() {
@@ -154,63 +146,5 @@ extension FollowersUsersWithMeController: UISearchBarDelegate {
             }
         }
         self.tableView.reloadData()
-    }
-}
-
-extension FollowersUsersWithMeController {
- 
-    func checkFollowMeKeys(user: User?, completion: @escaping ([String]) -> ()) {
-        guard let userId = user?.uid else { return }
-        let ref = Database.database().reference().child("following")
-        ref.observeSingleEvent(of: .value, with: { snapshot in
-            guard let iFollowUsers = snapshot.value as? [String: Any] else { return }
-            iFollowUsers.forEach { key, value in
-                if key != userId {
-                    var massive = [String]()
-                    massive.append(key)
-                    completion(massive)
-                }
-            }
-        })
-    }
-    
-    func checkCountKeys(item: [String], completion: @escaping ([String]) -> ()) {
-        for i in item {
-            let ref = Database.database().reference().child("following").child(i)
-            ref.observeSingleEvent(of: .value, with: { snapshot in
-                guard let usersCountFollowMe = snapshot.value as? [String: Any] else { return }
-                usersCountFollowMe.forEach { key, value in
-                    if key == self.user?.uid {
-                        var massive = [String]()
-                        massive.append(i)
-                        completion(massive)
-                    }
-                }
-            })
-        }
-    }
-    
-    func ktoImennoKeys(item: [String]) {
-        self.users = []
-        self.filteredUsers = []
-        for i in item {
-            let ref = Database.database().reference().child("users")
-            ref.observeSingleEvent(of: .value, with: { snapshot in
-                
-                guard let dictionaries = snapshot.value as? [String: Any] else { return }
-                
-                dictionaries.forEach { key, value in
-                    if key == i {
-                        guard let userDictionary = value as? [String: Any] else { return }
-                        let user = User(uid: key, dictionary: userDictionary)
-                        self.users.append(user)
-                        self.filteredUsers = self.users
-                        DispatchQueue.main.async {
-                            self.tableView.reloadData()
-                        }
-                    }
-                }
-            })
-        }
     }
 }

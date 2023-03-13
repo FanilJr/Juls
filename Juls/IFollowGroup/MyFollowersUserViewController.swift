@@ -11,7 +11,6 @@ import Firebase
 
 class MyFollowersUserViewController: UIViewController {
     
-    var usersKeyIFollow = [String]()
     var user: User?
     var users: [User] = []
     var filteredUsers: [User] = []
@@ -55,13 +54,7 @@ class MyFollowersUserViewController: UIViewController {
         tableView.dataSource = self
         tableView.alwaysBounceVertical = true
         tableView.keyboardDismissMode = .onDrag
-
-        guard let user = user else { return }
-        getKeyIFollowUser(user: user) { key in
-            DispatchQueue.main.async {
-                self.getUsersIFollow(keys: key)
-            }
-        }
+        fetchUsers()
     }
     
     private func setupWillAppear() {
@@ -70,14 +63,20 @@ class MyFollowersUserViewController: UIViewController {
         navigationItem.searchController = searchController
     }
     
-    @objc func didTapRefresh() {
-        guard let user = user else { return }
-        getKeyIFollowUser(user: user) { key in
+    func fetchUsers() {
+        guard let uid = user?.uid else { return }
+        Database.database().getUsersIFollow(myUserId: uid) { users in
             DispatchQueue.main.async {
-                self.users.removeAll()
-                self.getUsersIFollow(keys: key)
+                self.tableView.refreshControl?.endRefreshing()
+                self.users = users
+                self.filteredUsers = users
+                self.tableView.reloadData()
             }
         }
+    }
+    
+    @objc func didTapRefresh() {
+        fetchUsers()
     }
     
     func layout() {
@@ -144,49 +143,4 @@ extension MyFollowersUserViewController: UISearchBarDelegate {
         }
     }
 }
-
-extension MyFollowersUserViewController {
-    
-    func getKeyIFollowUser(user: User, completion: @escaping ([String]) -> ()) {
-        let ref = Database.database().reference().child("following").child(user.uid)
-        ref.observeSingleEvent(of: .value, with: { snapshot in
-            self.tableView.refreshControl?.endRefreshing()
-            guard let dictionaries = snapshot.value as? [String: Any] else { return }
-                
-            dictionaries.forEach { key, value in
-                if key == user.uid {
-                    return
-                }
-                var massiveKey = [String]()
-                massiveKey.append(key)
-                completion(massiveKey)
-            }
-        })
-    }
-    
-    func getUsersIFollow(keys: [String]) {
-        for i in keys {
-            let ref = Database.database().reference().child("users")
-            ref.observeSingleEvent(of: .value, with: { snapshot in
-                    
-                guard let dictionaries = snapshot.value as? [String: Any] else { return }
-                    
-                dictionaries.forEach { key, value in
-                        
-                    if key == i {
-                        guard let userDictionary = value as? [String: Any] else { return }
-                            
-                        let user = User(uid: key, dictionary: userDictionary)
-                        self.users.append(user)
-                    }
-                    self.filteredUsers = self.users
-                    DispatchQueue.main.async {
-                        self.tableView.reloadData()
-                    }
-                }
-            })
-        }
-    }
-}
-
 

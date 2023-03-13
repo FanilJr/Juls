@@ -13,9 +13,7 @@ class MessagesViewController: UIViewController {
     var user: User?
     var users = [User]()
     var filteredUsers = [User]()
-    var post = [Post]()
-    let juls = JulsView()
-    var chats: String?
+    var lastMessage = [String]()
     var refreshControler = UIRefreshControl()
     
     var searchController: UISearchController = {
@@ -86,11 +84,15 @@ class MessagesViewController: UIViewController {
             DispatchQueue.main.async {
                 self.tableView.refreshControl?.endRefreshing()
                 self.users = users
+                self.filteredUsers = users
+                self.filteredUsers.sort(by: { (user1, user2) -> Bool in
+                    return user2.creationDateLastMessage.compare(user1.creationDateLastMessage) == .orderedAscending
+                })
                 self.tableView.reloadData()
             }
         }
     }
-    
+
     @objc func didTapRefresh() {
         self.fetchAllMessages()
     }
@@ -126,23 +128,27 @@ extension MessagesViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return users.count
+        return filteredUsers.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "AllChatsTableViewCell", for: indexPath) as! AllChatsTableViewCell
         cell.backgroundColor = .clear
         cell.selectionStyle = UITableViewCell.SelectionStyle.none
-        cell.user = users[indexPath.row]
+        cell.user = filteredUsers[indexPath.row]
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let user = users[indexPath.row]
+        let user = filteredUsers[indexPath.row]
         let chatWithUserVC = ChatViewController()
         chatWithUserVC.userFriend = user
         chatWithUserVC.user = self.user
         self.navigationController?.pushViewController(chatWithUserVC, animated: true)
+    }
+    
+    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
+        return .delete
     }
 }
 
@@ -174,5 +180,3 @@ extension MessagesViewController: ContactsDelegate {
         self.navigationController?.pushViewController(chatWithUserVC, animated: true)
     }
 }
-
-

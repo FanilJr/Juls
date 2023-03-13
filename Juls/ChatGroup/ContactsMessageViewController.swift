@@ -21,13 +21,6 @@ class ContactsMessagesViewController: UIViewController {
     var experimentUser = [User]()
     var post = [Post]()
     let juls = JulsView()
-    var refreshControler = UIRefreshControl()
-
-    var searchController: UISearchController = {
-        let search = UISearchController(searchResultsController: nil)
-        search.searchBar.placeholder = "search people"
-        return search
-    }()
 
     let background: UIImageView = {
         let back = UIImageView()
@@ -50,53 +43,26 @@ class ContactsMessagesViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        searchController.searchBar.isHidden = false
     }
 
     private func setupDidLoad() {
         view.backgroundColor = .systemBackground
         title = "Сообщения"
-        navigationItem.searchController = searchController
         layout()
-        refreshControler.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
-        refreshControler.attributedTitle = NSAttributedString(string: "Обновление")
-        searchController.searchBar.delegate = self
         tableView.delegate = self
         tableView.dataSource = self
         tableView.alwaysBounceVertical = true
         tableView.keyboardDismissMode = .onDrag
-        self.fetchUsers()
+        fetchUsersIFollow()
     }
-
-    @objc func didTapRefresh() {
-        self.users.removeAll()
-        self.filteredUsers.removeAll()
-        self.experimentUser.removeAll()
-        self.fetchUsers()
-    }
-
-    func fetchUsers() {
-        let ref = Database.database().reference().child("users")
-        DispatchQueue.main.async {
-            ref.observeSingleEvent(of: .value, with: { snapshot in
-                self.tableView.refreshControl?.endRefreshing()
-                guard let dictionaries = snapshot.value as? [String: Any] else { return }
-            
-                dictionaries.forEach { key, value in
-                    if key == Auth.auth().currentUser?.uid {
-                        return
-                    }
-                    guard let userDictionary = value as? [String: Any] else { return }
-                
-                    let user = User(uid: key, dictionary: userDictionary)
-                    self.users.append(user)
-                }
-                self.filteredUsers = self.users
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
-                }
-            }) { err in
-                print("Failed to fetch users", err)
+    
+    func fetchUsersIFollow() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        Database.database().getUsersIFollow(myUserId: uid) { users in
+            DispatchQueue.main.async {
+                self.users = users
+                self.filteredUsers = users
+                self.tableView.reloadData()
             }
         }
     }
@@ -109,9 +75,9 @@ class ContactsMessagesViewController: UIViewController {
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            ])
-        }
+        ])
     }
+}
 
 extension ContactsMessagesViewController: UITableViewDataSource {
 
@@ -135,25 +101,14 @@ extension ContactsMessagesViewController: UITableViewDataSource {
         let user = filteredUsers[indexPath.item]
         delegate?.dismisAndPushChat(user: user)
     }
+    
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return "Подписки"
+    }
 }
 
 extension ContactsMessagesViewController: UITableViewDelegate {
 
-}
-
-extension ContactsMessagesViewController: UISearchBarDelegate {
-    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-    
-        if searchText.isEmpty {
-            experimentUser = self.filteredUsers
-        } else {
-            self.experimentUser = self.users
-            self.experimentUser = self.users.filter { user -> Bool in
-                return user.username.lowercased().contains(searchText.lowercased())
-            }
-        }
-        self.tableView.reloadData()
-    }
 }
 
 

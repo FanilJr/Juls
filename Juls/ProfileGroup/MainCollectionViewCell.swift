@@ -40,14 +40,6 @@ class MainCollectionViewCell: UICollectionViewCell {
         return name
     }()
     
-//    lazy var friends: UILabel = {
-//        let status = UILabel()
-//        status.font = UIFont.systemFont(ofSize: 12.0, weight: .light)
-//        status.text = "-"
-//        status.translatesAutoresizingMaskIntoConstraints = false
-//        return status
-//    }()
-    
     lazy var status: UILabel = {
         let label = UILabel()
         label.textColor = UIColor.createColor(light: .black, dark: .white)
@@ -56,7 +48,6 @@ class MainCollectionViewCell: UICollectionViewCell {
         label.font = .systemFont(ofSize: 15.0, weight: .semibold)
         label.shadowOffset = CGSize(width: 1, height: 1)
         label.clipsToBounds = true
-//        label.text = "-"
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -212,17 +203,12 @@ class MainCollectionViewCell: UICollectionViewCell {
         
         guard let currentLoggetUserId = Auth.auth().currentUser?.uid else { return }
         guard let userId = user?.uid else { return }
-        
+        self.status.text = user?.status
         if currentLoggetUserId != userId {
             self.editButton.alpha = 0.0
             self.editButton.isEnabled = true
         } else {
             self.editButton.setBackgroundImage(UIImage(systemName: "ellipsis"), for: .normal)
         }
-        self.status.text = user?.status
-//        self.name.text = user?.name
-//        self.ageUser.text = user?.age
-//        self.statusLife.text = user?.lifeStatus
-//        self.heightUser.text = user?.height
     }
 }

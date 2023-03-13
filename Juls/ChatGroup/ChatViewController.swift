@@ -26,11 +26,13 @@ class ChatViewController: UIViewController {
         }
     }
     
-    var chatKey: String? {
+    var isRead: Bool? {
         didSet {
-            
+            checkIsRead(read: isRead ?? false)
         }
     }
+    
+    var timer: Timer?
     
     var messages = [Message]()
     private let nc = NotificationCenter.default
@@ -80,7 +82,7 @@ class ChatViewController: UIViewController {
         textfield.layer.borderColor = UIColor.black.cgColor
         textfield.layer.borderWidth = 0.5
         textfield.setLeftPaddingPoints(12)
-        textfield.setRightPaddingPoints(36)
+        textfield.setRightPaddingPoints(40)
         textfield.translatesAutoresizingMaskIntoConstraints = false
         return textfield
     }()
@@ -98,7 +100,7 @@ class ChatViewController: UIViewController {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setImage(UIImage(systemName: "paperplane.fill"), for: .normal)
-        button.tintColor = .systemBlue
+        button.tintColor = #colorLiteral(red: 0.1758851111, green: 0.5897727013, blue: 0.9195605516, alpha: 1)
         button.setTitleColor(.createColor(light: .black, dark: .white), for: .normal)
         button.clipsToBounds = true
         button.layer.cornerRadius = 10
@@ -132,6 +134,10 @@ class ChatViewController: UIViewController {
         setupWillAppear()
     }
     
+    override func viewDidDisappear(_ animated: Bool) {
+        timer?.invalidate()
+    }
+    
     private func setupDidLoad() {
         view.backgroundColor = .systemBackground
         setupLayout()
@@ -140,6 +146,7 @@ class ChatViewController: UIViewController {
         guard let friendsUsername = userFriend?.username else { return }
         print("open Chat", username, "with", friendsUsername, "            ~~~~~JULS~~~~~")
         fetchChat()
+        timerSetup()
     }
     
     private func setupWillAppear() {
@@ -163,6 +170,14 @@ class ChatViewController: UIViewController {
     
     @objc func addAction() {
         
+    }
+    
+    func timerSetup() {
+        timer = Timer.scheduledTimer(timeInterval: 7, target: self, selector: #selector(updateMessagesForTimer), userInfo: nil, repeats: true)
+    }
+    
+    @objc func updateMessagesForTimer() {
+        fetchChat()
     }
     
     @objc func pushMessage() {
@@ -192,10 +207,20 @@ class ChatViewController: UIViewController {
         guard let friendId = userFriend?.uid else { return }
         Database.database().fetchMessageWithChatId(userUID: userId, userFriendUID: friendId) { messages in
             DispatchQueue.main.async {
+                print("Автообновление... Последнее сообщение в чате:", messages.last?.user.username ?? "",":", messages.last?.text ?? "")
                 self.messages = messages
                 self.tableView.setContentOffset(CGPointMake(0, self.containerView.center.y-60), animated: true)
                 self.tableView.reloadData()
             }
+        }
+    }
+    
+    func checkIsRead(read: Bool) {
+        if read {
+            guard let uid = user?.uid else { return }
+            guard let uidFriend = userFriend?.uid else { return }
+            let read = Database.database().reference().child("messages").child(uidFriend).child(uid)
+            
         }
     }
     
@@ -274,14 +299,14 @@ extension ChatViewController: UITableViewDataSource {
         if isComing {
             let cell = tableView.dequeueReusableCell(withIdentifier: "LocalChatTableViewCell", for: indexPath) as! LocalChatTableViewCell
             cell.selectionStyle = .none
-            cell.messages = messages[indexPath.row]
             cell.backgroundColor = .clear
+            cell.messages = messages[indexPath.row]
             return cell
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: "LocalChatWithUserTableViewCell", for: indexPath) as! LocalChatWithUserTableViewCell
             cell.selectionStyle = .none
-            cell.messages = messages[indexPath.row]
             cell.backgroundColor = .clear
+            cell.messages = messages[indexPath.row]
             return cell
         }
     }

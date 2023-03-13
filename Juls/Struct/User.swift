@@ -18,10 +18,14 @@ struct User {
     let age: String
     let lifeStatus: String
     let height: String
+    var official: Bool
+    let creationDateLastMessage: Date
+    var isReadLastMessage: Bool
     
     init(uid: String, dictionary: [String: Any]) {
         self.uid = uid
         self.username = dictionary["username"] as? String ?? ""
+        self.official = dictionary["official"] as? Bool ?? false
         self.picture = dictionary["picture"] as? String ?? ""
         self.status = dictionary["status"] as? String ?? ""
         self.name = dictionary["name"] as? String ?? ""
@@ -29,5 +33,9 @@ struct User {
         self.age = dictionary["age"] as? String ?? ""
         self.lifeStatus = dictionary["life status"] as? String ?? ""
         self.height = dictionary["height"] as? String ?? ""
+        self.isReadLastMessage = dictionary["isReadLastMessage"] as? Bool ?? false
+        
+        let secondsFrom1970 = dictionary["creationDateLastMessage"] as? Double ?? 0
+        self.creationDateLastMessage = Date(timeIntervalSince1970: secondsFrom1970)
     }
 }
