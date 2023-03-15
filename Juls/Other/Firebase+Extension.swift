@@ -390,6 +390,28 @@ extension Database {
     
     func pushMessageWithChatId(userUID uid: String, userFriendUID uidFriend: String, textMessage text: String, completion: @escaping (Error?) -> ()) {
         
+        let values = ["message": text, "creationDate": Date().timeIntervalSince1970, "uid": uid, "isRead": Bool()] as [String: Any]
+        
+        let messageReference = Database.database().reference().child("lastMessage").child(uid).child(uidFriend)
+        
+        messageReference.updateChildValues(values) { (err, _) in
+            if let err {
+                print(err)
+                completion(err)
+                return
+            }
+            
+            let values = ["message": text, "creationDate": Date().timeIntervalSince1970, "uid": uid, "isRead": Bool()] as [String: Any]
+            
+            let messageReference = Database.database().reference().child("lastMessage").child(uidFriend).child(uid)
+            
+            messageReference.updateChildValues(values) { (err, _) in
+                if let err {
+                    print(err)
+                    completion(err)
+                    return
+                }
+                
         let values = ["message": text, "creationDate": Date().timeIntervalSince1970, "uid": uid] as [String: Any]
         
         let messageReference = Database.database().reference().child("messages").child(uid).child(uidFriend).childByAutoId()
@@ -425,16 +447,9 @@ extension Database {
                             completion(err)
                             return
                         }
-                        let value = ["isRead": false] as [String: Any]
-                        Database.database().reference().child("messages").child(uid).updateChildValues(value) { (err, _) in
-                            if let err {
-                                print(err)
-                                completion(err)
-                                return
-                            }
-                            completion(nil)
-                        }
-                        
+                        completion(nil)
+                    }
+                }
                     }
                 }
             }
@@ -456,6 +471,7 @@ extension Database {
             dictionaries.forEach({ (key, value) in
                 guard let messageCitionary = value as? [String: Any] else { return }
                 guard let uid = messageCitionary["uid"] as? String else { return }
+                
                 
                 Database.database().fetchUser(withUID: uid) { (user) in
                     let message = Message(user: user, dictionary: messageCitionary)
@@ -540,6 +556,23 @@ extension Database {
                     completion(myUsers)
                 }
             }
+        })
+    }
+    
+    func checkisRead(friendUserId friendId: String, friendRead read: Bool) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        let ref = Database.database().reference().child("lastMessage").child(uid).child(friendId)
+        ref.observeSingleEvent(of: .value, with: { (snapshot) in
+            guard let dictionaries = snapshot.value as? [String: Any] else { return }
+            
+            dictionaries.forEach({ (key, value) in
+                Database.database().reference().child("lastMessage").child(uid).child(friendId).updateChildValues(["isRead" : read]) { error, ref in
+                    if let error {
+                        print(error)
+                        return
+                    }
+                }
+            })
         })
     }
 }

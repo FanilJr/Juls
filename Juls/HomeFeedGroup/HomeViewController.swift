@@ -91,8 +91,10 @@ class HomeViewController: UIViewController {
     func fetchUserForImageBack() {
         guard let userId = Auth.auth().currentUser?.uid else { return }
         Database.database().fetchUser(withUID: userId) { user in
-            self.user = user
-            self.imageBack.loadImage(urlString: user.picture)
+            DispatchQueue.main.async {
+                self.user = user
+                self.imageBack.loadImage(urlString: user.picture)
+            }
         }
     }
     

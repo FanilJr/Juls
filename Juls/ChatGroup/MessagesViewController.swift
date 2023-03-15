@@ -29,6 +29,14 @@ class MessagesViewController: UIViewController {
         return back
     }()
     
+    private let spinnerView: UIActivityIndicatorView = {
+        let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .medium)
+        activityView.color = UIColor.createColor(light: .black, dark: .white)
+        activityView.hidesWhenStopped = true
+        activityView.translatesAutoresizingMaskIntoConstraints = false
+        return activityView
+    }()
+    
     private lazy var tableView: UITableView = {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -67,6 +75,7 @@ class MessagesViewController: UIViewController {
         view.backgroundColor = .systemBackground
         title = "Сообщения"
         navigationItem.searchController = searchController
+        waitingSpinnerEnable(true)
         layout()
         refreshControler.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
         refreshControler.attributedTitle = NSAttributedString(string: "Обновление")
@@ -80,9 +89,10 @@ class MessagesViewController: UIViewController {
     
     func fetchAllMessages() {
         guard let uid = user?.uid else { return }
+        self.tableView.refreshControl?.endRefreshing()
         Database.database().fetchAllMessages(userUID: uid) { users in
             DispatchQueue.main.async {
-                self.tableView.refreshControl?.endRefreshing()
+                self.waitingSpinnerEnable(false)
                 self.users = users
                 self.filteredUsers = users
                 self.filteredUsers.sort(by: { (user1, user2) -> Bool in
@@ -109,14 +119,25 @@ class MessagesViewController: UIViewController {
         navigationController?.present(contactMessagesVC, animated: true)
     }
     
+    func waitingSpinnerEnable(_ active: Bool) {
+        if active {
+            spinnerView.startAnimating()
+        } else {
+            spinnerView.stopAnimating()
+        }
+    }
+    
     func layout() {
-        [tableView].forEach { view.addSubview($0) }
+        [tableView,spinnerView].forEach { view.addSubview($0) }
         
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            spinnerView.centerXAnchor.constraint(equalTo: tableView.centerXAnchor),
+            spinnerView.centerYAnchor.constraint(equalTo: tableView.centerYAnchor)
         ])
     }
 }

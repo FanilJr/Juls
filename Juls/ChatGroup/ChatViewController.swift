@@ -26,16 +26,17 @@ class ChatViewController: UIViewController {
         }
     }
     
-    var isRead: Bool? {
-        didSet {
-            checkIsRead(read: isRead ?? false)
-        }
-    }
-    
     var timer: Timer?
-    
     var messages = [Message]()
     private let nc = NotificationCenter.default
+    
+    private let spinnerView: UIActivityIndicatorView = {
+        let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .medium)
+        activityView.color = UIColor.createColor(light: .black, dark: .white)
+        activityView.hidesWhenStopped = true
+        activityView.translatesAutoresizingMaskIntoConstraints = false
+        return activityView
+    }()
 
     lazy var containerView: UIView = {
         let containterView = UIView()
@@ -44,7 +45,7 @@ class ChatViewController: UIViewController {
         return containterView
     }()
     
-    private let spinnerView: UIActivityIndicatorView = {
+    private let spinnerViewForChat: UIActivityIndicatorView = {
         let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .medium)
         activityView.color = UIColor.createColor(light: .black, dark: .white)
         activityView.hidesWhenStopped = true
@@ -140,6 +141,7 @@ class ChatViewController: UIViewController {
     
     private func setupDidLoad() {
         view.backgroundColor = .systemBackground
+        waitingSpinnerForChatEnable(true)
         setupLayout()
         setupNavButton()
         guard let username = user?.username else { return }
@@ -165,6 +167,14 @@ class ChatViewController: UIViewController {
             spinnerView.startAnimating()
         } else {
             spinnerView.stopAnimating()
+        }
+    }
+    
+    func waitingSpinnerForChatEnable(_ active: Bool) {
+        if active {
+            spinnerViewForChat.startAnimating()
+        } else {
+            spinnerViewForChat.stopAnimating()
         }
     }
     
@@ -208,19 +218,18 @@ class ChatViewController: UIViewController {
         Database.database().fetchMessageWithChatId(userUID: userId, userFriendUID: friendId) { messages in
             DispatchQueue.main.async {
                 print("Автообновление... Последнее сообщение в чате:", messages.last?.user.username ?? "",":", messages.last?.text ?? "")
+                self.checkIsRead(read: true)
                 self.messages = messages
                 self.tableView.setContentOffset(CGPointMake(0, self.containerView.center.y-60), animated: true)
+                self.waitingSpinnerForChatEnable(false)
                 self.tableView.reloadData()
             }
         }
     }
-    
     func checkIsRead(read: Bool) {
         if read {
-            guard let uid = user?.uid else { return }
-            guard let uidFriend = userFriend?.uid else { return }
-            let read = Database.database().reference().child("messages").child(uidFriend).child(uid)
-            
+            guard let friendUID = userFriend?.uid else { return }
+            Database.database().checkisRead(friendUserId: friendUID, friendRead: read)
         }
     }
     
@@ -252,7 +261,7 @@ class ChatViewController: UIViewController {
     }
     
     func setupLayout() {
-        [tableView,containerView].forEach { view.addSubview($0) }
+        [tableView,spinnerViewForChat,containerView].forEach { view.addSubview($0) }
         [authorComment, textfield, sendCommentButton,spinnerView].forEach { containerView.addSubview($0) }
         
         NSLayoutConstraint.activate([
@@ -260,6 +269,9 @@ class ChatViewController: UIViewController {
             tableView.leftAnchor.constraint(equalTo: view.leftAnchor),
             tableView.rightAnchor.constraint(equalTo: view.rightAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            spinnerViewForChat.centerXAnchor.constraint(equalTo: tableView.centerXAnchor),
+            spinnerViewForChat.centerYAnchor.constraint(equalTo: tableView.centerYAnchor),
             
             containerView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             containerView.widthAnchor.constraint(equalTo: view.widthAnchor),

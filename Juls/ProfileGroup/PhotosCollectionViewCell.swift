@@ -18,6 +18,8 @@ class PhotosCollectionViewCell: UICollectionViewCell {
         return blure
     }()
     
+    
+
     let image: CustomImageView = {
         let image = CustomImageView()
         image.contentMode = .scaleAspectFill

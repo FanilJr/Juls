@@ -22,8 +22,8 @@ class AllChatsTableViewCell: UITableViewCell {
                 }
             }
             usernameLabel.text = user?.username
-            guard let officialUser = user else { return }
-            fetchLastMessage(user: officialUser)
+            guard let user = user else { return }
+            fetchLastMessage(user: user)
         }
     }
     
@@ -46,7 +46,7 @@ class AllChatsTableViewCell: UITableViewCell {
     
     let lastMessage: UILabel = {
         let message = UILabel()
-        message.font = UIFont.systemFont(ofSize: 12)
+        message.font = UIFont.systemFont(ofSize: 13)
         message.translatesAutoresizingMaskIntoConstraints = false
         return message
     }()
@@ -69,15 +69,23 @@ class AllChatsTableViewCell: UITableViewCell {
     
     func fetchLastMessage(user: User) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
-        Database.database().fetchMessageWithChatId(userUID: uid, userFriendUID: user.uid) { messages in
-            guard let last = messages.last?.text else { return }
-            self.lastMessage.text = last
-        }
         
-        Database.database().fetchMessageWithChatId(userUID: uid, userFriendUID: user.uid) { date in
-            guard let date = date.last?.creationDate.timeAgoDisplay() else { return }
-            self.dateMassage.text = date
-        }
+        Database.database().reference().child("lastMessage").child(uid).child(user.uid).observe(.value, with: { snapshot in
+            guard let dictionary = snapshot.value as? [String: Any] else { return }
+            guard let message = dictionary["message"] as? String else { return }
+            guard let secondsFrom1970 = dictionary["creationDate"] as? Double else { return }
+            let creationDate = Date(timeIntervalSince1970: secondsFrom1970)
+            guard let read = dictionary["isRead"] as? Bool else { return }
+            DispatchQueue.main.async {
+                if read == false {
+                    self.lastMessage.font = UIFont.boldSystemFont(ofSize: 14)
+                } else {
+                    self.lastMessage.font = UIFont.systemFont(ofSize: 13)
+                }
+                self.lastMessage.text = message
+                self.dateMassage.text = creationDate.timeAgoDisplay()
+            }
+        })
     }
     
     func constraints() {

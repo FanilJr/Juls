@@ -30,8 +30,6 @@ class PostTableViewController: UIViewController {
         return blure
     }()
     
-    
-    
     lazy var imageBack: CustomImageView = {
         let imageView = CustomImageView()
         imageView.contentMode = .scaleAspectFill
