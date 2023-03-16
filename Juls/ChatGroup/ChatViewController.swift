@@ -25,7 +25,7 @@ class ChatViewController: UIViewController {
             self.authorComment.loadImage(urlString: image)
         }
     }
-    
+
     var timer: Timer?
     var messages = [Message]()
     private let nc = NotificationCenter.default
@@ -36,6 +36,13 @@ class ChatViewController: UIViewController {
         activityView.hidesWhenStopped = true
         activityView.translatesAutoresizingMaskIntoConstraints = false
         return activityView
+    }()
+    
+    lazy var read: UILabel = {
+        let read = UILabel()
+        read.translatesAutoresizingMaskIntoConstraints = false
+        read.text = "Прочитано"
+        return read
     }()
 
     lazy var containerView: UIView = {
@@ -127,7 +134,6 @@ class ChatViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupDidLoad()
-        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -135,7 +141,8 @@ class ChatViewController: UIViewController {
         setupWillAppear()
     }
     
-    override func viewDidDisappear(_ animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
         timer?.invalidate()
     }
     
@@ -203,13 +210,13 @@ class ChatViewController: UIViewController {
                 if let error {
                     print(error)
                 }
-                self.textfield.text = ""
                 self.fetchChat()
                 self.sendCommentButton.isEnabled = true
                 self.sendCommentButton.alpha = 1
                 self.waitingSpinnerEnable(false)
             }
         }
+        self.textfield.text = ""
     }
     
     func fetchChat() {
@@ -226,6 +233,7 @@ class ChatViewController: UIViewController {
             }
         }
     }
+    
     func checkIsRead(read: Bool) {
         if read {
             guard let friendUID = userFriend?.uid else { return }

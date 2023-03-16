@@ -45,6 +45,12 @@ class ProfileViewController: UIViewController {
         return imageView
     }()
     
+    private let newMessage: UILabel = {
+        let new = UILabel(frame: CGRect(x: 45, y: 15, width: 20, height: 20))
+        new.font = UIFont(name: "Futura-Bold", size: 14)
+        return new
+    }()
+    
     private let spinnerView: UIActivityIndicatorView = {
         let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .large)
         activityView.color = .white
@@ -106,6 +112,7 @@ class ProfileViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         view.backgroundColor = .systemBackground
         setupDidLoad()
     }
@@ -119,11 +126,13 @@ class ProfileViewController: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         showImage(false)
+        showNewMessage(false)
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         showImage(true)
+        showNewMessage(true)
     }
     
     private func setupDidLoad() {
@@ -142,9 +151,11 @@ class ProfileViewController: UIViewController {
         self.posts.sort { p1, p2 in
             return p1.creationDate.compare(p2.creationDate) == .orderedDescending
         }
+        
     }
     
     private func setupWillAppear() {
+        self.updateMessage()
         let height = self.tabBarController?.tabBar.frame.height
         if self.tabBarController?.tabBar.frame.origin.y != self.cgfloatTabBar {
             UIView.animate(withDuration: 0.3) {
@@ -164,8 +175,15 @@ class ProfileViewController: UIViewController {
         }
     }
     
+    private func showNewMessage(_ show: Bool) {
+        UIView.animate(withDuration: 0.1) {
+            self.newMessage.alpha = show ? 1.0 : 0.0
+        }
+    }
+    
     @objc func didTapRefresh() {
         self.fetchUser()
+        self.updateMessage()
         print("refresh Profile")
     }
     
@@ -364,6 +382,24 @@ extension ProfileViewController {
         }
     }
     
+    func updateMessage() {
+        let uid = userId ?? (Auth.auth().currentUser?.uid ?? "")
+        Database.database().checkNewMessage(userUid: uid) { count in
+            if uid == Auth.auth().currentUser?.uid {
+                DispatchQueue.main.async {
+                    self.navigationController?.navigationBar.addSubview(self.newMessage)
+                    if count == 0 {
+                        self.newMessage.text = ""
+                        print("no new messages")
+                    } else {
+                        self.newMessage.text = "\(count)"
+                        print("you have \(count) message(s)")
+                    }
+                }
+            }
+        }
+    }
+    
     func fetchUser() {
         let uid = userId ?? (Auth.auth().currentUser?.uid ?? "")
         
@@ -373,12 +409,14 @@ extension ProfileViewController {
             self.setupNavigationButton(user: user)
             self.header?.user = user
             self.loadDatabase()
+            
             if user.official {
                 print(user.username, "- official status <Public person>")
                 self.fetchTick()
             } else {
                 print(user.username, "- not have status <Public person>")
             }
+            
             Database.database().fetchAllPosts(withUID: uid) { posts in
                 DispatchQueue.main.async {
                     self.collectionView.refreshControl?.endRefreshing()

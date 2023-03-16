@@ -17,9 +17,11 @@ class PostTableViewController: UIViewController {
     
     weak var delegate: PostViewControllerDelegate?
     
+    var cgfloatTabBar: CGFloat?
     var post: Post?
     var juls = JulsView()
     var commentArray = [String]()
+    let sheetComments = CommentsSheetViewController()
     
     lazy var blureForCell: UIVisualEffectView = {
         let bluereEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
@@ -69,38 +71,38 @@ class PostTableViewController: UIViewController {
         setupWillAppear()
     }
     
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        setupDidDisappear()
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        self.sheetComments.dismiss(animated: true)
     }
     
     private func setupDidLoad() {
-        self.title = "Juls"
         setupNavButton()
         layout()
         tableView.delegate = self
         tableView.dataSource = self
-    }
-    
-    private func setupWillAppear() {
-        self.navigationItem.largeTitleDisplayMode = .never
         let height = self.tabBarController?.tabBar.frame.height
         UIView.animate(withDuration: 0.3) {
             self.tabBarController?.tabBar.frame.origin.y += height!
+            self.cgfloatTabBar = self.tabBarController?.tabBar.frame.origin.y
         }
     }
     
-    private func setupDidDisappear() {
+    private func setupWillAppear() {
+        
         let height = self.tabBarController?.tabBar.frame.height
-        UIView.animate(withDuration: 0.3) {
-            self.tabBarController?.tabBar.frame.origin.y -= height!
+        
+        if self.tabBarController?.tabBar.frame.origin.y != self.cgfloatTabBar {
+            UIView.animate(withDuration: 0.3) {
+                self.tabBarController?.tabBar.frame.origin.y += height!
+            }
         }
     }
     
     private func setupNavButton() {
         if post?.user.uid == Auth.auth().currentUser?.uid {
             let deleteButton = UIBarButtonItem(image: UIImage(systemName: "trash"), style: .plain, target: self, action: #selector(deleteAction))
-            deleteButton.tintColor = UIColor.createColor(light: .black, dark: .white)
+            deleteButton.tintColor = UIColor.createColor(light: .red, dark: .red)
             navigationItem.rightBarButtonItem = deleteButton
         }
     }
@@ -119,6 +121,8 @@ class PostTableViewController: UIViewController {
     
     
     func fetchPost() {
+        guard let stringTile = post?.message else { return }
+        self.title = stringTile
         guard let imageUrl = self.post?.imageUrl else { return }
         self.imageBack.loadImage(urlString: imageUrl)
     }
@@ -215,7 +219,18 @@ extension PostTableViewController: CommentDelegate {
         }
     }
     
-    func didTapComment() {
+    func didtapImageComment() {
         CommentViewController.showComment(self, post: post)
+    }
+    
+    func didTapComment() {
+        sheetComments.post = self.post
+        if let sheet = sheetComments.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
+            sheet.largestUndimmedDetentIdentifier = .medium
+            sheet.prefersGrabberVisible = true
+        }
+        present(sheetComments, animated: true)
     }
 }

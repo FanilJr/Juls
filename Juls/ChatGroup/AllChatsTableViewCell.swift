@@ -79,8 +79,10 @@ class AllChatsTableViewCell: UITableViewCell {
             DispatchQueue.main.async {
                 if read == false {
                     self.lastMessage.font = UIFont.boldSystemFont(ofSize: 14)
+                    self.dateMassage.font = UIFont.boldSystemFont(ofSize: 12)
                 } else {
                     self.lastMessage.font = UIFont.systemFont(ofSize: 13)
+                    self.dateMassage.font = UIFont.systemFont(ofSize: 10)
                 }
                 self.lastMessage.text = message
                 self.dateMassage.text = creationDate.timeAgoDisplay()

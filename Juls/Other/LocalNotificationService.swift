@@ -7,6 +7,7 @@
 
 import Foundation
 import UserNotifications
+import Firebase
 
 class LocalNotificationService {
     
@@ -15,8 +16,9 @@ class LocalNotificationService {
         let userNotificationCenter = UNUserNotificationCenter.current()
         
         let content = UNMutableNotificationContent()
-        content.title = "Опана"
-        content.body = "Посмотрите последнее обновление!"
+        
+        content.title = "Juls"
+        content.body = "Посмотрите последние сообщения!"
         content.badge = 1
 
         //Триггер уведомления на каждый день

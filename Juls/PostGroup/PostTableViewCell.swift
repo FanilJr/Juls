@@ -12,6 +12,7 @@ import Firebase
 protocol CommentDelegate: AnyObject {
     func didTapComment()
     func didTapLike(for cell: PostTableViewCell)
+    func didtapImageComment()
 }
 
 class PostTableViewCell: UITableViewCell {
@@ -140,7 +141,7 @@ class PostTableViewCell: UITableViewCell {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setBackgroundImage(UIImage(named: "bubble.right.circle.fill@100x"), for: .normal)
-        button.addTarget(self, action: #selector(tapComment), for: .touchUpInside)
+        button.addTarget(self, action: #selector(tapImageComment), for: .touchUpInside)
         button.tintColor = .white
         return button
     }()
@@ -178,6 +179,10 @@ class PostTableViewCell: UITableViewCell {
     
     @objc func tapLike() {
         delegate?.didTapLike(for: self)
+    }
+    
+    @objc func tapImageComment() {
+        delegate?.didtapImageComment()
     }
     
     @objc func tapComment() {

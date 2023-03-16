@@ -575,5 +575,25 @@ extension Database {
             })
         })
     }
+    
+    func checkNewMessage(userUid uid: String, completion: @escaping (Int) ->()) {
+        let ref = Database.database().reference().child("lastMessage").child(uid)
+        ref.observeSingleEvent(of: .value, with: { snapshot in
+            
+            var massive = [Bool]()
+            
+            guard let dictionary = snapshot.value as? [String: Any] else { return }
+            dictionary.forEach { key, value in
+                guard let message = value as? [String: Any] else { return }
+                message.forEach { key,value in
+                    guard let read = value as? Bool else { return }
+                    if read == false {
+                        massive.append(read)
+                    }
+                }
+            }
+            completion(massive.count)
+        })
+    }
 }
 

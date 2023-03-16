@@ -14,6 +14,7 @@ class MessagesViewController: UIViewController {
     var users = [User]()
     var filteredUsers = [User]()
     var lastMessage = [String]()
+    var cgfloatTabBar: CGFloat?
     var refreshControler = UIRefreshControl()
     
     var searchController: UISearchController = {
@@ -53,20 +54,15 @@ class MessagesViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        fetchAllMessages()
         searchController.searchBar.isHidden = false
         
         let height = self.tabBarController?.tabBar.frame.height
-        UIView.animate(withDuration: 0.3) {
-            self.tabBarController?.tabBar.frame.origin.y += height!
-        }
-    }
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
         
-        let height = self.tabBarController?.tabBar.frame.height
-        UIView.animate(withDuration: 0.3) {
-            self.tabBarController?.tabBar.frame.origin.y -= height!
+        if self.tabBarController?.tabBar.frame.origin.y != self.cgfloatTabBar {
+            UIView.animate(withDuration: 0.3) {
+                self.tabBarController?.tabBar.frame.origin.y += height!
+            }
         }
     }
     
@@ -84,20 +80,25 @@ class MessagesViewController: UIViewController {
         tableView.dataSource = self
         tableView.alwaysBounceVertical = true
         tableView.keyboardDismissMode = .onDrag
-        fetchAllMessages()
+        
+        let height = self.tabBarController?.tabBar.frame.height
+        UIView.animate(withDuration: 0.3) {
+            self.tabBarController?.tabBar.frame.origin.y += height!
+            self.cgfloatTabBar = self.tabBarController?.tabBar.frame.origin.y
+        }
     }
     
     func fetchAllMessages() {
         guard let uid = user?.uid else { return }
-        self.tableView.refreshControl?.endRefreshing()
         Database.database().fetchAllMessages(userUID: uid) { users in
             DispatchQueue.main.async {
-                self.waitingSpinnerEnable(false)
                 self.users = users
                 self.filteredUsers = users
                 self.filteredUsers.sort(by: { (user1, user2) -> Bool in
                     return user2.creationDateLastMessage.compare(user1.creationDateLastMessage) == .orderedAscending
                 })
+                self.waitingSpinnerEnable(false)
+                self.tableView.refreshControl?.endRefreshing()
                 self.tableView.reloadData()
             }
         }
