@@ -48,6 +48,15 @@ class LocalChatTableViewCell: UITableViewCell {
         return descriptionNameandText
     }()
     
+    let readLabel: UILabel = {
+        let readLabel = UILabel()
+        readLabel.numberOfLines = 0
+        readLabel.font = UIFont.systemFont(ofSize: 12)
+        readLabel.translatesAutoresizingMaskIntoConstraints = false
+        return readLabel
+    }()
+    
+    
     let nameCommentUser: UILabel = {
         let nameCommentUser = UILabel()
         nameCommentUser.font = UIFont.systemFont(ofSize: 13)
@@ -72,23 +81,26 @@ class LocalChatTableViewCell: UITableViewCell {
     }
     
     func constraints() {
-        [profileImageView,viewForBack,descriptionNameandText].forEach { contentView.addSubview($0) }
+        [profileImageView,viewForBack,descriptionNameandText,readLabel].forEach { contentView.addSubview($0) }
         
         NSLayoutConstraint.activate([
-            profileImageView.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 7),
+            profileImageView.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 5),
             profileImageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -10),
             profileImageView.heightAnchor.constraint(equalToConstant: 30),
             profileImageView.widthAnchor.constraint(equalToConstant: 30),
             
-            viewForBack.topAnchor.constraint(equalTo: descriptionNameandText.topAnchor,constant: -6),
+            viewForBack.topAnchor.constraint(equalTo: descriptionNameandText.topAnchor,constant: -7),
             viewForBack.leadingAnchor.constraint(equalTo: descriptionNameandText.leadingAnchor,constant: -12),
             viewForBack.trailingAnchor.constraint(equalTo: descriptionNameandText.trailingAnchor,constant: 12),
-            viewForBack.bottomAnchor.constraint(equalTo: descriptionNameandText.bottomAnchor,constant: 6),
+            viewForBack.bottomAnchor.constraint(equalTo: descriptionNameandText.bottomAnchor,constant: 7),
             
-            descriptionNameandText.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor),
+            descriptionNameandText.topAnchor.constraint(equalTo: profileImageView.topAnchor,constant: 5),
             descriptionNameandText.trailingAnchor.constraint(equalTo: profileImageView.leadingAnchor,constant: -16),
             descriptionNameandText.widthAnchor.constraint(lessThanOrEqualToConstant: 300),
-            descriptionNameandText.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -10),
+            
+            readLabel.topAnchor.constraint(equalTo: viewForBack.bottomAnchor),
+            readLabel.trailingAnchor.constraint(equalTo: viewForBack.trailingAnchor),
+            readLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -10)
         ])
     }
 }

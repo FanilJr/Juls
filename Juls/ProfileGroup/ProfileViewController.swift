@@ -386,12 +386,14 @@ extension ProfileViewController {
         let uid = userId ?? (Auth.auth().currentUser?.uid ?? "")
         Database.database().checkNewMessage(userUid: uid) { count in
             if uid == Auth.auth().currentUser?.uid {
-                DispatchQueue.main.async {
-                    self.navigationController?.navigationBar.addSubview(self.newMessage)
-                    if count == 0 {
+                self.navigationController?.navigationBar.addSubview(self.newMessage)
+                if count == 0 {
+                    DispatchQueue.main.async {
                         self.newMessage.text = ""
                         print("no new messages")
-                    } else {
+                    }
+                } else {
+                    DispatchQueue.main.async {
                         self.newMessage.text = "\(count)"
                         print("you have \(count) message(s)")
                     }

@@ -75,17 +75,17 @@ class LocalChatWithUserTableViewCell: UITableViewCell {
         [profileImageView,viewForBack,descriptionNameandText].forEach { contentView.addSubview($0) }
         
         NSLayoutConstraint.activate([
-            profileImageView.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 7),
+            profileImageView.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 5),
             profileImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
             profileImageView.heightAnchor.constraint(equalToConstant: 30),
             profileImageView.widthAnchor.constraint(equalToConstant: 30),
             
-            viewForBack.topAnchor.constraint(equalTo: descriptionNameandText.topAnchor,constant: -6),
+            viewForBack.topAnchor.constraint(equalTo: descriptionNameandText.topAnchor,constant: -7),
             viewForBack.leadingAnchor.constraint(equalTo: descriptionNameandText.leadingAnchor,constant: -12),
             viewForBack.trailingAnchor.constraint(equalTo: descriptionNameandText.trailingAnchor,constant: 12),
-            viewForBack.bottomAnchor.constraint(equalTo: descriptionNameandText.bottomAnchor,constant: 6),
+            viewForBack.bottomAnchor.constraint(equalTo: descriptionNameandText.bottomAnchor,constant: 7),
             
-            descriptionNameandText.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor),
+            descriptionNameandText.topAnchor.constraint(equalTo: profileImageView.topAnchor,constant: 5),
             descriptionNameandText.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor,constant: 16),
             descriptionNameandText.widthAnchor.constraint(lessThanOrEqualToConstant: 300),
             descriptionNameandText.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -10),

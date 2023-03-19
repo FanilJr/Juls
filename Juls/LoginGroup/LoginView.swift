@@ -241,12 +241,13 @@ class LoginView: UIView {
             self.registerButton.isEnabled = true
             guard let uid = user?.user.uid else { return }
             
-            let allValues = ["username": nicknameText, "name": "","secondName": "","picture": "", "years": "", "status": "", "life status": "", "height": "", "official": Bool()]
+            let allValues = ["username": nicknameText, "name": "","sex": "","secondName": "","picture": "", "years": "", "status": "", "life status": "", "height": "", "official": Bool()]
             let values = [uid: allValues]
             
             Database.database().reference().child("users").updateChildValues(values) { error, ref in
                 if let error {
                     print("failed ooooops", error)
+                    return
                 }
                 print("succes update user info")
                 
@@ -256,7 +257,7 @@ class LoginView: UIView {
                 Auth.auth().signIn(withEmail: mailText, password: passwordRegText) { user, error in
                     if let error {
                         CommonAlertError.present(vc: vc, with: error.localizedDescription)
-                        print("suda zashli")
+                        print(error)
                         return
                     }
                     guard let userId = user?.user.uid else { return }
@@ -285,7 +286,7 @@ class LoginView: UIView {
         Auth.auth().signIn(withEmail: emailText, password: passwordText) { user, error in
             if let error {
                 CommonAlertError.present(vc: vc, with: error.localizedDescription)
-                print("suda zashli")
+                print(error)
                 return
             }
             guard let userId = user?.user.uid else { return }

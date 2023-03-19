@@ -81,6 +81,7 @@ class PostTableViewController: UIViewController {
         layout()
         tableView.delegate = self
         tableView.dataSource = self
+        self.navigationItem.largeTitleDisplayMode = .never
         let height = self.tabBarController?.tabBar.frame.height
         UIView.animate(withDuration: 0.3) {
             self.tabBarController?.tabBar.frame.origin.y += height!
@@ -89,15 +90,15 @@ class PostTableViewController: UIViewController {
     }
     
     private func setupWillAppear() {
-        
         let height = self.tabBarController?.tabBar.frame.height
-        
         if self.tabBarController?.tabBar.frame.origin.y != self.cgfloatTabBar {
             UIView.animate(withDuration: 0.3) {
                 self.tabBarController?.tabBar.frame.origin.y += height!
+//                self.tabBarController?.tabBar.isHidden = true
             }
         }
     }
+    
     
     private func setupNavButton() {
         if post?.user.uid == Auth.auth().currentUser?.uid {

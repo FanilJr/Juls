@@ -11,19 +11,10 @@ import Firebase
 
 class AllChatsTableViewCell: UITableViewCell {
     
-    var user: User? {
+    var message: Message? {
         didSet {
-            guard let profileImageUrl = user?.picture else { return }
-            if profileImageUrl == "" {
-                self.profileImageView.image = UIImage(named: "noimage")
-            } else {
-                DispatchQueue.main.async {
-                    self.profileImageView.loadImage(urlString: profileImageUrl)
-                }
-            }
-            usernameLabel.text = user?.username
-            guard let user = user else { return }
-            fetchLastMessage(user: user)
+            guard let message = message else { return }
+            self.updateLastMessage(message: message)
         }
     }
     
@@ -39,21 +30,18 @@ class AllChatsTableViewCell: UITableViewCell {
     
     let usernameLabel: UILabel = {
         let user = UILabel()
-        user.font = UIFont.boldSystemFont(ofSize: 14)
         user.translatesAutoresizingMaskIntoConstraints = false
         return user
     }()
     
     let lastMessage: UILabel = {
         let message = UILabel()
-        message.font = UIFont.systemFont(ofSize: 13)
         message.translatesAutoresizingMaskIntoConstraints = false
         return message
     }()
     
     let dateMassage: UILabel = {
         let message = UILabel()
-        message.font = UIFont.systemFont(ofSize: 10)
         message.translatesAutoresizingMaskIntoConstraints = false
         return message
     }()
@@ -67,27 +55,21 @@ class AllChatsTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func fetchLastMessage(user: User) {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
+    func updateLastMessage(message: Message) {
+        self.lastMessage.text = message.text
+        self.dateMassage.text = message.creationDate.timeAgoDisplay()
+        self.profileImageView.loadImage(urlString: message.user.picture)
+        self.usernameLabel.text = message.user.username
         
-        Database.database().reference().child("lastMessage").child(uid).child(user.uid).observe(.value, with: { snapshot in
-            guard let dictionary = snapshot.value as? [String: Any] else { return }
-            guard let message = dictionary["message"] as? String else { return }
-            guard let secondsFrom1970 = dictionary["creationDate"] as? Double else { return }
-            let creationDate = Date(timeIntervalSince1970: secondsFrom1970)
-            guard let read = dictionary["isRead"] as? Bool else { return }
-            DispatchQueue.main.async {
-                if read == false {
-                    self.lastMessage.font = UIFont.boldSystemFont(ofSize: 14)
-                    self.dateMassage.font = UIFont.boldSystemFont(ofSize: 12)
-                } else {
-                    self.lastMessage.font = UIFont.systemFont(ofSize: 13)
-                    self.dateMassage.font = UIFont.systemFont(ofSize: 10)
-                }
-                self.lastMessage.text = message
-                self.dateMassage.text = creationDate.timeAgoDisplay()
-            }
-        })
+        if message.isRead {
+            self.usernameLabel.font = UIFont.systemFont(ofSize: 14)
+            self.lastMessage.font = UIFont.systemFont(ofSize: 13)
+            self.dateMassage.font = UIFont.systemFont(ofSize: 10)
+        } else {
+            self.usernameLabel.font = UIFont.boldSystemFont(ofSize: 15)
+            self.lastMessage.font = UIFont.boldSystemFont(ofSize: 14)
+            self.dateMassage.font = UIFont.boldSystemFont(ofSize: 11)
+        }
     }
     
     func constraints() {

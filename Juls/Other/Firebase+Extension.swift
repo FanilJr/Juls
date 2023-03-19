@@ -412,27 +412,11 @@ extension Database {
                     return
                 }
                 
-        let values = ["message": text, "creationDate": Date().timeIntervalSince1970, "uid": uid] as [String: Any]
-        
-        let messageReference = Database.database().reference().child("messages").child(uid).child(uidFriend).childByAutoId()
-        
-        messageReference.updateChildValues(values) { (err, _) in
-            if let err {
-                print(err)
-                completion(err)
-                return
-            }
-            
-            let value = ["creationDateLastMessage": Date().timeIntervalSince1970] as [String: Any]
-            Database.database().reference().child("users").child(uid).updateChildValues(value) { (err, _) in
-                if let err {
-                    print(err)
-                    completion(err)
-                    return
-                }
+                let values = ["message": text, "creationDate": Date().timeIntervalSince1970, "uid": uid] as [String: Any]
                 
-                let value = ["creationDateLastMessage": Date().timeIntervalSince1970] as [String: Any]
-                Database.database().reference().child("users").child(uidFriend).updateChildValues(value) { (err, _) in
+                let messageReference = Database.database().reference().child("messages").child(uid).child(uidFriend).childByAutoId()
+                
+                messageReference.updateChildValues(values) { (err, _) in
                     if let err {
                         print(err)
                         completion(err)
@@ -448,8 +432,6 @@ extension Database {
                             return
                         }
                         completion(nil)
-                    }
-                }
                     }
                 }
             }
@@ -485,22 +467,6 @@ extension Database {
                     }
                 }
             })
-        })
-    }
-    
-    func fetchAllMessages(userUID uid: String, completion: @escaping ([User]) -> ()) {
-        let ref = Database.database().reference().child("messages").child(uid)
-        ref.observeSingleEvent(of: .value, with: { snapshot in
-            guard let dictionaries = snapshot.value as? [String: Any] else { return }
-                
-            var users = [User]()
-                
-            dictionaries.forEach { key, value in
-                Database.database().fetchUser(withUID: key) { user in
-                    users.append(user)
-                    completion(users)
-                }
-            }
         })
     }
     
@@ -559,7 +525,7 @@ extension Database {
         })
     }
     
-    func checkisRead(friendUserId friendId: String, friendRead read: Bool) {
+    func changeIsRead(friendUserId friendId: String, friendRead read: Bool) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         let ref = Database.database().reference().child("lastMessage").child(uid).child(friendId)
         ref.observeSingleEvent(of: .value, with: { (snapshot) in
@@ -576,7 +542,7 @@ extension Database {
         })
     }
     
-    func checkNewMessage(userUid uid: String, completion: @escaping (Int) ->()) {
+    func checkNewMessage(userUid uid: String, completion: @escaping (Int) -> ()) {
         let ref = Database.database().reference().child("lastMessage").child(uid)
         ref.observeSingleEvent(of: .value, with: { snapshot in
             
@@ -594,6 +560,112 @@ extension Database {
             }
             completion(massive.count)
         })
+    }
+    
+    func checkIsRead(friendUserId friendId: String, completion: @escaping (Bool) -> ()) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        let ref = Database.database().reference().child("lastMessage").child(friendId).child(uid)
+        ref.observeSingleEvent(of: .value, with: { (snapshot) in
+            
+            guard let dictionaries = snapshot.value as? [String: Any] else { return }
+            dictionaries.forEach { key, value in
+                guard let readMessage = value as? Bool else { return }
+                completion(readMessage)
+            }
+        })
+    }
+    
+    func getLastMessage(friendUserId friendId: String, completion: @escaping (String) -> ()) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        let ref = Database.database().reference().child("lastMessage").child(friendId).child(uid)
+        ref.observeSingleEvent(of: .value, with: { (snapshot) in
+            
+            guard let dictionaries = snapshot.value as? [String: Any] else { return }
+            dictionaries.forEach { key, value in
+                guard let message = value as? String else { return }
+                if message == uid {
+                    return
+                }
+                completion(message)
+            }
+        })
+    }
+    
+    func fetchAllLastMessages(userUID uid: String, completion: @escaping ([User]) -> ()) {
+        let ref = Database.database().reference().child("lastMessage").child(uid)
+        ref.observeSingleEvent(of: .value, with: { snapshot in
+            guard let dictionaries = snapshot.value as? [String: Any] else { return }
+            
+            var users = [User]()
+            
+            dictionaries.forEach { key, value in
+                Database.database().fetchUser(withUID: key) { user in
+                    users.append(user)
+                    users.sort(by: { (message1, message2) -> Bool in
+                        return message2.creationDateLastMessage.compare(message1.creationDateLastMessage) == .orderedAscending
+                    })
+                    completion(users)
+                }
+            }
+        })
+    }
+    
+    func fetchLastMessagesInMessenger(userUID uid: String, completion: @escaping ([Message]) -> ()) {
+        let ref = Database.database().reference().child("lastMessage").child(uid)
+        ref.observeSingleEvent(of: .value, with: { snapshot in
+            guard let dictionaries = snapshot.value as? [String: Any] else { return }
+            
+            var messages = [Message]()
+            
+            dictionaries.forEach({ (key, value) in
+                guard let messageCitionary = value as? [String: Any] else { return }
+                
+                
+                Database.database().fetchUser(withUID: key) { (user) in
+                    let message = Message(user: user, dictionary: messageCitionary)
+                    messages.append(message)
+                    
+                    if messages.count == dictionaries.count {
+                        messages.sort(by: { (message1, message2) -> Bool in
+                            return message2.creationDate.compare(message1.creationDate) == .orderedAscending
+                        })
+                        completion(messages)
+                    }
+                }
+            })
+        })
+    }
+    
+    func removeChatWithAllChats(userUID uid: String, userFriendWithDeleteUID uidFriend: String, completion: ((Error?) -> ())? = nil) {
+        Database.database().reference().child("messages").child(uid).child(uidFriend).removeValue() { (err, _) in
+            if let err = err {
+                print("Failed to delete chat:", err)
+                completion?(err)
+                return
+            }
+            Database.database().reference().child("messages").child(uidFriend).child(uid).removeValue() { (err, _) in
+                if let err = err {
+                    print("Failed to delete chat:", err)
+                    completion?(err)
+                    return
+                }
+                Database.database().reference().child("lastMessage").child(uid).child(uidFriend).removeValue() { (err, _) in
+                    if let err = err {
+                        print("Failed to delete chat:", err)
+                        completion?(err)
+                        return
+                    }
+                    Database.database().reference().child("lastMessage").child(uidFriend).child(uid).removeValue() { (err, _) in
+                        if let err = err {
+                            print("Failed to delete chat:", err)
+                            completion?(err)
+                            return
+                        }
+                        completion?(nil)
+                    }
+                }
+            }
+        }
     }
 }
 

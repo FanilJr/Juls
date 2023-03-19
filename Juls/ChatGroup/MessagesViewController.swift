@@ -11,23 +11,19 @@ import Firebase
 class MessagesViewController: UIViewController {
     
     var user: User?
-    var users = [User]()
-    var filteredUsers = [User]()
-    var lastMessage = [String]()
+    var messages = [Message]()
+    var filteredMessage = [Message]()
     var cgfloatTabBar: CGFloat?
     var refreshControler = UIRefreshControl()
+    
+    lazy var addButton = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(addContact))
+    lazy var filteredButton = UIBarButtonItem(image: UIImage(systemName: "line.3.horizontal.decrease.circle"), style: .plain, target: self, action: #selector(filteredUnRead))
+    lazy var removeFilterButton = UIBarButtonItem(image: UIImage(systemName: "line.3.horizontal.decrease.circle.fill"), style: .plain, target: self, action: #selector(removeFilter))
     
     var searchController: UISearchController = {
         let search = UISearchController(searchResultsController: nil)
         search.searchBar.placeholder = "search people"
         return search
-    }()
-    
-    let background: UIImageView = {
-        let back = UIImageView()
-        back.image = UIImage(named: "back")
-        back.translatesAutoresizingMaskIntoConstraints = false
-        return back
     }()
     
     private let spinnerView: UIActivityIndicatorView = {
@@ -80,6 +76,7 @@ class MessagesViewController: UIViewController {
         tableView.dataSource = self
         tableView.alwaysBounceVertical = true
         tableView.keyboardDismissMode = .onDrag
+        addButton.tintColor = UIColor.createColor(light: .black, dark: .white)
         
         let height = self.tabBarController?.tabBar.frame.height
         UIView.animate(withDuration: 0.3) {
@@ -90,13 +87,11 @@ class MessagesViewController: UIViewController {
     
     func fetchAllMessages() {
         guard let uid = user?.uid else { return }
-        Database.database().fetchAllMessages(userUID: uid) { users in
+        
+        Database.database().fetchLastMessagesInMessenger(userUID: uid) { message in
             DispatchQueue.main.async {
-                self.users = users
-                self.filteredUsers = users
-                self.filteredUsers.sort(by: { (user1, user2) -> Bool in
-                    return user2.creationDateLastMessage.compare(user1.creationDateLastMessage) == .orderedAscending
-                })
+                self.filteredMessage = message
+                self.messages = message
                 self.waitingSpinnerEnable(false)
                 self.tableView.refreshControl?.endRefreshing()
                 self.tableView.reloadData()
@@ -109,9 +104,21 @@ class MessagesViewController: UIViewController {
     }
 
     func setupNavButton() {
-        let addButton = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(addContact))
-        addButton.tintColor = UIColor.createColor(light: .black, dark: .white)
-        navigationItem.rightBarButtonItem = addButton
+        navigationItem.rightBarButtonItems = [addButton,filteredButton]
+    }
+    
+    @objc func filteredUnRead() {
+        navigationItem.rightBarButtonItems = [addButton,removeFilterButton]
+        filteredMessage = messages.filter { messages -> Bool in
+            return messages.isRead == false
+        }
+        self.tableView.reloadData()
+    }
+    
+    @objc func removeFilter() {
+        navigationItem.rightBarButtonItems = [addButton,filteredButton]
+        filteredMessage = messages
+        self.tableView.reloadData()
     }
     
     @objc func addContact() {
@@ -150,19 +157,19 @@ extension MessagesViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return filteredUsers.count
+        return filteredMessage.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "AllChatsTableViewCell", for: indexPath) as! AllChatsTableViewCell
         cell.backgroundColor = .clear
+        cell.message = filteredMessage[indexPath.row]
         cell.selectionStyle = UITableViewCell.SelectionStyle.none
-        cell.user = filteredUsers[indexPath.row]
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let user = filteredUsers[indexPath.row]
+        let user = filteredMessage[indexPath.row].user
         let chatWithUserVC = ChatViewController()
         chatWithUserVC.userFriend = user
         chatWithUserVC.user = self.user
@@ -171,6 +178,22 @@ extension MessagesViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
         return .delete
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        tableView.beginUpdates()
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        let messageIndex = filteredMessage[indexPath.row].user.uid
+        Database.database().removeChatWithAllChats(userUID: uid, userFriendWithDeleteUID: messageIndex) { error in
+            if let error {
+                print(error)
+                return
+            }
+            print("remove chat with:", self.filteredMessage[indexPath.row].user.username)
+            self.filteredMessage.remove(at: indexPath.item)
+            self.tableView.deleteRows(at: [indexPath], with: .automatic)
+        }
+        tableView.endUpdates()
     }
 }
 
@@ -182,10 +205,10 @@ extension MessagesViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         
         if searchText.isEmpty {
-            print(searchText)
+            self.filteredMessage = messages
         } else {
-           filteredUsers = users.filter { user -> Bool in
-                return user.username.lowercased().contains(searchText.lowercased())
+            filteredMessage = messages.filter { messages -> Bool in
+               return messages.user.username.lowercased().contains(searchText.lowercased())
             }
         }
         tableView.reloadData()

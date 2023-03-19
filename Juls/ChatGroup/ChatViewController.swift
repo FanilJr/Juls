@@ -25,10 +25,13 @@ class ChatViewController: UIViewController {
             self.authorComment.loadImage(urlString: image)
         }
     }
-
+    
+    var isRead = Bool()
+    var lastMessage = String()
     var timer: Timer?
     var messages = [Message]()
     private let nc = NotificationCenter.default
+    let imagePicker = UIImagePickerController()
     
     private let spinnerView: UIActivityIndicatorView = {
         let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .medium)
@@ -43,6 +46,22 @@ class ChatViewController: UIViewController {
         read.translatesAutoresizingMaskIntoConstraints = false
         read.text = "Прочитано"
         return read
+    }()
+    
+    lazy var containerViewForImage: UIView = {
+        let containterView = UIView()
+        containterView.backgroundColor = .systemGray6
+        containterView.translatesAutoresizingMaskIntoConstraints = false
+        return containterView
+    }()
+    
+    private let imageChat: UIImageView = {
+        let image = UIImageView()
+        image.translatesAutoresizingMaskIntoConstraints = false
+        image.contentMode = .scaleAspectFill
+        image.clipsToBounds = true
+        image.layer.cornerRadius = 14
+        return image
     }()
 
     lazy var containerView: UIView = {
@@ -116,6 +135,17 @@ class ChatViewController: UIViewController {
         return button
     }()
     
+    lazy var plusButton: UIButton = {
+        let button = UIButton()
+        button.menu = addMenu()
+        button.showsMenuAsPrimaryAction = true
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setImage(UIImage(systemName: "plus"), for: .normal)
+        button.tintColor = UIColor.createColor(light: .black, dark: .white)
+        button.setTitleColor(.createColor(light: .black, dark: .white), for: .normal)
+        return button
+    }()
+    
     private lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .grouped)
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -144,13 +174,14 @@ class ChatViewController: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         timer?.invalidate()
+        view.endEditing(true)
     }
     
     private func setupDidLoad() {
         view.backgroundColor = .systemBackground
         waitingSpinnerForChatEnable(true)
         setupLayout()
-        setupNavButton()
+        imagePicker.delegate = self
         guard let username = user?.username else { return }
         guard let friendsUsername = userFriend?.username else { return }
         print("open Chat", username, "with", friendsUsername, "            ~~~~~JULS~~~~~")
@@ -163,10 +194,18 @@ class ChatViewController: UIViewController {
         tabBarController?.tabBar.isHidden = true
     }
     
-    func setupNavButton() {
-        let addButton = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(addAction))
-        addButton.tintColor = UIColor.createColor(light: .black, dark: .white)
-        navigationItem.rightBarButtonItem = addButton
+    private func addMenu() -> UIMenu {
+        let addPhoto = UIAction(title: "Отправить фото",image: UIImage(systemName: "photo")) { _ in
+            self.present(self.imagePicker, animated: true)
+        }
+        let addVideo = UIAction(title: "Отправить видео",image: UIImage(systemName: "video.badge.plus")) { _ in
+            print("video")
+        }
+        let addGif = UIAction(title: "Отправить GIF",image: UIImage(systemName: "livephoto.play")) { _ in
+            print("gif")
+        }
+        let menu = UIMenu(title: "Выберите действие", children: [addGif,addVideo,addPhoto])
+        return menu
     }
     
     func waitingSpinnerEnable(_ active: Bool) {
@@ -190,7 +229,27 @@ class ChatViewController: UIViewController {
     }
     
     func timerSetup() {
-        timer = Timer.scheduledTimer(timeInterval: 7, target: self, selector: #selector(updateMessagesForTimer), userInfo: nil, repeats: true)
+        self.timer = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(self.updateMessagesForTimer), userInfo: nil, repeats: true)
+    }
+    
+    func checkFriendRead() {
+        guard let friendId = userFriend?.uid else { return }
+        Database.database().checkIsRead(friendUserId: friendId) { read in
+            DispatchQueue.main.async {
+                self.isRead = read
+                if read {
+                    print("Сообщение пользователем прочитано")
+                } else {
+                    print("Сообщение пользователем непрочитано")
+                }
+            }
+        }
+        Database.database().getLastMessage(friendUserId: friendId) { slovo in
+            DispatchQueue.main.async {
+                self.lastMessage = slovo
+                print("Последнее сообщение", slovo)
+            }
+        }
     }
     
     @objc func updateMessagesForTimer() {
@@ -222,10 +281,10 @@ class ChatViewController: UIViewController {
     func fetchChat() {
         guard let userId = user?.uid else { return }
         guard let friendId = userFriend?.uid else { return }
+        self.changeIsRead(read: true)
+        self.checkFriendRead()
         Database.database().fetchMessageWithChatId(userUID: userId, userFriendUID: friendId) { messages in
             DispatchQueue.main.async {
-                print("Автообновление... Последнее сообщение в чате:", messages.last?.user.username ?? "",":", messages.last?.text ?? "")
-                self.checkIsRead(read: true)
                 self.messages = messages
                 self.tableView.setContentOffset(CGPointMake(0, self.containerView.center.y-60), animated: true)
                 self.waitingSpinnerForChatEnable(false)
@@ -234,10 +293,10 @@ class ChatViewController: UIViewController {
         }
     }
     
-    func checkIsRead(read: Bool) {
+    func changeIsRead(read: Bool) {
         if read {
             guard let friendUID = userFriend?.uid else { return }
-            Database.database().checkisRead(friendUserId: friendUID, friendRead: read)
+            Database.database().changeIsRead(friendUserId: friendUID, friendRead: read)
         }
     }
     
@@ -268,9 +327,24 @@ class ChatViewController: UIViewController {
         self.containerView.transform = CGAffineTransform(translationX: 0, y: 0)
     }
     
+    func addImage() {
+        [containerViewForImage,imageChat].forEach { containerView.addSubview($0) }
+        
+        NSLayoutConstraint.activate([
+            containerViewForImage.bottomAnchor.constraint(equalTo: containerView.topAnchor),
+            containerViewForImage.heightAnchor.constraint(equalTo: imageChat.heightAnchor),
+            containerViewForImage.widthAnchor.constraint(equalTo: view.widthAnchor),
+            
+            imageChat.topAnchor.constraint(equalTo: containerViewForImage.topAnchor,constant: 5),
+            imageChat.leadingAnchor.constraint(equalTo: containerViewForImage.leadingAnchor,constant: 12),
+            imageChat.heightAnchor.constraint(lessThanOrEqualToConstant: 100),
+            imageChat.widthAnchor.constraint(equalToConstant: 60),
+        ])
+    }
+    
     func setupLayout() {
         [tableView,spinnerViewForChat,containerView].forEach { view.addSubview($0) }
-        [authorComment, textfield, sendCommentButton,spinnerView].forEach { containerView.addSubview($0) }
+        [plusButton, authorComment, textfield, sendCommentButton,spinnerView].forEach { containerView.addSubview($0) }
         
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
@@ -285,14 +359,19 @@ class ChatViewController: UIViewController {
             containerView.widthAnchor.constraint(equalTo: view.widthAnchor),
             containerView.heightAnchor.constraint(equalToConstant: 70),
             
+            plusButton.topAnchor.constraint(equalTo: containerView.topAnchor,constant: 12),
+            plusButton.leadingAnchor.constraint(equalTo: containerView.leadingAnchor,constant: 12),
+            plusButton.heightAnchor.constraint(equalToConstant: 30),
+            plusButton.widthAnchor.constraint(equalToConstant: 30),
+            
             authorComment.topAnchor.constraint(equalTo: containerView.topAnchor,constant: 12),
-            authorComment.leadingAnchor.constraint(equalTo: containerView.leadingAnchor,constant: 10),
+            authorComment.leadingAnchor.constraint(equalTo: plusButton.trailingAnchor,constant: 12),
             authorComment.widthAnchor.constraint(equalToConstant: 30),
             authorComment.heightAnchor.constraint(equalToConstant: 30),
             
             textfield.centerYAnchor.constraint(equalTo: authorComment.centerYAnchor),
             textfield.leadingAnchor.constraint(equalTo: authorComment.trailingAnchor,constant: 10),
-            textfield.trailingAnchor.constraint(equalTo: containerView.trailingAnchor,constant: -5),
+            textfield.trailingAnchor.constraint(equalTo: containerView.trailingAnchor,constant: -12),
             textfield.heightAnchor.constraint(equalToConstant: 35),
             
             sendCommentButton.centerYAnchor.constraint(equalTo: authorComment.centerYAnchor),
@@ -318,9 +397,18 @@ extension ChatViewController: UITableViewDataSource {
         let isComing = user?.uid == messages[indexPath.row].uid
         if isComing {
             let cell = tableView.dequeueReusableCell(withIdentifier: "LocalChatTableViewCell", for: indexPath) as! LocalChatTableViewCell
+            cell.messages = messages[indexPath.row]
             cell.selectionStyle = .none
             cell.backgroundColor = .clear
-            cell.messages = messages[indexPath.row]
+            if indexPath.row == messages.count - 1 {
+                if isRead {
+                    cell.readLabel.text = "Прочитано"
+                } else {
+                    cell.readLabel.text = ""
+                }
+            } else {
+                cell.readLabel.text = ""
+            }
             return cell
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: "LocalChatWithUserTableViewCell", for: indexPath) as! LocalChatWithUserTableViewCell
@@ -354,5 +442,14 @@ extension ChatViewController {
     @objc func dismissKeyboard() {
         view.endEditing(true)
         self.containerView.transform = CGAffineTransform(translationX: 0, y: 0)
+    }
+}
+
+extension ChatViewController: UIImagePickerControllerDelegate & UINavigationControllerDelegate {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        guard let pickedImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage else { return }
+        imageChat.image = pickedImage
+        dismiss(animated: true)
+        self.addImage()
     }
 }
