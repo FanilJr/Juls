@@ -9,6 +9,8 @@ import UIKit
 import Firebase
 import FirebaseStorage
 import AVFoundation
+import MobileCoreServices
+import UniformTypeIdentifiers
 
 class ProfileViewController: UIViewController {
     
@@ -20,18 +22,21 @@ class ProfileViewController: UIViewController {
     var followMeUsers: Int?
     var postsCount: Int?
     var cgfloatTabBar: CGFloat?
+    var player: AVPlayer?
+    
     private var refreshController = UIRefreshControl()
     private let messagePostViewController = MessagePostViewController()
     private let viewModel: ProfileViewModel
     private let saveView = SaveView()
     private let infoView = InfoView()
     private let imagePicker = UIImagePickerController()
+    private let filePicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.mp3], asCopy: true)
     private var currentImage: UIImageView?
     private var header: StretchyCollectionHeaderView?
     
     let systemSoundID: SystemSoundID = 1016
     let systemSoundID2: SystemSoundID = 1018
-    
+
     private lazy var titleImage: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -57,6 +62,27 @@ class ProfileViewController: UIViewController {
         activityView.hidesWhenStopped = true
         activityView.translatesAutoresizingMaskIntoConstraints = false
         return activityView
+    }()
+    
+    private let spinnerViewForPutTrack: UIActivityIndicatorView = {
+        let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .large)
+        activityView.color = .black
+        activityView.hidesWhenStopped = true
+        activityView.translatesAutoresizingMaskIntoConstraints = false
+        return activityView
+    }()
+    
+    private let titleSpinner: UILabel = {
+        let title = UILabel()
+        title.text = "Дождитесь окончания загрузки"
+        title.textColor = UIColor.createColor(light: .black, dark: .white)
+        title.shadowColor = UIColor.createColor(light: .gray, dark: .gray)
+        title.font = UIFont(name: "Futura-Bold", size: 20)
+        title.shadowOffset = CGSize(width: 1, height: 1)
+        title.isHidden = true
+        title.clipsToBounds = true
+        title.translatesAutoresizingMaskIntoConstraints = false
+        return title
     }()
     
     private let spinnerViewForPost: UIActivityIndicatorView = {
@@ -112,21 +138,38 @@ class ProfileViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = .systemGray6
+        cgfloatTabBar = tabBarController?.tabBar.frame.origin.y
         
-        view.backgroundColor = .systemBackground
-        setupDidLoad()
+        self.tabBarController?.tabBar.isHidden = false
+        self.navigationController?.setNavigationBarHidden(false, animated: false)
+        self.navigationController?.navigationBar.prefersLargeTitles = true
+        self.navigationItem.largeTitleDisplayMode = .automatic
+        
+        setupTableView()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.hidesBarsOnSwipe = false
-        setupWillAppear()
+        let height = self.tabBarController?.tabBar.frame.height
+        self.tabBarController?.tabBar.isHidden = false
+        self.navigationController?.setNavigationBarHidden(false, animated: false)
+        if self.tabBarController?.tabBar.frame.origin.y != self.cgfloatTabBar {
+            UIView.animate(withDuration: 0.3) {
+                self.tabBarController?.tabBar.frame.origin.y -= height!
+            }
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         showImage(false)
         showNewMessage(false)
+        self.header?.progressBar.value = 0.0
+        self.header?.progressBar.alpha = 0.0
+        self.stop()
+        self.header?.playSongButton.setBackgroundImage(UIImage(systemName: "play.circle"), for: .normal)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -135,40 +178,6 @@ class ProfileViewController: UIViewController {
         showNewMessage(true)
     }
     
-    private func setupDidLoad() {
-        cgfloatTabBar = tabBarController?.tabBar.frame.origin.y
-        tabBarController?.tabBar.isHidden = false
-        
-        self.navigationController?.navigationBar.prefersLargeTitles = true
-        self.navigationItem.largeTitleDisplayMode = .automatic
-        
-        navigationController?.setNavigationBarHidden(false, animated: false)
-        refreshController.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
-        setupTableView()
-        imagePicker.delegate = self
-        messagePostViewController.delegatePost = self
-        fetchUser()
-        self.posts.sort { p1, p2 in
-            return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-        }
-        
-    }
-    
-    private func setupWillAppear() {
-        self.updateMessage()
-        let height = self.tabBarController?.tabBar.frame.height
-        if self.tabBarController?.tabBar.frame.origin.y != self.cgfloatTabBar {
-            UIView.animate(withDuration: 0.3) {
-                self.tabBarController?.tabBar.frame.origin.y -= height!
-            }
-        }
-        self.tabBarController?.tabBar.isHidden = false
-        self.navigationController?.setNavigationBarHidden(false, animated: false)
-    }
-    
-    /// Show or hide the image from NavBar while going to next screen or back to initial screen
-    ///
-    /// - Parameter show: show or hide the image from NavBar
     private func showImage(_ show: Bool) {
         UIView.animate(withDuration: 0.1) {
             self.titleImage.alpha = show ? 1.0 : 0.0
@@ -183,8 +192,7 @@ class ProfileViewController: UIViewController {
     
     @objc func didTapRefresh() {
         self.fetchUser()
-        self.updateMessage()
-        print("refresh Profile")
+        print("refresh friend Profile")
     }
     
     @objc func openInfoForOfficial() {
@@ -192,62 +200,6 @@ class ProfileViewController: UIViewController {
         let alertOk = UIAlertAction(title: "OK", style: .default)
         alertController.addAction(alertOk)
         present(alertController, animated: true)
-    }
-    
-    func setupNavigationButton(user: User) {
-        
-        let plusButton: UIBarButtonItem = {
-            let barButtonMenu = UIMenu(title: "Выберите действие", children: [
-                UIAction(title: NSLocalizedString("Создать пост", comment: ""), image: UIImage(systemName: "square.and.pencil"), handler: { _ in
-                    self.addPostInCollection()
-                }),
-                UIAction(title: NSLocalizedString("Создать историю", comment: ""), image: UIImage(systemName: "hand.tap"), handler: { _ in
-                    print("Story's")
-                })
-            ])
-            let plus = UIBarButtonItem()
-            plus.image = UIImage(systemName: "plus")
-            plus.tintColor = UIColor.createColor(light: .black, dark: .white)
-            plus.menu = barButtonMenu
-            return plus
-        }()
-        
-        let ellipsisButton: UIBarButtonItem = {
-            let barButtonMenu = UIMenu(title: "Выберите действие", children: [
-                UIAction(title: NSLocalizedString("Изменить аватар", comment: ""), image: UIImage(systemName: "person.fill.viewfinder"), handler: { _ in
-                    self.presentImagePickerForUser()
-                }),
-                UIAction(title: NSLocalizedString("Изменить статус", comment: ""), image: UIImage(systemName: "heart.text.square.fill"), handler: { _ in
-                    self.addStatus()
-                }),
-                UIAction(title: NSLocalizedString("Выйти из аккаунта", comment: ""), image: UIImage(systemName: "hands.sparkles.fill"), attributes: .destructive, handler: { _ in
-                    self.logOut()
-                })
-            ])
-            
-            let ellipsis = UIBarButtonItem()
-            ellipsis.image = UIImage(systemName: "ellipsis")
-            ellipsis.tintColor = UIColor.createColor(light: .black, dark: .white)
-            ellipsis.menu = barButtonMenu
-            return ellipsis
-        }()
-        
-        let messageButton = UIBarButtonItem(image: UIImage(systemName: "paperplane.fill"), style: .plain, target: self, action: #selector(pushMessageController))
-        messageButton.tintColor = #colorLiteral(red: 0.1758851111, green: 0.5897727013, blue: 0.9195605516, alpha: 1)
-        
-        let messageButtonForFriend = UIBarButtonItem(image: UIImage(systemName: "paperplane.fill"), style: .plain, target: self, action: #selector(pushMessageFriendController))
-        messageButtonForFriend.tintColor = #colorLiteral(red: 0.1758851111, green: 0.5897727013, blue: 0.9195605516, alpha: 1)
-
-        
-        let starButton = UIBarButtonItem(image: UIImage(systemName: "star"), style: .plain, target: self, action: #selector(addFavorites))
-        starButton.tintColor = UIColor.createColor(light: .black, dark: .white)
-        
-        if user.uid == Auth.auth().currentUser?.uid {
-            navigationItem.rightBarButtonItems = [ellipsisButton,plusButton]
-            navigationItem.leftBarButtonItems = [messageButton]
-        } else {
-            navigationItem.rightBarButtonItems = [messageButtonForFriend,starButton]
-        }
     }
     
     @objc func pushMessageFriendController() {
@@ -271,17 +223,15 @@ class ProfileViewController: UIViewController {
     @objc func addFavorites() {
         print("add Favorites")
     }
-
-    func waitingSpinnerEnable(_ active: Bool) {
-        if active {
-            spinnerView.startAnimating()
-        } else {
-            spinnerView.stopAnimating()
-        }
-    }
         
     func setupTableView() {
-        [collectionView, spinnerView].forEach({ view.addSubview($0) })
+        filePicker.delegate = self
+        imagePicker.delegate = self
+        messagePostViewController.delegate = self
+        refreshController.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
+        fetchUser()
+        loadDatabase()
+        [collectionView, spinnerView,titleSpinner,spinnerViewForPutTrack].forEach({ view.addSubview($0) })
             
         NSLayoutConstraint.activate([
             collectionView.topAnchor.constraint(equalTo: view.topAnchor),
@@ -290,7 +240,13 @@ class ProfileViewController: UIViewController {
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
             spinnerView.topAnchor.constraint(equalTo: collectionView.topAnchor,constant: 300),
-            spinnerView.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            spinnerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            titleSpinner.centerYAnchor.constraint(equalTo: view.centerYAnchor,constant: -50),
+            titleSpinner.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            spinnerViewForPutTrack.topAnchor.constraint(equalTo: titleSpinner.bottomAnchor,constant: 10),
+            spinnerViewForPutTrack.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
     }
 }
@@ -310,7 +266,7 @@ extension ProfileViewController: UIImagePickerControllerDelegate & UINavigationC
             
         } else if currentImage == header?.userImage {
             currentImage?.image = pickedImage
-            waitingSpinnerEnable(true)
+            waitingSpinnerEnable(activity: self.spinnerView, active: true)
             dismiss(animated: true)
             self.saveChanges()
             print("header в имейдж пикер релоад")
@@ -348,7 +304,7 @@ extension ProfileViewController {
         
         guard let viewTitle = title else { return }
         if viewTitle.count >= 9 {
-            xTranslation = max(0, 50 - coeff * 50)
+            xTranslation = max(0, 35 - coeff * 50)
         } else {
             xTranslation = max(0, 100 - coeff * 100)
         }
@@ -365,7 +321,7 @@ extension ProfileViewController {
         
         if viewTitle.count >= 9 {
             NSLayoutConstraint.activate([
-                titleImage.centerXAnchor.constraint(equalTo: navBar.centerXAnchor, constant: 25),
+                titleImage.centerXAnchor.constraint(equalTo: navBar.centerXAnchor, constant: 35),
                 titleImage.bottomAnchor.constraint(equalTo: navBar.bottomAnchor, constant: -Const.ImageBottomMarginForLargeState),
                 titleImage.heightAnchor.constraint(equalToConstant: Const.ImageSizeForLargeState),
                 titleImage.widthAnchor.constraint(equalTo: titleImage.heightAnchor)
@@ -381,24 +337,41 @@ extension ProfileViewController {
             ])
         }
     }
-    
-    func updateMessage() {
-        let uid = userId ?? (Auth.auth().currentUser?.uid ?? "")
-        Database.database().checkNewMessage(userUid: uid) { count in
-            if uid == Auth.auth().currentUser?.uid {
-                self.navigationController?.navigationBar.addSubview(self.newMessage)
-                if count == 0 {
-                    DispatchQueue.main.async {
-                        self.newMessage.text = ""
-                        print("no new messages")
+
+    func deleteMusic() {
+        let alert = UIAlertController(title: "Удалить песню", message: "Вы уверены?", preferredStyle: .alert)
+        let alertOK = UIAlertAction(title: "Удалить", style: .destructive)  { [self] _ in
+            guard let uid = Auth.auth().currentUser?.uid else { return }
+            guard let song = user?.loveSong else { return }
+            Storage.storage().reference().child("songs/\(uid)").child(song).delete { error in
+                if let error {
+                    print(error)
+                    return
+                }
+                Database.database().reference().child("users").child(uid).child("loveSong").removeValue { error, _ in
+                    if let error {
+                        print(error)
+                        return
                     }
-                } else {
-                    DispatchQueue.main.async {
-                        self.newMessage.text = "\(count)"
-                        print("you have \(count) message(s)")
-                    }
+                    self.fetchForReload()
+                    print("succes delete Music")
                 }
             }
+        }
+        let alertCancel = UIAlertAction(title: "Отмена", style: .default)
+        [alertOK,alertCancel].forEach { alert.addAction($0) }
+        present(alert, animated: true)
+    }
+    
+    func fetchForReload() {
+        let uid = userId ?? (Auth.auth().currentUser?.uid ?? "")
+        
+        Database.database().fetchUser(withUID: uid) { user in
+            self.user = user
+            self.setupNavigationButton(user: user)
+            self.header?.user = user
+            self.collectionView.refreshControl?.endRefreshing()
+            self.collectionView.reloadData()
         }
     }
     
@@ -410,22 +383,17 @@ extension ProfileViewController {
             self.title = user.username
             self.setupNavigationButton(user: user)
             self.header?.user = user
-            self.loadDatabase()
-            
+            if user.uid == uid {
+                Database.database().updateMessageInNavigationBar(userId: uid, navigation: self.navigationController!, label: self.newMessage)
+            }
             if user.official {
                 print(user.username, "- official status <Public person>")
                 self.fetchTick()
-            } else {
-                print(user.username, "- not have status <Public person>")
             }
-            
             Database.database().fetchAllPosts(withUID: uid) { posts in
                 DispatchQueue.main.async {
                     self.collectionView.refreshControl?.endRefreshing()
                     self.posts = posts
-                    self.posts.sort { p1, p2 in
-                        return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-                    }
                     self.collectionView.reloadData()
                 }
             } withCancel: { error in
@@ -437,23 +405,26 @@ extension ProfileViewController {
     private func loadDatabase() {
         let uid = userId ?? (Auth.auth().currentUser?.uid ?? "")
         
-        Database.database().numberOfPostsForUser(withUID: uid) { number in
-            self.postsCount = number
+        Database.database().numberOfItemsForUser(withUID: uid, category: "posts") { count in
+            self.postsCount = count
+            self.collectionView.reloadData()
         }
-        Database.database().numberOfFollowingForUser(withUID: uid) { number in
-            self.iFollowUsers = number
+        Database.database().numberOfItemsForUser(withUID: uid, category: "followers") { count in
+            self.followMeUsers = count
+            self.collectionView.reloadData()
         }
-        Database.database().numberOfFollowersForUser(withUID: uid) { number in
-            self.followMeUsers = number
+        Database.database().numberOfItemsForUser(withUID: uid, category: "following") { count in
+            self.iFollowUsers = count
+            self.collectionView.reloadData()
         }
     }
     
     func saveChanges() {
         guard let userId = Auth.auth().currentUser?.uid else { return }
         let imageName = NSUUID().uuidString
-        let storedImage = Storage.storage().reference().child("profile_image").child(imageName)
+        let storedImage = Storage.storage().reference().child("profile_image").child(userId).child(imageName)
         
-        if let uploadData = header?.userImage.image?.jpegData(compressionQuality: 0.3) {
+        if let uploadData = header?.userImage.image?.jpegData(compressionQuality: 0.2) {
             storedImage.putData(uploadData, metadata: nil) { metadata, error in
                 if let error {
                     print("error upload", error)
@@ -471,7 +442,7 @@ extension ProfileViewController {
                                 return
                             }
                             print("succes download Photo in Firebase Library")
-                            self.waitingSpinnerEnable(false)
+                            waitingSpinnerEnable(activity: self.spinnerView, active: false)
                             self.view.addSubview(self.saveView)
                             self.didTapRefresh()
                             NSLayoutConstraint.activate([
@@ -499,15 +470,15 @@ extension ProfileViewController {
         let alert = UIAlertController(title: "Введите статус", message: "", preferredStyle: .alert)
         let alertOK = UIAlertAction(title: "Ok", style: .default)  { [self] _ in
             let text = alert.textFields?.first?.text
-            header?.statusLabel.text = text
             AudioServicesPlaySystemSound(self.systemSoundID)
-            if let urlText = header?.statusLabel.text {
+            if let urlText = text {
                 DispatchQueue.main.async {
                     Database.database().reference().child("users").child(Auth.auth().currentUser?.uid ?? "").updateChildValues(["status" : urlText]) { error, ref in
                         if let error {
                             print(error)
                             return
                         }
+                        self.fetchUser()
                         print("succes download Status in Firebase Library")
                     }
                 }
@@ -545,7 +516,7 @@ extension ProfileViewController {
     
     func addPostInCollection() {
         if let sheet = messagePostViewController.sheetPresentationController {
-            sheet.detents = [.medium(), .large()]
+            sheet.detents = [.medium()]
             sheet.prefersScrollingExpandsWhenScrolledToEdge = false
             sheet.largestUndimmedDetentIdentifier = .medium
             sheet.prefersGrabberVisible = true
@@ -660,7 +631,7 @@ extension ProfileViewController: MessagePostDelegate {
 
             
             UIView.animate(withDuration: 0.5, animations: {
-                self.didTapRefresh()
+                self.fetchUser()
             })
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -763,7 +734,6 @@ extension ProfileViewController: UICollectionViewDataSource {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "PhotosCollectionViewCell", for: indexPath) as! PhotosCollectionViewCell
             cell.configureCell(post: posts[indexPath.item])
             return cell
-            
         default:
             return UICollectionViewCell()
         }
@@ -773,6 +743,7 @@ extension ProfileViewController: UICollectionViewDataSource {
         switch indexPath.section {
         case 0:
             header = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "StretchyCollectionHeaderView", for: indexPath) as? StretchyCollectionHeaderView
+            header?.delegate = self
             return header!
         default:
             return UICollectionReusableView()
@@ -841,7 +812,7 @@ extension ProfileViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         switch section {
         case 0:
-            return CGSize(width: self.collectionView.frame.size.width, height: 540)
+            return CGSize(width: self.collectionView.frame.size.width, height: 510)
         default:
             return CGSize()
         }
@@ -887,5 +858,170 @@ extension ProfileViewController: UICollectionViewDelegateFlowLayout {
 extension ProfileViewController: PostViewControllerDelegate {
     func reloadTable() {
         self.fetchUser()
+    }
+}
+
+
+extension ProfileViewController: StretchyProtocol {
+    func play(url: URL) {
+        let playerItem: AVPlayerItem = AVPlayerItem(url: url)
+        self.player = AVPlayer(playerItem: playerItem)
+        player?.addPeriodicTimeObserver(forInterval: CMTimeMake(value: 1, timescale: 10), queue: DispatchQueue.main) { [weak self] time in
+            guard let self = self else { return }
+            let currentTime = Float(CMTimeGetSeconds(time))
+            let duration = Float(CMTimeGetSeconds(playerItem.duration))
+            let progress = currentTime / duration
+            self.header?.progressBar.value = progress
+            // Check if the song has ended
+            if currentTime >= duration {
+                self.header?.progressBar.value = 0.0
+                self.header?.progressBar.alpha = 0.0
+                self.stop()
+                self.header?.playSongButton.setBackgroundImage(UIImage(systemName: "play.circle"), for: .normal)
+            }
+        }
+        player?.play()
+        self.header?.progressBar.alpha = 1.0
+    }
+    
+    func stop() {
+        self.header?.progressBar.value = 0.0
+        self.player?.pause()
+    }
+    
+    func openFileManager() {
+        present(filePicker, animated: true)
+    }
+}
+
+
+//MARK: DOCUMENTPICKER
+extension ProfileViewController: UIDocumentPickerDelegate {
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let url = urls.first else { return }
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+
+        let storageRef = Storage.storage().reference().child("songs/\(uid)/\(url.lastPathComponent)")
+        waitingSpinnerEnable(activity: self.spinnerViewForPutTrack, active: true)
+        titleSpinner.isHidden = false
+        UIView.animate(withDuration: 1) {
+            self.collectionView.alpha = 0.2
+            self.collectionView.isScrollEnabled = false
+        }
+        storageRef.putFile(from: url, metadata: nil) { (_, error) in
+            if let error {
+                print("Error uploading song: \(error.localizedDescription)")
+                return
+            }
+            print("Song uploaded successfully")
+            Database.database().reference().child("users").child(Auth.auth().currentUser?.uid ?? "").updateChildValues(["loveSong" : url.lastPathComponent]) { error, ref in
+                if let error {
+                    print(error)
+                    return
+                }
+                waitingSpinnerEnable(activity: self.spinnerViewForPutTrack, active: false)
+                UIView.animate(withDuration: 0.5) {
+                    self.collectionView.alpha = 1.0
+                    self.collectionView.isScrollEnabled = true
+                }
+                self.titleSpinner.isHidden = true
+                self.fetchForReload()
+                print("succes download sound in User in Firebase Library")
+            }
+        }
+    }
+}
+
+
+//MARK: SETUP NAVIGATIONBUTTON
+extension ProfileViewController {
+    func setupNavigationButton(user: User) {
+        let plusButton: UIBarButtonItem = {
+            let barButtonMenu = UIMenu(title: "Выберите действие", children: [
+                UIAction(title: NSLocalizedString("Создать пост", comment: ""), image: UIImage(systemName: "square.and.pencil"), handler: { _ in
+                    self.addPostInCollection()
+                }),
+                UIAction(title: NSLocalizedString("Создать историю", comment: ""), image: UIImage(systemName: "hand.tap"), handler: { _ in
+                    print("Story's")
+                })
+            ])
+            let plus = UIBarButtonItem()
+            plus.image = UIImage(systemName: "plus")
+            plus.tintColor = UIColor.createColor(light: .black, dark: .white)
+            plus.menu = barButtonMenu
+            return plus
+        }()
+        
+        let ellipsisButtonForDeleteMusic: UIBarButtonItem = {
+            let barButtonMenu = UIMenu(title: "Выберите действие", children: [
+                UIAction(title: NSLocalizedString("Изменить аватар", comment: ""), image: UIImage(systemName: "person.fill.viewfinder"), handler: { _ in
+                    self.presentImagePickerForUser()
+                }),
+                UIAction(title: NSLocalizedString("Изменить статус", comment: ""), image: UIImage(systemName: "heart.text.square.fill"), handler: { _ in
+                    self.addStatus()
+                }),
+                UIAction(title: NSLocalizedString("Удалить песню", comment: ""), image: UIImage(systemName: "trash"), attributes: .destructive, handler: { _ in
+                    self.deleteMusic()
+                }),
+                UIAction(title: NSLocalizedString("Выйти из аккаунта", comment: ""), image: UIImage(systemName: "hands.sparkles.fill"), attributes: .destructive, handler: { _ in
+                    self.logOut()
+                })
+            ])
+            
+            let ellipsis = UIBarButtonItem()
+            ellipsis.image = UIImage(systemName: "ellipsis")
+            ellipsis.tintColor = UIColor.createColor(light: .black, dark: .white)
+            ellipsis.menu = barButtonMenu
+            return ellipsis
+        }()
+        
+        let ellipsisButton: UIBarButtonItem = {
+            let barButtonMenu = UIMenu(title: "Выберите действие", children: [
+                UIAction(title: NSLocalizedString("Изменить аватар", comment: ""), image: UIImage(systemName: "person.fill.viewfinder"), handler: { _ in
+                    self.presentImagePickerForUser()
+                }),
+                UIAction(title: NSLocalizedString("Изменить статус", comment: ""), image: UIImage(systemName: "heart.text.square.fill"), handler: { _ in
+                    self.addStatus()
+                }),
+                UIAction(title: NSLocalizedString("Добавить песню", comment: ""), image: UIImage(systemName: "music.note"), handler: { _ in
+                    self.openFileManager()
+                }),
+                UIAction(title: NSLocalizedString("Выйти из аккаунта", comment: ""), image: UIImage(systemName: "hands.sparkles.fill"), attributes: .destructive, handler: { _ in
+                    self.logOut()
+                })
+            ])
+            
+            let ellipsis = UIBarButtonItem()
+            ellipsis.image = UIImage(systemName: "ellipsis")
+            ellipsis.tintColor = UIColor.createColor(light: .black, dark: .white)
+            ellipsis.menu = barButtonMenu
+            return ellipsis
+        }()
+        
+        let messageButton = UIBarButtonItem(image: UIImage(systemName: "paperplane.fill"), style: .plain, target: self, action: #selector(pushMessageController))
+        messageButton.tintColor = #colorLiteral(red: 0.1758851111, green: 0.5897727013, blue: 0.9195605516, alpha: 1)
+        
+        let messageButtonForFriend = UIBarButtonItem(image: UIImage(systemName: "paperplane.fill"), style: .plain, target: self, action: #selector(pushMessageFriendController))
+        messageButtonForFriend.tintColor = #colorLiteral(red: 0.1758851111, green: 0.5897727013, blue: 0.9195605516, alpha: 1)
+        
+        let starButton = UIBarButtonItem(image: UIImage(systemName: "star"), style: .plain, target: self, action: #selector(addFavorites))
+        starButton.tintColor = UIColor.createColor(light: .black, dark: .white)
+        
+        if user.uid == Auth.auth().currentUser?.uid {
+            guard let uid = Auth.auth().currentUser?.uid else { return }
+            let ref = Database.database().reference().child("users").child(uid)
+            ref.observeSingleEvent(of: .value, with: { snapshot in
+                guard let dictionaty = snapshot.value as? [String: Any] else { return }
+                if (dictionaty["loveSong"] != nil) == true {
+                        self.navigationItem.rightBarButtonItems = [ellipsisButtonForDeleteMusic,plusButton]
+                        self.navigationItem.leftBarButtonItems = [messageButton]
+                    } else {
+                        self.navigationItem.rightBarButtonItems = [ellipsisButton,plusButton]
+                        self.navigationItem.leftBarButtonItems = [messageButton]
+                    }
+                })
+        } else {
+            navigationItem.rightBarButtonItems = [messageButtonForFriend,starButton]
+        }
     }
 }

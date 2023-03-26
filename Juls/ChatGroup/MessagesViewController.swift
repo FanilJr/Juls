@@ -50,7 +50,6 @@ class MessagesViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        fetchAllMessages()
         searchController.searchBar.isHidden = false
         
         let height = self.tabBarController?.tabBar.frame.height
@@ -64,10 +63,11 @@ class MessagesViewController: UIViewController {
     
     private func setupDidLoad() {
         setupNavButton()
+        fetchAllMessages()
         view.backgroundColor = .systemBackground
         title = "Сообщения"
         navigationItem.searchController = searchController
-        waitingSpinnerEnable(true)
+        waitingSpinnerEnable(activity: self.spinnerView, active: true)
         layout()
         refreshControler.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
         refreshControler.attributedTitle = NSAttributedString(string: "Обновление")
@@ -92,7 +92,7 @@ class MessagesViewController: UIViewController {
             DispatchQueue.main.async {
                 self.filteredMessage = message
                 self.messages = message
-                self.waitingSpinnerEnable(false)
+                waitingSpinnerEnable(activity: self.spinnerView, active: false)
                 self.tableView.refreshControl?.endRefreshing()
                 self.tableView.reloadData()
             }
@@ -108,6 +108,7 @@ class MessagesViewController: UIViewController {
     }
     
     @objc func filteredUnRead() {
+        title = "Непрочитанное"
         navigationItem.rightBarButtonItems = [addButton,removeFilterButton]
         filteredMessage = messages.filter { messages -> Bool in
             return messages.isRead == false
@@ -116,6 +117,7 @@ class MessagesViewController: UIViewController {
     }
     
     @objc func removeFilter() {
+        title = "Сообщения"
         navigationItem.rightBarButtonItems = [addButton,filteredButton]
         filteredMessage = messages
         self.tableView.reloadData()
@@ -125,14 +127,6 @@ class MessagesViewController: UIViewController {
         let contactMessagesVC = ContactsMessagesViewController()
         contactMessagesVC.delegate = self
         navigationController?.present(contactMessagesVC, animated: true)
-    }
-    
-    func waitingSpinnerEnable(_ active: Bool) {
-        if active {
-            spinnerView.startAnimating()
-        } else {
-            spinnerView.stopAnimating()
-        }
     }
     
     func layout() {
@@ -172,7 +166,9 @@ extension MessagesViewController: UITableViewDataSource {
         let user = filteredMessage[indexPath.row].user
         let chatWithUserVC = ChatViewController()
         chatWithUserVC.userFriend = user
+        chatWithUserVC.lastMessage = filteredMessage[indexPath.row].text
         chatWithUserVC.user = self.user
+        
         self.navigationController?.pushViewController(chatWithUserVC, animated: true)
     }
     

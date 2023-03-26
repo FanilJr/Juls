@@ -15,6 +15,7 @@ class MessagesTableViewCell: UITableViewCell {
         pi.contentMode = .scaleAspectFill
         pi.layer.cornerRadius = 80/2
         pi.clipsToBounds = true
+        pi.image = UIImage(named: "Grey_full")
         pi.backgroundColor = .gray
         pi.translatesAutoresizingMaskIntoConstraints = false
         return pi
@@ -22,7 +23,7 @@ class MessagesTableViewCell: UITableViewCell {
     
     let usernameLabel: UILabel = {
         let user = UILabel()
-        user.font = UIFont.boldSystemFont(ofSize: 14)
+        user.font = UIFont(name: "Futura-Bold", size: 14)
         user.translatesAutoresizingMaskIntoConstraints = false
         return user
     }()

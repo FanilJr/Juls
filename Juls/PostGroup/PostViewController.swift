@@ -94,7 +94,6 @@ class PostTableViewController: UIViewController {
         if self.tabBarController?.tabBar.frame.origin.y != self.cgfloatTabBar {
             UIView.animate(withDuration: 0.3) {
                 self.tabBarController?.tabBar.frame.origin.y += height!
-//                self.tabBarController?.tabBar.isHidden = true
             }
         }
     }
@@ -122,10 +121,12 @@ class PostTableViewController: UIViewController {
     
     
     func fetchPost() {
-        guard let stringTile = post?.message else { return }
-        self.title = stringTile
-        guard let imageUrl = self.post?.imageUrl else { return }
-        self.imageBack.loadImage(urlString: imageUrl)
+        DispatchQueue.main.async {
+            guard let stringTile = self.post?.message else { return }
+            self.title = stringTile
+            guard let imageUrl = self.post?.imageUrl else { return }
+            self.imageBack.loadImage(urlString: imageUrl)
+        }
     }
     
     static func showPost(_ viewController: UIViewController, post: Post) {
@@ -151,7 +152,7 @@ class PostTableViewController: UIViewController {
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.leftAnchor.constraint(equalTo: view.leftAnchor),
             tableView.rightAnchor.constraint(equalTo: view.rightAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
     }
 }

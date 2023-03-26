@@ -21,8 +21,9 @@ class AllChatsTableViewCell: UITableViewCell {
     let profileImageView: CustomImageView = {
         let pi = CustomImageView()
         pi.contentMode = .scaleAspectFill
-        pi.layer.cornerRadius = 80/2
+        pi.layer.cornerRadius = 60/2
         pi.clipsToBounds = true
+        pi.image = UIImage(named: "Grey_full")
         pi.backgroundColor = .gray
         pi.translatesAutoresizingMaskIntoConstraints = false
         return pi
@@ -62,13 +63,13 @@ class AllChatsTableViewCell: UITableViewCell {
         self.usernameLabel.text = message.user.username
         
         if message.isRead {
-            self.usernameLabel.font = UIFont.systemFont(ofSize: 14)
+            self.usernameLabel.font = UIFont(name: "Futura", size: 14)
             self.lastMessage.font = UIFont.systemFont(ofSize: 13)
-            self.dateMassage.font = UIFont.systemFont(ofSize: 10)
+            self.dateMassage.font = UIFont(name: "Futura", size: 10)
         } else {
-            self.usernameLabel.font = UIFont.boldSystemFont(ofSize: 15)
+            self.usernameLabel.font = UIFont(name: "Futura-Bold", size: 15)
             self.lastMessage.font = UIFont.boldSystemFont(ofSize: 14)
-            self.dateMassage.font = UIFont.boldSystemFont(ofSize: 11)
+            self.dateMassage.font = UIFont(name: "Futura-Bold", size: 11)
         }
     }
     
@@ -78,15 +79,15 @@ class AllChatsTableViewCell: UITableViewCell {
         NSLayoutConstraint.activate([
             profileImageView.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10),
             profileImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
-            profileImageView.heightAnchor.constraint(equalToConstant: 80),
-            profileImageView.widthAnchor.constraint(equalToConstant: 80),
+            profileImageView.heightAnchor.constraint(equalToConstant: 60),
+            profileImageView.widthAnchor.constraint(equalToConstant: 60),
             
             usernameLabel.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor,constant: 10),
             usernameLabel.topAnchor.constraint(equalTo: profileImageView.topAnchor),
-            usernameLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -72),
+            usernameLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -52),
             
             lastMessage.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor,constant: 10),
-            lastMessage.widthAnchor.constraint(equalToConstant: 230),
+            lastMessage.widthAnchor.constraint(equalToConstant: 225),
             lastMessage.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor),
             
             dateMassage.centerYAnchor.constraint(equalTo: lastMessage.centerYAnchor),

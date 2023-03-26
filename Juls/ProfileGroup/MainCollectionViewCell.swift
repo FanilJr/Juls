@@ -32,9 +32,10 @@ class MainCollectionViewCell: UICollectionViewCell {
     private lazy var info: UILabel = {
         let name = UILabel()
         name.text = "О себе:"
-        name.shadowColor = .white
-        name.font = .systemFont(ofSize: 20, weight: .heavy)
-        name.shadowOffset = CGSize(width: 0.5, height: 0.5)
+        name.textColor = UIColor.createColor(light: .black, dark: .white)
+        name.shadowColor = UIColor.createColor(light: .gray, dark: .gray)
+        name.font = UIFont(name: "Futura-Bold", size: 20)
+        name.shadowOffset = CGSize(width: 1, height: 1)
         name.clipsToBounds = true
         name.translatesAutoresizingMaskIntoConstraints = false
         return name
@@ -45,7 +46,7 @@ class MainCollectionViewCell: UICollectionViewCell {
         label.textColor = UIColor.createColor(light: .black, dark: .white)
         label.shadowColor = UIColor.createColor(light: .gray, dark: .gray)
         label.numberOfLines = 0
-        label.font = .systemFont(ofSize: 15.0, weight: .semibold)
+        label.font = UIFont(name: "Futura-Bold", size: 14)
         label.shadowOffset = CGSize(width: 1, height: 1)
         label.clipsToBounds = true
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -55,7 +56,7 @@ class MainCollectionViewCell: UICollectionViewCell {
     lazy var iFollow: UILabel = {
         let nothing = UILabel()
         nothing.shadowColor = .white
-        nothing.font = .systemFont(ofSize: 15, weight: .bold)
+        nothing.font = UIFont(name: "Futura-Bold", size: 15)
         nothing.shadowOffset = CGSize(width: 0.5, height: 0.5)
         nothing.clipsToBounds = true
         nothing.translatesAutoresizingMaskIntoConstraints = false
@@ -65,7 +66,7 @@ class MainCollectionViewCell: UICollectionViewCell {
     
     lazy var followMe: UILabel = {
         let nothing = UILabel()
-        nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .bold)
+        nothing.font = UIFont(name: "Futura-Bold", size: 15)
         nothing.shadowColor = .white
         nothing.shadowOffset = CGSize(width: 0.5, height: 0.5)
         nothing.clipsToBounds = true
@@ -76,7 +77,7 @@ class MainCollectionViewCell: UICollectionViewCell {
     
     lazy var postsCount: UILabel = {
         let nothing = UILabel()
-        nothing.font = UIFont.systemFont(ofSize: 15.0, weight: .bold)
+        nothing.font = UIFont(name: "Futura-Bold", size: 15)
         nothing.shadowColor = .white
         nothing.shadowOffset = CGSize(width: 0.5, height: 0.5)
         nothing.clipsToBounds = true
@@ -97,7 +98,7 @@ class MainCollectionViewCell: UICollectionViewCell {
     lazy var iFollowButton: UIButton = {
         let button = UIButton()
         button.setTitle("-", for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .bold)
+        button.titleLabel?.font = UIFont(name: "Futura-Bold", size: 20)
         button.setTitleColor(UIColor.createColor(light: .black, dark: .white), for: .normal)
         button.addTarget(self, action: #selector(getUsersIFollow), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -109,7 +110,7 @@ class MainCollectionViewCell: UICollectionViewCell {
         let button = UIButton()
         button.setTitle("-", for: .normal)
         button.setTitleColor(UIColor.createColor(light: .black, dark: .white), for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .bold)
+        button.titleLabel?.font = UIFont(name: "Futura-Bold", size: 20)
         button.addTarget(self, action: #selector(getUsersFollowMe), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.showsMenuAsPrimaryAction = true
@@ -120,7 +121,7 @@ class MainCollectionViewCell: UICollectionViewCell {
         let button = UIButton()
         button.setTitle("-", for: .normal)
         button.setTitleColor(UIColor.createColor(light: .black, dark: .white), for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .bold)
+        button.titleLabel?.font = UIFont(name: "Futura-Bold", size: 20)
         button.addTarget(self, action: #selector(tapPosts), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.showsMenuAsPrimaryAction = true
@@ -200,7 +201,6 @@ class MainCollectionViewCell: UICollectionViewCell {
     }
     
     func configureMain(user: User?) {
-        
         guard let currentLoggetUserId = Auth.auth().currentUser?.uid else { return }
         guard let userId = user?.uid else { return }
         self.status.text = user?.status

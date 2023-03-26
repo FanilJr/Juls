@@ -32,6 +32,14 @@ class CommentViewController: UIViewController {
         return activityView
     }()
     
+    private let spinnerViewForTable: UIActivityIndicatorView = {
+        let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .medium)
+        activityView.color = UIColor.createColor(light: .black, dark: .white)
+        activityView.hidesWhenStopped = true
+        activityView.translatesAutoresizingMaskIntoConstraints = false
+        return activityView
+    }()
+    
     lazy var blureForCell: UIVisualEffectView = {
         let bluereEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
         let blure = UIVisualEffectView()
@@ -127,6 +135,7 @@ class CommentViewController: UIViewController {
         setupLayout()
         fetchCommentsPost()
         loadImageCurrentUser()
+        waitingSpinnerEnable(activity: self.spinnerViewForTable, active: true)
     }
     
     private func setupWillAppear() {
@@ -141,16 +150,9 @@ class CommentViewController: UIViewController {
                 self.comments.removeAll()
                 self.comments = comments
                 self.tableView.setContentOffset(CGPointMake(0, self.containerView.center.y-60), animated: true)
+                waitingSpinnerEnable(activity: self.spinnerViewForTable, active: false)
                 self.tableView.reloadData()
             }
-        }
-    }
-    
-    func waitingSpinnerEnable(_ active: Bool) {
-        if active {
-            spinnerView.startAnimating()
-        } else {
-            spinnerView.stopAnimating()
         }
     }
     
@@ -168,7 +170,7 @@ class CommentViewController: UIViewController {
     @objc func pushComment() {
         self.sendCommentButton.isEnabled = false
         self.sendCommentButton.alpha = 0
-        self.waitingSpinnerEnable(true)
+        waitingSpinnerEnable(activity: self.spinnerView, active: true)
         guard let postId = post?.id else { return }
         guard let textComment = textfield.text else { return }
         
@@ -180,7 +182,7 @@ class CommentViewController: UIViewController {
             self.fetchCommentsPost()
             self.sendCommentButton.isEnabled = true
             self.sendCommentButton.alpha = 1
-            self.waitingSpinnerEnable(false)
+            waitingSpinnerEnable(activity: self.spinnerView, active: false)
         }
         textfield.text = ""
     }
@@ -212,7 +214,7 @@ class CommentViewController: UIViewController {
     }
     
     func setupLayout() {
-        [background,imageBack,blureForCell,tableView,containerView].forEach { view.addSubview($0) }
+        [background,imageBack,blureForCell,tableView,spinnerViewForTable,containerView].forEach { view.addSubview($0) }
         [authorComment, textfield, sendCommentButton,spinnerView].forEach { containerView.addSubview($0) }
         
         NSLayoutConstraint.activate([
@@ -235,6 +237,9 @@ class CommentViewController: UIViewController {
             tableView.leftAnchor.constraint(equalTo: background.leftAnchor),
             tableView.rightAnchor.constraint(equalTo: background.rightAnchor),
             tableView.bottomAnchor.constraint(equalTo: background.bottomAnchor),
+            
+            spinnerViewForTable.centerXAnchor.constraint(equalTo: tableView.centerXAnchor),
+            spinnerViewForTable.centerYAnchor.constraint(equalTo: tableView.centerYAnchor),
             
             containerView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             containerView.widthAnchor.constraint(equalTo: view.widthAnchor),

@@ -15,6 +15,8 @@ enum TypeOfViewController {
     case home
     case news
     case search
+    case match
+    case game
 }
 
 extension TypeOfViewController {
@@ -32,6 +34,10 @@ extension TypeOfViewController {
             return NewsListController()
         case .search:
             return SearchViewController()
+        case .match:
+            return MatchViewController()
+        case .game:
+            return GameViewController()
         }
     }
 }

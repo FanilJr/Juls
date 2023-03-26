@@ -70,6 +70,7 @@ class HomeViewController: UIViewController {
     
     private func setupDidLoad() {
         title = "Лента"
+        tableView.refreshControl?.beginRefreshing()
         view.backgroundColor = .systemBackground
         tableView.delegate = self
         tableView.dataSource = self
@@ -99,62 +100,23 @@ class HomeViewController: UIViewController {
     }
     
     fileprivate func fetchAllPosts() {
-        self.posts.removeAll()
         fetchUserForImageBack()
         showEmptyStateViewIfNeeded()
-        fetchPostsForCurrentUser()
-        fetchFollowingUserPosts()
-    }
-    
-    private func fetchPostsForCurrentUser() {
-        guard let currentLoggedInUserId = Auth.auth().currentUser?.uid else { return }
-
-        tableView.refreshControl?.beginRefreshing()
-
-        Database.database().fetchAllPosts(withUID: currentLoggedInUserId, completion: { (posts) in
+        
+        //MARK: helping ChatGPT :/
+        Database.database().fetchFeedPosts { posts in
             DispatchQueue.main.async {
-                self.posts.append(contentsOf: posts)
-                self.posts.sort(by: { (p1, p2) -> Bool in
-                    return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-                })
-                self.tableView.reloadData()
                 self.tableView.refreshControl?.endRefreshing()
+                self.posts = posts
+                self.tableView.reloadData()
             }
-        }) { (err) in
-            self.tableView.refreshControl?.endRefreshing()
-        }
-    }
-
-    private func fetchFollowingUserPosts() {
-        guard let currentLoggedInUserId = Auth.auth().currentUser?.uid else { return }
-        tableView.refreshControl?.beginRefreshing()
-
-        Database.database().reference().child("following").child(currentLoggedInUserId).observeSingleEvent(of: .value, with: { (snapshot) in
-            guard let userIdsDictionary = snapshot.value as? [String: Any] else { return }
-
-            userIdsDictionary.forEach({ (uid, value) in
-                Database.database().fetchAllPosts(withUID: uid, completion: { (posts) in
-                    DispatchQueue.main.async {
-                        self.posts.append(contentsOf: posts)
-                        self.posts.sort(by: { (p1, p2) -> Bool in
-                            return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-                        })
-                        self.tableView.reloadData()
-                        self.tableView.refreshControl?.endRefreshing()
-                    }
-                }, withCancel: { (err) in
-                    self.tableView.refreshControl?.endRefreshing()
-                })
-            })
-        }) { (err) in
-            self.tableView.refreshControl?.endRefreshing()
         }
     }
 
     func showEmptyStateViewIfNeeded() {
         guard let currentLoggedInUserId = Auth.auth().currentUser?.uid else { return }
-        Database.database().numberOfFollowingForUser(withUID: currentLoggedInUserId) { (followingCount) in
-            Database.database().numberOfPostsForUser(withUID: currentLoggedInUserId, completion: { (postCount) in
+        Database.database().numberOfItemsForUser(withUID: currentLoggedInUserId, category: "following") { (followingCount) in
+            Database.database().numberOfItemsForUser(withUID: currentLoggedInUserId, category: "posts") { (postCount) in
                 DispatchQueue.main.async {
                     if followingCount == 0 && postCount == 0 {
                         UIView.animate(withDuration: 0.5, delay: 0.5, options: .curveEaseOut, animations: {
@@ -165,7 +127,7 @@ class HomeViewController: UIViewController {
                         self.tableView.backgroundView?.alpha = 0
                     }
                 }
-            })
+            }
         }
     }
     
@@ -203,25 +165,11 @@ extension HomeViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
-//        switch section {
-//        case 0:
-//            return 0
-//        case 1:
-            return posts.count
-//        default:
-//            return 0
-//        }
+        return posts.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-//        switch indexPath.section {
-//        case 0:
-//            let cell = tableView.dequeueReusableCell(withIdentifier: "StorysTableViewCell", for: indexPath) as! StorysTableViewCell
-//            cell.backgroundColor = .red
-//            return cell
-//        case 1:
             let cell = tableView.dequeueReusableCell(withIdentifier: "HomeTableViewCell", for: indexPath) as! HomeTableViewCell
             cell.selectionStyle = UITableViewCell.SelectionStyle.none
             if indexPath.row < posts.count {
@@ -230,20 +178,10 @@ extension HomeViewController: UITableViewDataSource {
             cell.delegate = self
             cell.backgroundColor = .clear
             return cell
-//        default:
-//            return UITableViewCell()
-//        }
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        switch indexPath.section {
-//        case 0:
-//            print("hui")
-//        case 1:
-            CommentViewController.showComment(self, post: posts[indexPath.row])
-//        default:
-//            print("nothing")
-//        }
+        CommentViewController.showComment(self, post: posts[indexPath.row])
     }
 }
 

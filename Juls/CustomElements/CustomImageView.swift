@@ -13,6 +13,7 @@ var imageCache = [String: UIImage]()
 class CustomImageView: UIImageView {
     
     var lastURLUsedToLoadImage: String?
+    private let activityIndicator = UIActivityIndicatorView()
     
     func loadImage(urlString: String) {
         lastURLUsedToLoadImage = urlString
@@ -22,13 +23,16 @@ class CustomImageView: UIImageView {
             return
         }
         
+//        addActivityIndicator()
+        
         guard let url = URL(string: urlString) else { return }
-            
-        URLSession.shared.dataTask(with: url) { data, responce, error in
-            if let error  {
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
                 print(error)
                 return
             }
+            
             if url.absoluteString != self.lastURLUsedToLoadImage {
                 return
             }
@@ -39,9 +43,23 @@ class CustomImageView: UIImageView {
             imageCache[url.absoluteString] = photoImage
             
             DispatchQueue.main.async {
+//                self.removeActivityIndicator()
                 self.image = photoImage
             }
         }
         .resume()
+    }
+    
+    private func addActivityIndicator() {
+        activityIndicator.style = .medium
+        activityIndicator.center = center
+        activityIndicator.hidesWhenStopped = true
+        addSubview(activityIndicator)
+        activityIndicator.startAnimating()
+    }
+    
+    private func removeActivityIndicator() {
+        activityIndicator.stopAnimating()
+        activityIndicator.removeFromSuperview()
     }
 }

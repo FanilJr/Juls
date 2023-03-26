@@ -20,6 +20,7 @@ class HomeTableViewCell: UITableViewCell {
         let imageView = CustomImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
+        imageView.image = UIImage(named: "Grey_full")
         imageView.layer.cornerRadius = 50/2
         imageView.backgroundColor = .gray
         imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -50,6 +51,7 @@ class HomeTableViewCell: UITableViewCell {
         let imageView = CustomImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.backgroundColor = .gray
+        imageView.image = UIImage(named: "Grey_full")
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.clipsToBounds = true
         return imageView
@@ -80,7 +82,7 @@ class HomeTableViewCell: UITableViewCell {
         let name = UILabel()
         name.textColor = UIColor.createColor(light: .black, dark: .white)
         name.shadowColor = UIColor.createColor(light: .gray, dark: .gray)
-        name.font = .systemFont(ofSize: 15, weight: .bold)
+        name.font = UIFont(name: "Futura-Bold", size: 15)
         name.shadowOffset = CGSize(width: 0.5, height: 0.5)
         name.clipsToBounds = true
         name.translatesAutoresizingMaskIntoConstraints = false
@@ -92,7 +94,7 @@ class HomeTableViewCell: UITableViewCell {
         name.numberOfLines = 0
         name.textColor = UIColor.createColor(light: .black, dark: .white)
         name.shadowColor = UIColor.createColor(light: .white, dark: .black)
-        name.font = .systemFont(ofSize: 14, weight: .thin)
+        name.font = UIFont(name: "Futura", size: 14)
         name.shadowOffset = CGSize(width: 1, height: 1)
         name.layer.shadowOpacity = 1
         name.layer.shadowRadius = 30
@@ -104,7 +106,7 @@ class HomeTableViewCell: UITableViewCell {
     
     lazy var datePost: UILabel = {
         let name = UILabel()
-        name.font = UIFont.systemFont(ofSize: 12, weight: .light)
+        name.font = UIFont(name: "Futura", size: 12)
         name.translatesAutoresizingMaskIntoConstraints = false
         name.textColor = UIColor.createColor(light: .black, dark: .white)
         name.backgroundColor = .clear
@@ -113,7 +115,7 @@ class HomeTableViewCell: UITableViewCell {
     
     lazy var commentCountLabel: UILabel = {
         let name = UILabel()
-        name.font = UIFont.systemFont(ofSize: 13, weight: .light)
+        name.font = UIFont(name: "Futura", size: 13)
         name.translatesAutoresizingMaskIntoConstraints = false
         name.textColor = .systemGray
         name.text = "Комментарии"
@@ -129,7 +131,7 @@ class HomeTableViewCell: UITableViewCell {
         let name = UILabel()
         name.textColor = UIColor.createColor(light: .systemGray5, dark: .white)
         name.shadowColor = UIColor.createColor(light: .black, dark: .gray)
-        name.font = .systemFont(ofSize: 15, weight: .bold)
+        name.font = UIFont(name: "Futura-Bold", size: 15)
         name.shadowOffset = CGSize(width: 1, height: 1)
         name.clipsToBounds = true
         name.translatesAutoresizingMaskIntoConstraints = false
@@ -141,7 +143,7 @@ class HomeTableViewCell: UITableViewCell {
         let name = UILabel()
         name.textColor = UIColor.createColor(light: .systemGray5, dark: .white)
         name.shadowColor = UIColor.createColor(light: .black, dark: .gray)
-        name.font = .systemFont(ofSize: 15, weight: .bold)
+        name.font = UIFont(name: "Futura-Bold", size: 15)
         name.shadowOffset = CGSize(width: 1, height: 1)
         name.clipsToBounds = true
         name.translatesAutoresizingMaskIntoConstraints = false
@@ -257,7 +259,7 @@ class HomeTableViewCell: UITableViewCell {
         datePost.text = post?.creationDate.timeAgoDisplay()
         
         let attributedText = NSMutableAttributedString(string: post?.user.username ?? "")
-        attributedText.addAttribute(.font, value: UIFont.systemFont(ofSize: 14, weight: .bold), range: NSRange(location: 0, length: post?.user.username.count ?? 0))
+        attributedText.addAttribute(.font, value: UIFont(name: "Futura-Bold", size: 14)!, range: NSRange(location: 0, length: post?.user.username.count ?? 0))
         let attributeComment = NSAttributedString(string: "  \(post?.message ?? "")")
         attributedText.append(attributeComment)
         descriptionText.attributedText = attributedText

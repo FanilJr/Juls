@@ -24,6 +24,7 @@ class CommentsTableViewCell: UITableViewCell {
         let pi = CustomImageView()
         pi.contentMode = .scaleAspectFill
         pi.layer.cornerRadius = 30/2
+        pi.image = UIImage(named: "Grey_full")
         pi.clipsToBounds = true
         pi.backgroundColor = .gray
         pi.translatesAutoresizingMaskIntoConstraints = false
@@ -33,21 +34,21 @@ class CommentsTableViewCell: UITableViewCell {
     let descriptionNameandText: UILabel = {
         let descriptionNameandText = UILabel()
         descriptionNameandText.numberOfLines = 0
-        descriptionNameandText.font = UIFont.systemFont(ofSize: 12)
+        descriptionNameandText.font = UIFont(name: "Futura", size: 12)
         descriptionNameandText.translatesAutoresizingMaskIntoConstraints = false
         return descriptionNameandText
     }()
     
     let nameCommentUser: UILabel = {
         let nameCommentUser = UILabel()
-        nameCommentUser.font = UIFont.systemFont(ofSize: 13)
+        nameCommentUser.font = UIFont(name: "Futura", size: 13)
         nameCommentUser.translatesAutoresizingMaskIntoConstraints = false
         return nameCommentUser
     }()
     
     let timeAgo: UILabel = {
         let timeAgo = UILabel()
-        timeAgo.font = UIFont.systemFont(ofSize: 10)
+        timeAgo.font = UIFont(name: "Futura", size: 10)
         timeAgo.translatesAutoresizingMaskIntoConstraints = false
         return timeAgo
     }()

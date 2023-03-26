@@ -20,6 +20,8 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
         static let profileImageName: String = "person.circle"
         static let searchImageName: String = "magnifyingglass.circle"
         static let ribbonImageName: String = "house.circle"
+        static let matchImageName: String = "heart.circle"
+        static let gameImageName: String = "trophy.circle"
     }
     
     private enum ConstantsSelect {
@@ -27,6 +29,8 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
         static let profileImageName: String = "person.circle.fill"
         static let searchImageName: String = "magnifyingglass.circle.fill"
         static let ribbonImageName: String = "house.circle.fill"
+        static let matchImageName: String = "heart.circle.fill"
+        static let gameImageName: String = "trophy.circle.fill"
     }
 
     init(scene: UIWindowScene, viewControllerFactory: ViewControllersFactoryProtocol) {
@@ -49,15 +53,25 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
     
     private func initTabBarController() {
         tabBarController.viewControllers = settingsViewControllers()
-        tabBarController.selectedIndex = 3
+        tabBarController.selectedIndex = 4
     }
     
     private func settingsViewControllers() -> [UIViewController] {
         
         //MARK: NEWS
-        let newsVc = viewControllerFactory.viewController(for: .news)
-        let navNewsVC = createNavController(for: newsVc, title: String("Новости"), image: UIImage(systemName: Constants.newsImageName)!, selectImage: UIImage(systemName: ConstantsSelect.newsImageName)!)
-        let newsCoordinator = NewsCoordinator(navigationController: navNewsVC, viewControllerFactory: viewControllerFactory)
+//        let newsVc = viewControllerFactory.viewController(for: .news)
+//        let navNewsVC = createNavController(for: newsVc, title: String("Новости"), image: UIImage(systemName: Constants.newsImageName)!, selectImage: UIImage(systemName: ConstantsSelect.newsImageName)!)
+//        let newsCoordinator = NewsCoordinator(navigationController: navNewsVC, viewControllerFactory: viewControllerFactory)
+        
+        //MARK: MATCH
+        let matchVc = viewControllerFactory.viewController(for: .match)
+        let navMatchVC = createNavController(for: matchVc, title: String("Match"), image: UIImage(systemName: Constants.matchImageName)!, selectImage: UIImage(systemName: ConstantsSelect.matchImageName)!)
+        let matchCoordinator = MatchCoordinator(navigationController: navMatchVC, viewControllerFactory: viewControllerFactory)
+        
+        //MARK: GAME
+        let gameVc = viewControllerFactory.viewController(for: .game)
+        let navGameVC = createNavController(for: gameVc, title: "Game", image: UIImage(systemName: Constants.gameImageName) ?? UIImage(), selectImage: UIImage(systemName: ConstantsSelect.gameImageName) ?? UIImage())
+        let gameCoordinator = GameCoordinator(navigationController: navGameVC, viewControllerFactory: viewControllerFactory)
         
         //MARK: SEARCH
         let searchVC = viewControllerFactory.viewController(for: .search)
@@ -71,11 +85,15 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
 
         addDependency(searchCoordinator)
         addDependency(homeCoordinator)
-        addDependency(newsCoordinator)
+//        addDependency(newsCoordinator)
+        addDependency(matchCoordinator)
+        addDependency(gameCoordinator)
 
         searchCoordinator.start()
         homeCoordinator.start()
-        newsCoordinator.start()
+//        newsCoordinator.start()
+        matchCoordinator.start()
+        gameCoordinator.start()
         
         if Auth.auth().currentUser == nil {
             let loginViewModel = LoginViewModel()
@@ -88,7 +106,7 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
             let logInCoordinator = LogInCoordinator(navigationController: navLogInVc, viewControllerFactory: viewControllerFactory)
             addDependency(logInCoordinator)
             logInCoordinator.start()
-            return [navNewsVC, navSearchVC, navHomeVC, navLogInVc]
+            return [navMatchVC,navGameVC, navHomeVC, navSearchVC, navLogInVc]
         }
         
         let profileViewModel = ProfileViewModel()
@@ -101,7 +119,7 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
         
         addDependency(profileCoordinator)
         profileCoordinator.start()
-        return [navNewsVC, navSearchVC, navHomeVC, navProfileInVc]
+        return [navMatchVC,navGameVC, navHomeVC,navSearchVC, navProfileInVc]
     }
     
     private func createNavController(for rootViewController: UIViewController, title: String, image: UIImage, selectImage: UIImage) -> UINavigationController {
@@ -109,7 +127,6 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
         navController.tabBarItem.title = title
         navController.tabBarItem.image = image
         navController.tabBarItem.selectedImage = selectImage
-        navController.navigationBar.prefersLargeTitles = false
         rootViewController.navigationItem.title = title
         return navController
     }

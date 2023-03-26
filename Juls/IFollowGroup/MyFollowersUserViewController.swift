@@ -23,6 +23,14 @@ class MyFollowersUserViewController: UIViewController {
         return search
     }()
     
+    private let spinnerView: UIActivityIndicatorView = {
+        let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .medium)
+        activityView.color = UIColor.createColor(light: .black, dark: .white)
+        activityView.hidesWhenStopped = true
+        activityView.translatesAutoresizingMaskIntoConstraints = false
+        return activityView
+    }()
+    
     private lazy var tableView: UITableView = {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -55,6 +63,7 @@ class MyFollowersUserViewController: UIViewController {
         tableView.alwaysBounceVertical = true
         tableView.keyboardDismissMode = .onDrag
         fetchUsers()
+        waitingSpinnerEnable(activity: self.spinnerView, active: true)
     }
     
     private func setupWillAppear() {
@@ -70,6 +79,7 @@ class MyFollowersUserViewController: UIViewController {
                 self.tableView.refreshControl?.endRefreshing()
                 self.users = users
                 self.filteredUsers = users
+                waitingSpinnerEnable(activity: self.spinnerView, active: false)
                 self.tableView.reloadData()
             }
         }
@@ -80,13 +90,16 @@ class MyFollowersUserViewController: UIViewController {
     }
     
     func layout() {
-        [tableView].forEach { view.addSubview($0) }
+        [tableView,spinnerView].forEach { view.addSubview($0) }
         
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            spinnerView.centerXAnchor.constraint(equalTo: tableView.centerXAnchor),
+            spinnerView.centerYAnchor.constraint(equalTo: tableView.centerYAnchor)
         ])
     }
 }

@@ -16,7 +16,7 @@ protocol MessagePostDelegate: AnyObject {
 
 class MessagePostViewController: UIViewController {
     
-    weak var delegatePost: MessagePostDelegate?
+    weak var delegate: MessagePostDelegate?
     
     private let spinnerViewForPost: UIActivityIndicatorView = {
         let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .medium)
@@ -101,18 +101,18 @@ class MessagePostViewController: UIViewController {
     }
     
     @objc func apendPhotoInPost() {
-        delegatePost?.presentPostImagePicker()
+        delegate?.presentPostImagePicker()
     }
     
     @objc func pushPost() {
-        delegatePost?.pushPostDelegate()
+        delegate?.pushPostDelegate()
         sendPostButton.setTitle("", for: .normal)
         sendPostButton.setImage(UIImage(), for: .normal)
         waitingSpinnerPostEnable(true)
     }
     
     @objc func closedPost() {
-        delegatePost?.closedPostPostDelegate()
+        delegate?.closedPostPostDelegate()
     }
     
     func layout() {

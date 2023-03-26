@@ -10,6 +10,10 @@ import UIKit
 import Firebase
 import FirebaseStorage
 
+
+var messagesPerPage: Int = 25
+var loadedMessagesCount: Int = 0
+
 extension Database {
     
     //MARK: USER & USERS
@@ -138,15 +142,14 @@ extension Database {
                         post.hasLiked = false
                     }
                     
-                    Database.database().numberOfLikesForPost(withPostId: postId, completion: { (count) in
+                    Database.database().numberOfItemsForUser(withUID: postId, category: "likes", completion: { (count) in
                         post.likes = count
                         
-                        Database.database().fetchCommetsCount(withPostId: postId) { count in
+                        Database.database().numberOfItemsForUser(withUID: postId, category: "comments") { count in
                             post.comments = count
                             completion(post)
                         }
                     })
-                    
                 }, withCancel: { (err) in
                     print("Failed to fetch like info for post:", err)
                     cancel?(err)
@@ -170,7 +173,11 @@ extension Database {
                 Database.database().fetchPost(withUID: uid, postId: postId, completion: { (post) in
                     posts.append(post)
                     
+                    
                     if posts.count == dictionaries.count {
+                        posts.sort { p1, p2 in
+                            return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+                        }
                         completion(posts)
                     }
                 })
@@ -257,7 +264,7 @@ extension Database {
     func fetchCommentsForPost(withId postId: String, completion: @escaping ([Comment]) -> ()) {
         let commentsReference = Database.database().reference().child("comments").child(postId)
         
-        commentsReference.observeSingleEvent(of: .value, with: { (snapshot) in
+        commentsReference.observe(.value, with: { (snapshot) in
             guard let dictionaries = snapshot.value as? [String: Any] else {
                 completion([])
                 return
@@ -282,58 +289,6 @@ extension Database {
                 }
             })
         })
-    }
-    
-    //MARK: количество комментариев, постов, лайков, подписчиков
-    
-    func fetchCommetsCount(withPostId uid: String, completion: @escaping (Int) -> ()) {
-        Database.database().reference().child("comments").child(uid).observeSingleEvent(of: .value) { snapshot in
-            if let dictionaries = snapshot.value as? [String: Any] {
-                completion(dictionaries.count)
-            } else {
-                completion(0)
-            }
-        }
-    }
-                                                                                        
-    func numberOfPostsForUser(withUID uid: String, completion: @escaping (Int) -> ()) {
-        Database.database().reference().child("posts").child(uid).observeSingleEvent(of: .value) { (snapshot) in
-            if let dictionaries = snapshot.value as? [String: Any] {
-                completion(dictionaries.count)
-            } else {
-                completion(0)
-            }
-        }
-    }
-    
-    func numberOfFollowersForUser(withUID uid: String, completion: @escaping (Int) -> ()) {
-        Database.database().reference().child("followers").child(uid).observeSingleEvent(of: .value) { (snapshot) in
-            if let dictionaries = snapshot.value as? [String: Any] {
-                completion(dictionaries.count)
-            } else {
-                completion(0)
-            }
-        }
-    }
-    
-    func numberOfFollowingForUser(withUID uid: String, completion: @escaping (Int) -> ()) {
-        Database.database().reference().child("following").child(uid).observeSingleEvent(of: .value) { (snapshot) in
-            if let dictionaries = snapshot.value as? [String: Any] {
-                completion(dictionaries.count)
-            } else {
-                completion(0)
-            }
-        }
-    }
-    
-    func numberOfLikesForPost(withPostId postId: String, completion: @escaping (Int) -> ()) {
-        Database.database().reference().child("likes").child(postId).observeSingleEvent(of: .value) { (snapshot) in
-            if let dictionaries = snapshot.value as? [String: Any] {
-                completion(dictionaries.count)
-            } else {
-                completion(0)
-            }
-        }
     }
 }
 
@@ -364,7 +319,7 @@ extension Storage {
     }
     
     fileprivate func uploadPostImage(image: UIImage, filename: String, completion: @escaping (String) -> ()) {
-        guard let uploadData = image.jpegData(compressionQuality: 0.5) else { return } //changed from 0.5
+        guard let uploadData = image.jpegData(compressionQuality: 0.1) else { return } //changed from 0.5
         
         let storageRef = Storage.storage().reference().child("post_images").child(filename)
         storageRef.putData(uploadData, metadata: nil, completion: { (_, err) in
@@ -383,66 +338,118 @@ extension Storage {
             })
         })
     }
+    
+    func uploadSongToFirebase(fileURL: URL) {
+        let storageRef = Storage.storage().reference()
+        let songRef = storageRef.child("songs/\(fileURL.lastPathComponent)")
+
+        songRef.putFile(from: fileURL, metadata: nil) { (metadata, error) in
+            if let error {
+                print("Error uploading file: \(error.localizedDescription )")
+                return
+            }
+
+            print("File uploaded successfully")
+
+            songRef.downloadURL { (url, error) in
+                guard let downloadURL = url else {
+                    print("Error getting download URL: \(error?.localizedDescription ?? "unknown error")")
+                    return
+                }
+
+                print("Download URL: \(downloadURL)")
+
+                // Now you can use the download URL to retrieve the file
+                let session = URLSession.shared
+                let downloadTask = session.downloadTask(with: downloadURL) { (url, response, error) in
+                    if let error {
+                        print("Error downloading file: \(error.localizedDescription)")
+                        return
+                    }
+                    print("File downloaded successfully")
+                    // Use the localURL to access the downloaded file
+                }
+                downloadTask.resume()
+            }
+        }
+    }
 }
 
 //MARK: CHAT ~
 extension Database {
     
     func pushMessageWithChatId(userUID uid: String, userFriendUID uidFriend: String, textMessage text: String, completion: @escaping (Error?) -> ()) {
-        
-        let values = ["message": text, "creationDate": Date().timeIntervalSince1970, "uid": uid, "isRead": Bool()] as [String: Any]
-        
-        let messageReference = Database.database().reference().child("lastMessage").child(uid).child(uidFriend)
-        
-        messageReference.updateChildValues(values) { (err, _) in
-            if let err {
-                print(err)
-                completion(err)
-                return
+            
+            let values = ["message": text, "creationDate": Date().timeIntervalSince1970, "uid": uid, "isRead": false] as [String: Any]
+            
+            let lastMessageRef = Database.database().reference().child("lastMessage")
+            let messageRef = Database.database().reference().child("messages")
+            
+            let group = DispatchGroup()
+            var error: Error?
+            
+            group.enter()
+            lastMessageRef.child(uid).child(uidFriend).updateChildValues(values) { err, _ in
+                error = err
+                group.leave()
             }
             
-            let values = ["message": text, "creationDate": Date().timeIntervalSince1970, "uid": uid, "isRead": Bool()] as [String: Any]
+            group.enter()
+            lastMessageRef.child(uidFriend).child(uid).updateChildValues(values) { err, _ in
+                error = error ?? err
+                group.leave()
+            }
             
-            let messageReference = Database.database().reference().child("lastMessage").child(uidFriend).child(uid)
+            group.enter()
+            messageRef.child(uid).child(uidFriend).childByAutoId().updateChildValues(values) { err, _ in
+                error = error ?? err
+                group.leave()
+            }
             
-            messageReference.updateChildValues(values) { (err, _) in
-                if let err {
-                    print(err)
-                    completion(err)
-                    return
-                }
-                
-                let values = ["message": text, "creationDate": Date().timeIntervalSince1970, "uid": uid] as [String: Any]
-                
-                let messageReference = Database.database().reference().child("messages").child(uid).child(uidFriend).childByAutoId()
-                
-                messageReference.updateChildValues(values) { (err, _) in
-                    if let err {
-                        print(err)
-                        completion(err)
-                        return
-                    }
-                    
-                    let values = ["message": text, "creationDate": Date().timeIntervalSince1970, "uid": uid] as [String: Any]
-                    let messageReference = Database.database().reference().child("messages").child(uidFriend).child(uid).childByAutoId()
-                    messageReference.updateChildValues(values) { (err, _) in
-                        if let err {
-                            print(err)
-                            completion(err)
-                            return
-                        }
-                        completion(nil)
-                    }
-                }
+            group.enter()
+            messageRef.child(uidFriend).child(uid).childByAutoId().updateChildValues(values) { err, _ in
+                error = error ?? err
+                group.leave()
+            }
+            
+            group.notify(queue: .main) {
+                completion(error)
             }
         }
-    }
+
     
     func fetchMessageWithChatId(userUID uid: String, userFriendUID uidFriend: String, completion: @escaping ([Message]) -> ()) {
-        
         let commentsReference = Database.database().reference().child("messages").child(uid).child(uidFriend)
+        let query = commentsReference.queryOrderedByKey().queryLimited(toLast: UInt(messagesPerPage))
+        query.observe(.value, with: { snapshot in
+            guard let dictionaries = snapshot.value as? [String: Any] else {
+                completion([])
+                return
+            }
+            var messages = [Message]()
+            dictionaries.forEach({ (key, value) in
+                guard let messageCitionary = value as? [String: Any] else { return }
+                guard let uid = messageCitionary["uid"] as? String else { return }
+                Database.database().fetchUser(withUID: uid) { (user) in
+                    let message = Message(user: user, dictionary: messageCitionary)
+                    messages.append(message)
+                    if messages.count == dictionaries.count {
+                        messages.sort(by: { (message1, message2) -> Bool in
+                            return message1.creationDate.compare(message2.creationDate) == .orderedAscending
+                        })
+                        completion(messages)
+                    }
+                }
+            })
+        })
+    }
+    //MARK: второй вариант
+    func fetchMessages(userUID uid: String, userFriendUID uidFriend: String, completion: @escaping ([Message]) -> ()) {
+            
+        let commentsReference = Database.database().reference().child("messages").child(uid).child(uidFriend)
+        let query = commentsReference.queryOrderedByKey().queryLimited(toLast: UInt(messagesPerPage + loadedMessagesCount))
         
-        commentsReference.observeSingleEvent(of: .value, with: { (snapshot) in
+        query.observe(.value, with: { (snapshot) in
             guard let dictionaries = snapshot.value as? [String: Any] else {
                 completion([])
                 return
@@ -454,7 +461,6 @@ extension Database {
                 guard let messageCitionary = value as? [String: Any] else { return }
                 guard let uid = messageCitionary["uid"] as? String else { return }
                 
-                
                 Database.database().fetchUser(withUID: uid) { (user) in
                     let message = Message(user: user, dictionary: messageCitionary)
                     messages.append(message)
@@ -463,13 +469,14 @@ extension Database {
                         messages.sort(by: { (message1, message2) -> Bool in
                             return message1.creationDate.compare(message2.creationDate) == .orderedAscending
                         })
+                        loadedMessagesCount = messages.count
                         completion(messages)
                     }
                 }
             })
         })
     }
-    
+
     func feetchUsersForSearch(completion: @escaping ([User]) -> ()) {
         
         guard let uid = Auth.auth().currentUser?.uid else { return }
@@ -525,6 +532,53 @@ extension Database {
         })
     }
     
+    func getFollowersAndFollowingUsers(myUserId userId: String, completion: @escaping ([User], [User]) ->()) {
+        let followingRef = Database.database().reference().child("following").child(userId)
+        let followersRef = Database.database().reference().child("followers").child(userId)
+
+        var followingUsers = [User]()
+        var followersUsers = [User]()
+
+        let dispatchGroup = DispatchGroup()
+
+        dispatchGroup.enter()
+        followingRef.observeSingleEvent(of: .value, with: { snapshot in
+            guard let followingDictionaries = snapshot.value as? [String: Any] else {
+                dispatchGroup.leave()
+                return
+            }
+            followingDictionaries.forEach { key, value in
+                dispatchGroup.enter()
+                Database.database().fetchUser(withUID: key) { user in
+                    followingUsers.append(user)
+                    dispatchGroup.leave()
+                }
+            }
+            dispatchGroup.leave()
+        })
+
+        dispatchGroup.enter()
+        followersRef.observeSingleEvent(of: .value, with: { snapshot in
+            guard let followersDictionaries = snapshot.value as? [String: Any] else {
+                dispatchGroup.leave()
+                return
+            }
+            followersDictionaries.forEach { key, value in
+                dispatchGroup.enter()
+                Database.database().fetchUser(withUID: key) { user in
+                    followersUsers.append(user)
+                    dispatchGroup.leave()
+                }
+            }
+            dispatchGroup.leave()
+        })
+
+        dispatchGroup.notify(queue: .main) {
+            completion(followingUsers, followersUsers)
+        }
+    }
+
+    
     func changeIsRead(friendUserId friendId: String, friendRead read: Bool) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         let ref = Database.database().reference().child("lastMessage").child(uid).child(friendId)
@@ -544,7 +598,7 @@ extension Database {
     
     func checkNewMessage(userUid uid: String, completion: @escaping (Int) -> ()) {
         let ref = Database.database().reference().child("lastMessage").child(uid)
-        ref.observeSingleEvent(of: .value, with: { snapshot in
+        ref.observe(.value, with: { snapshot in
             
             var massive = [Bool]()
             
@@ -562,10 +616,30 @@ extension Database {
         })
     }
     
+    func updateMessageInNavigationBar(userId: String, navigation: UINavigationController,label: UILabel) {
+        Database.database().checkNewMessage(userUid: userId) { count in
+            if userId == Auth.auth().currentUser?.uid {
+                navigation.navigationBar.addSubview(label)
+                if count == 0 {
+                    DispatchQueue.main.async {
+                        label.text = ""
+                        print("no new messages")
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        label.text = "\(count)"
+                        print("you have \(count) message(s)")
+                    }
+                }
+            }
+        }
+    }
+
+    
     func checkIsRead(friendUserId friendId: String, completion: @escaping (Bool) -> ()) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         let ref = Database.database().reference().child("lastMessage").child(friendId).child(uid)
-        ref.observeSingleEvent(of: .value, with: { (snapshot) in
+        ref.observe(.value, with: { (snapshot) in
             
             guard let dictionaries = snapshot.value as? [String: Any] else { return }
             dictionaries.forEach { key, value in
@@ -578,7 +652,7 @@ extension Database {
     func getLastMessage(friendUserId friendId: String, completion: @escaping (String) -> ()) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         let ref = Database.database().reference().child("lastMessage").child(friendId).child(uid)
-        ref.observeSingleEvent(of: .value, with: { (snapshot) in
+        ref.observe(.value, with: { (snapshot) in
             
             guard let dictionaries = snapshot.value as? [String: Any] else { return }
             dictionaries.forEach { key, value in
@@ -593,7 +667,7 @@ extension Database {
     
     func fetchAllLastMessages(userUID uid: String, completion: @escaping ([User]) -> ()) {
         let ref = Database.database().reference().child("lastMessage").child(uid)
-        ref.observeSingleEvent(of: .value, with: { snapshot in
+        ref.observe(.value, with: { snapshot in
             guard let dictionaries = snapshot.value as? [String: Any] else { return }
             
             var users = [User]()
@@ -612,7 +686,7 @@ extension Database {
     
     func fetchLastMessagesInMessenger(userUID uid: String, completion: @escaping ([Message]) -> ()) {
         let ref = Database.database().reference().child("lastMessage").child(uid)
-        ref.observeSingleEvent(of: .value, with: { snapshot in
+        ref.observe(.value, with: { snapshot in
             guard let dictionaries = snapshot.value as? [String: Any] else { return }
             
             var messages = [Message]()
@@ -667,5 +741,51 @@ extension Database {
             }
         }
     }
-}
+    
+    //MARK: version ChatGPT
+    func fetchFeedPosts(completion: @escaping ([Post]) -> Void) {
+        guard let currentLoggedInUserId = Auth.auth().currentUser?.uid else { return }
 
+        var userIdsToFetchPostsFrom = [currentLoggedInUserId]
+
+        Database.database().reference().child("following").child(currentLoggedInUserId).observeSingleEvent(of: .value, with: { (snapshot) in
+            guard let userIdsDictionary = snapshot.value as? [String: Any] else { return }
+
+            userIdsToFetchPostsFrom += userIdsDictionary.keys
+
+            DispatchQueue.global(qos: .background).async {
+                let fetchGroup = DispatchGroup()
+
+                var posts = [Post]()
+
+                for uid in userIdsToFetchPostsFrom {
+                    fetchGroup.enter()
+
+                    Database.database().fetchAllPosts(withUID: uid, completion: { (postsForUser) in
+                        posts += postsForUser
+                        fetchGroup.leave()
+                    }, withCancel: { (err) in
+                        fetchGroup.leave()
+                    })
+                }
+
+                fetchGroup.notify(queue: .main) {
+                    let sortedPosts = posts.sorted { $0.creationDate > $1.creationDate }
+                    completion(sortedPosts)
+                }
+            }
+        }) { (err) in
+            print(err)
+        }
+    }
+    
+    func numberOfItemsForUser(withUID uid: String, category: String, completion: @escaping (Int) -> ()) {
+        Database.database().reference().child(category).child(uid).observe(.value) { (snapshot) in
+            if let dictionaries = snapshot.value as? [String: Any] {
+                completion(dictionaries.count)
+            } else {
+                completion(0)
+            }
+        }
+    }
+}

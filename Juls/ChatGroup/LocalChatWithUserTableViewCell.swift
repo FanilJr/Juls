@@ -30,12 +30,13 @@ class LocalChatWithUserTableViewCell: UITableViewCell {
         return view
     }()
     
-    let profileImageView: CustomImageView = {
+    lazy var profileImageView: CustomImageView = {
         let pi = CustomImageView()
         pi.contentMode = .scaleAspectFill
         pi.layer.cornerRadius = 30/2
         pi.clipsToBounds = true
         pi.backgroundColor = .gray
+        pi.isUserInteractionEnabled = true
         pi.translatesAutoresizingMaskIntoConstraints = false
         return pi
     }()

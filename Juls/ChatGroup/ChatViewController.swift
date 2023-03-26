@@ -26,12 +26,12 @@ class ChatViewController: UIViewController {
         }
     }
     
+    var lastMessage: String?
     var isRead = Bool()
-    var lastMessage = String()
-    var timer: Timer?
     var messages = [Message]()
     private let nc = NotificationCenter.default
     let imagePicker = UIImagePickerController()
+    let refreshControl = UIRefreshControl()
     
     private let spinnerView: UIActivityIndicatorView = {
         let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .medium)
@@ -153,6 +153,7 @@ class ChatViewController: UIViewController {
         tableView.separatorStyle = .none
         tableView.dataSource = self
         tableView.delegate = self
+        tableView.refreshControl = refreshControl
         let recognizer: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         recognizer.cancelsTouchesInView = false
         tableView.addGestureRecognizer(recognizer)
@@ -173,25 +174,35 @@ class ChatViewController: UIViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        timer?.invalidate()
         view.endEditing(true)
+        self.changeIsRead(read: true)
     }
     
     private func setupDidLoad() {
         view.backgroundColor = .systemBackground
-        waitingSpinnerForChatEnable(true)
+        waitingSpinnerEnable(activity: self.spinnerViewForChat, active: true)
         setupLayout()
         imagePicker.delegate = self
         guard let username = user?.username else { return }
         guard let friendsUsername = userFriend?.username else { return }
         print("open Chat", username, "with", friendsUsername, "            ~~~~~JULS~~~~~")
         fetchChat()
-        timerSetup()
+        refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
     }
     
     private func setupWillAppear() {
         addObserver()
         tabBarController?.tabBar.isHidden = true
+    }
+    
+    @objc func refresh() {
+        self.tableView.refreshControl?.endRefreshing()
+        guard let userId = user?.uid else { return }
+        guard let friendId = userFriend?.uid else { return }
+        Database.database().fetchMessages(userUID: userId, userFriendUID: friendId) { messages in
+            self.messages = messages
+            self.tableView.reloadData()
+        }
     }
     
     private func addMenu() -> UIMenu {
@@ -208,30 +219,6 @@ class ChatViewController: UIViewController {
         return menu
     }
     
-    func waitingSpinnerEnable(_ active: Bool) {
-        if active {
-            spinnerView.startAnimating()
-        } else {
-            spinnerView.stopAnimating()
-        }
-    }
-    
-    func waitingSpinnerForChatEnable(_ active: Bool) {
-        if active {
-            spinnerViewForChat.startAnimating()
-        } else {
-            spinnerViewForChat.stopAnimating()
-        }
-    }
-    
-    @objc func addAction() {
-        
-    }
-    
-    func timerSetup() {
-        self.timer = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(self.updateMessagesForTimer), userInfo: nil, repeats: true)
-    }
-    
     func checkFriendRead() {
         guard let friendId = userFriend?.uid else { return }
         Database.database().checkIsRead(friendUserId: friendId) { read in
@@ -244,16 +231,10 @@ class ChatViewController: UIViewController {
                 }
             }
         }
-        Database.database().getLastMessage(friendUserId: friendId) { slovo in
-            DispatchQueue.main.async {
-                self.lastMessage = slovo
-                print("Последнее сообщение", slovo)
-            }
-        }
     }
     
     @objc func updateMessagesForTimer() {
-        fetchChat()
+        
     }
     
     @objc func pushMessage() {
@@ -262,17 +243,18 @@ class ChatViewController: UIViewController {
         guard let friendId = userFriend?.uid else { return }
         self.sendCommentButton.isEnabled = false
         self.sendCommentButton.alpha = 0
-        self.waitingSpinnerEnable(true)
+        waitingSpinnerEnable(activity: self.spinnerView, active: true)
         
         Database.database().pushMessageWithChatId(userUID: userId, userFriendUID: friendId, textMessage: textMessage) { error in
+            if let error {
+                print(error)
+                return
+            }
             DispatchQueue.main.async {
-                if let error {
-                    print(error)
-                }
                 self.fetchChat()
                 self.sendCommentButton.isEnabled = true
                 self.sendCommentButton.alpha = 1
-                self.waitingSpinnerEnable(false)
+                waitingSpinnerEnable(activity: self.spinnerView, active: false)
             }
         }
         self.textfield.text = ""
@@ -283,11 +265,13 @@ class ChatViewController: UIViewController {
         guard let friendId = userFriend?.uid else { return }
         self.changeIsRead(read: true)
         self.checkFriendRead()
+            
         Database.database().fetchMessageWithChatId(userUID: userId, userFriendUID: friendId) { messages in
+        
             DispatchQueue.main.async {
                 self.messages = messages
                 self.tableView.setContentOffset(CGPointMake(0, self.containerView.center.y-60), animated: true)
-                self.waitingSpinnerForChatEnable(false)
+                waitingSpinnerEnable(activity: self.spinnerViewForChat, active: false)
                 self.tableView.reloadData()
             }
         }
@@ -295,8 +279,10 @@ class ChatViewController: UIViewController {
     
     func changeIsRead(read: Bool) {
         if read {
-            guard let friendUID = userFriend?.uid else { return }
-            Database.database().changeIsRead(friendUserId: friendUID, friendRead: read)
+            DispatchQueue.main.async {
+                guard let friendUID = self.userFriend?.uid else { return }
+                Database.database().changeIsRead(friendUserId: friendUID, friendRead: read)
+            }
         }
     }
     

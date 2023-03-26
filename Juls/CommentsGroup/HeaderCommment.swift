@@ -17,7 +17,7 @@ class HeaderCommment: UIView {
             datePost.text = post?.creationDate.timeAgoDisplay()
             
             let attributedText = NSMutableAttributedString(string: post?.user.username ?? "")
-            attributedText.addAttribute(.font, value: UIFont.systemFont(ofSize: 14, weight: .bold), range: NSRange(location: 0, length: post?.user.username.count ?? 0))
+            attributedText.addAttribute(.font, value: UIFont(name: "Futura-Bold", size: 14)!, range: NSRange(location: 0, length: post?.user.username.count ?? 0))
             let attributeComment = NSAttributedString(string: "  \(post?.message ?? "")")
             attributedText.append(attributeComment)
             
@@ -36,7 +36,7 @@ class HeaderCommment: UIView {
     
     lazy var nameAuthor: UILabel = {
         let name = UILabel()
-        name.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+        name.font = UIFont(name: "Futura-Bold", size: 17)
         name.translatesAutoresizingMaskIntoConstraints = false
         name.backgroundColor = .clear
         return name
@@ -47,7 +47,7 @@ class HeaderCommment: UIView {
         name.numberOfLines = 0
         name.textColor = UIColor.createColor(light: .white, dark: .white)
         name.shadowColor = .black
-        name.font = .systemFont(ofSize: 16, weight: .thin)
+        name.font = UIFont(name: "Futura", size: 16)
         name.shadowOffset = CGSize(width: 1, height: 1)
         name.layer.shadowOpacity = 1
         name.layer.shadowRadius = 30
@@ -59,7 +59,7 @@ class HeaderCommment: UIView {
     
     lazy var datePost: UILabel = {
         let name = UILabel()
-        name.font = UIFont.systemFont(ofSize: 14, weight: .light)
+        name.font = UIFont(name: "Futura", size: 14)
         name.translatesAutoresizingMaskIntoConstraints = false
         name.textColor = .systemGray5
         name.backgroundColor = .clear

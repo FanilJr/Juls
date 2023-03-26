@@ -77,26 +77,10 @@ class CommentsSheetViewController: UIViewController {
         fetchCommentsPost()
     }
     
-    func waitingSpinnerForTableEnable(_ active: Bool) {
-        if active {
-            spinnerViewForTable.startAnimating()
-        } else {
-            spinnerViewForTable.stopAnimating()
-        }
-    }
-    
-    func waitingSpinnerEnable(_ active: Bool) {
-        if active {
-            spinnerView.startAnimating()
-        } else {
-            spinnerView.stopAnimating()
-        }
-    }
-    
     @objc func pushMessage() {
         self.sendCommentButton.isEnabled = false
         self.sendCommentButton.alpha = 0
-        self.waitingSpinnerEnable(true)
+        waitingSpinnerEnable(activity: self.spinnerView, active: true)
         guard let postId = post?.id else { return }
         guard let textComment = textfield.text else { return }
         
@@ -108,7 +92,7 @@ class CommentsSheetViewController: UIViewController {
             self.fetchCommentsPost()
             self.sendCommentButton.isEnabled = true
             self.sendCommentButton.alpha = 1
-            self.waitingSpinnerEnable(false)
+            waitingSpinnerEnable(activity: self.spinnerView, active: false)
         }
         textfield.text = ""
     }
@@ -140,7 +124,7 @@ class CommentsSheetViewController: UIViewController {
     }
     
     func fetchCommentsPost() {
-        waitingSpinnerForTableEnable(true)
+        waitingSpinnerEnable(activity: self.spinnerViewForTable, active: true)
         guard let postId = self.post?.id else { return }
         Database.database().fetchCommentsForPost(withId: postId) { comments in
             DispatchQueue.main.async {
@@ -151,7 +135,7 @@ class CommentsSheetViewController: UIViewController {
                 } else {
                     self.textfield.placeholder = "Напишите комментарий"
                 }
-                self.waitingSpinnerForTableEnable(false)
+                waitingSpinnerEnable(activity: self.spinnerViewForTable, active: false)
                 self.tableView.reloadData()
             }
         }

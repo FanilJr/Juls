@@ -25,6 +25,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             appearance.backgroundEffect = nil
             appearance.shadowImage = nil
             appearance.shadowColor = nil
+            if let titleFont = UIFont(name: "Futura-Bold", size: 15) {
+            appearance.titleTextAttributes = [NSAttributedString.Key.font: titleFont]
+            }
+            if let titleFont = UIFont(name: "Futura-Bold", size: 31) {
+            appearance.largeTitleTextAttributes = [NSAttributedString.Key.font: titleFont]
+            }
 
             UINavigationBar.appearance().standardAppearance = appearance
             UINavigationBar.appearance().scrollEdgeAppearance = appearance
@@ -33,9 +39,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             UINavigationBar.appearance().shadowImage = UIImage()
             UINavigationBar.appearance().tintColor = UIColor.createColor(light: .black, dark: .white)
             
-            UITabBar.appearance().backgroundColor = .clear
+            UITabBar.appearance().backgroundColor = .systemGray6
             UITabBar.appearance().tintColor = #colorLiteral(red: 0.9294139743, green: 0.2863991261, blue: 0.3659052849, alpha: 1)
-            UITabBar.appearance().unselectedItemTintColor = UIColor.createColor(light: .black, dark: .black)
+            UITabBar.appearance().unselectedItemTintColor = UIColor.createColor(light: .black, dark: .systemGray)
         }
         
         guard let windowScene = (scene as? UIWindowScene) else { return }

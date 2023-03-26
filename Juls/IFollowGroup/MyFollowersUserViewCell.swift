@@ -13,7 +13,8 @@ class MyFollowersUserViewCell: UITableViewCell {
     let profileImageView: CustomImageView = {
         let pi = CustomImageView()
         pi.contentMode = .scaleAspectFill
-        pi.layer.cornerRadius = 80/2
+        pi.layer.cornerRadius = 60/2
+        pi.image = UIImage(named: "Grey_full")
         pi.clipsToBounds = true
         pi.backgroundColor = .gray
         pi.translatesAutoresizingMaskIntoConstraints = false
@@ -23,7 +24,7 @@ class MyFollowersUserViewCell: UITableViewCell {
     let usernameLabel: UILabel = {
         let user = UILabel()
         user.text = "username"
-        user.font = UIFont.boldSystemFont(ofSize: 14)
+        user.font = UIFont(name: "Futura-Bold", size: 14)
         user.translatesAutoresizingMaskIntoConstraints = false
         return user
     }()
@@ -43,12 +44,12 @@ class MyFollowersUserViewCell: UITableViewCell {
         NSLayoutConstraint.activate([
             profileImageView.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10),
             profileImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 10),
-            profileImageView.heightAnchor.constraint(equalToConstant: 80),
-            profileImageView.widthAnchor.constraint(equalToConstant: 80),
+            profileImageView.heightAnchor.constraint(equalToConstant: 60),
+            profileImageView.widthAnchor.constraint(equalToConstant: 60),
             
             usernameLabel.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor,constant: 10),
             usernameLabel.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor),
-            usernameLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -42)
+            usernameLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -32)
         ])
     }
     

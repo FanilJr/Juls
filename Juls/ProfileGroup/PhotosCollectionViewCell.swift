@@ -9,21 +9,11 @@ import UIKit
 
 class PhotosCollectionViewCell: UICollectionViewCell {
     
-    lazy var blureForCell: UIVisualEffectView = {
-        let bluereEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
-        let blure = UIVisualEffectView()
-        blure.effect = bluereEffect
-        blure.translatesAutoresizingMaskIntoConstraints = false
-        blure.clipsToBounds = true
-        return blure
-    }()
-    
-    
-
     let image: CustomImageView = {
         let image = CustomImageView()
         image.contentMode = .scaleAspectFill
         image.backgroundColor = .systemGray
+        image.image = UIImage(named: "Grey_full")
         image.translatesAutoresizingMaskIntoConstraints = false
         image.clipsToBounds = true
         return image
@@ -40,7 +30,6 @@ class PhotosCollectionViewCell: UICollectionViewCell {
     }
     
     private func setupCell() {
-        
         [image].forEach { addSubview($0) }
         
         NSLayoutConstraint.activate([
