@@ -9,6 +9,7 @@ Coordinators, Delegate, Completion Block, Firebase (Database, Storage), UserDefa
 
 1. Основной экран профиля:
 ![Alt text](12.jpeg)
+![Alt text](11.jpeg)
 
 2. Меню создания поста:
 ![Alt text](6.jpeg)
@@ -30,9 +31,19 @@ Coordinators, Delegate, Completion Block, Firebase (Database, Storage), UserDefa
 9. Комментарии и лайки постов:
 ![Alt text](7.jpeg)
 
+10. Match - знакомства
+![Alt text](2.jpeg)
 
-В процессе находятся авторизация по номеру телефона, хранение понравившихся публикаций CoreData.
+11. Сообщения и личка
+![Alt text](10.jpeg)
+![Alt text](9.jpeg)
 
+12. Ночной режим
+![Alt text](13.jpeg)
+
+
+
+В процессе находятся авторизация по номеру телефона, знакомства, игра, хранение понравившихся публикаций CoreData.
 
 
 Skills: Swift, Firebase, Database, Storage.
