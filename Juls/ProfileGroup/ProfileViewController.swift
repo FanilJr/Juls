@@ -164,8 +164,8 @@ class ProfileViewController: UIViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        showImage(false)
-        showNewMessage(false)
+        showOrAlpha(object: self.titleImage, false)
+        showOrAlpha(object: self.newMessage, false)
         self.header?.progressBar.value = 0.0
         self.header?.progressBar.alpha = 0.0
         self.stop()
@@ -174,20 +174,8 @@ class ProfileViewController: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        showImage(true)
-        showNewMessage(true)
-    }
-    
-    private func showImage(_ show: Bool) {
-        UIView.animate(withDuration: 0.1) {
-            self.titleImage.alpha = show ? 1.0 : 0.0
-        }
-    }
-    
-    private func showNewMessage(_ show: Bool) {
-        UIView.animate(withDuration: 0.1) {
-            self.newMessage.alpha = show ? 1.0 : 0.0
-        }
+        showOrAlpha(object: self.titleImage, true)
+        showOrAlpha(object: self.newMessage, true)
     }
     
     @objc func didTapRefresh() {
@@ -353,7 +341,7 @@ extension ProfileViewController {
                         print(error)
                         return
                     }
-                    self.fetchForReload()
+                    self.fetchUser()
                     print("succes delete Music")
                 }
             }
@@ -361,18 +349,6 @@ extension ProfileViewController {
         let alertCancel = UIAlertAction(title: "Отмена", style: .default)
         [alertOK,alertCancel].forEach { alert.addAction($0) }
         present(alert, animated: true)
-    }
-    
-    func fetchForReload() {
-        let uid = userId ?? (Auth.auth().currentUser?.uid ?? "")
-        
-        Database.database().fetchUser(withUID: uid) { user in
-            self.user = user
-            self.setupNavigationButton(user: user)
-            self.header?.user = user
-            self.collectionView.refreshControl?.endRefreshing()
-            self.collectionView.reloadData()
-        }
     }
     
     func fetchUser() {
@@ -644,13 +620,6 @@ extension ProfileViewController: MessagePostDelegate {
 }
 
 extension ProfileViewController: MainCollectionDelegate {
-    func hideCell(for cell: MainCollectionViewCell) {
-        guard let indexPath = collectionView.indexPath(for: cell) else { return }
-        UIView.animate(withDuration: 0.3) {
-            print(indexPath)
-        }
-    }
-    
     
     func tapPosts(for cell: MainCollectionViewCell) {
         guard let indexPath = collectionView.indexPath(for: cell) else { return }
@@ -925,7 +894,7 @@ extension ProfileViewController: UIDocumentPickerDelegate {
                     self.collectionView.isScrollEnabled = true
                 }
                 self.titleSpinner.isHidden = true
-                self.fetchForReload()
+                self.fetchUser()
                 print("succes download sound in User in Firebase Library")
             }
         }
