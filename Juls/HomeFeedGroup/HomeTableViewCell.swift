@@ -188,7 +188,7 @@ class HomeTableViewCell: UITableViewCell {
     }
     
     func layout() {
-        [whiteViewForImage,authorImage, nameAuthor, postImage, whiteViewForDescription, commentButton,commentCount,likeButton,likeCount, descriptionText,commentCountLabel, datePost].forEach { contentView.addSubview($0) }
+        [whiteViewForImage,authorImage, nameAuthor, postImage, whiteViewForDescription, commentButton,commentCount,likeButton,likeCount, descriptionText, datePost].forEach { contentView.addSubview($0) }
         
         NSLayoutConstraint.activate([
             whiteViewForImage.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 5),
@@ -234,10 +234,7 @@ class HomeTableViewCell: UITableViewCell {
             descriptionText.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 15),
             descriptionText.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             
-            commentCountLabel.topAnchor.constraint(equalTo: descriptionText.bottomAnchor,constant: 10),
-            commentCountLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 15),
-            
-            datePost.topAnchor.constraint(equalTo: commentCountLabel.bottomAnchor,constant: 5),
+            datePost.topAnchor.constraint(equalTo: descriptionText.bottomAnchor,constant: 5),
             datePost.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 15),
             datePost.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -25)
         ])

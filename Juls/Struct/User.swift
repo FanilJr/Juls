@@ -8,16 +8,14 @@
 import Foundation
 
 struct User {
-    
     let uid: String
     let username: String
     let picture: String
     let status: String
     let name: String
     let secondName: String
-    let age: String
+    let age: Int
     let lifeStatus: String
-    let height: String
     var official: Bool
     let creationDateLastMessage: Date
     let loveSong: String
@@ -31,9 +29,8 @@ struct User {
         self.status = dictionary["status"] as? String ?? ""
         self.name = dictionary["name"] as? String ?? ""
         self.secondName = dictionary["secondName"] as? String ?? ""
-        self.age = dictionary["age"] as? String ?? ""
+        self.age = dictionary["age"] as? Int ?? 0
         self.lifeStatus = dictionary["life status"] as? String ?? ""
-        self.height = dictionary["height"] as? String ?? ""
         self.loveSong = dictionary["loveSong"] as? String ?? ""
         self.isActiveMatch = dictionary["isActiveMatch"] as? Bool ?? false
         

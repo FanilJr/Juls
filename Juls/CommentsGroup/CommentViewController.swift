@@ -12,10 +12,14 @@ import Firebase
 class CommentViewController: UIViewController {
     var myUserComment: User?
     var post: Post?
+    var rating: Raiting?
+    var myRating: Raiting?
     var comments = [Comment]()
     var headerComment = HeaderCommment()
     var commentKeyArray = [String]()
     private let nc = NotificationCenter.default
+    
+    var fetchCommentsForRaitin: Bool = false
 
     lazy var containerView: UIView = {
         let containterView = UIView()
@@ -79,6 +83,7 @@ class CommentViewController: UIViewController {
         let image = CustomImageView()
         image.translatesAutoresizingMaskIntoConstraints = false
         image.contentMode = .scaleAspectFill
+        image.image = UIImage(named: "Grey_full")
         image.layer.cornerRadius = 30/2
         image.clipsToBounds = true
         return image
@@ -131,10 +136,14 @@ class CommentViewController: UIViewController {
         headerComment.post = post
         guard let imageUrl = post?.imageUrl else { return }
         imageBack.loadImage(urlString: imageUrl)
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        Database.database().fetchUser(withUID: uid) { user in
+            self.myUserComment = user
+            self.authorComment.loadImage(urlString: user.picture)
+        }
         title = "Комментарии"
         setupLayout()
         fetchCommentsPost()
-        loadImageCurrentUser()
         waitingSpinnerEnable(activity: self.spinnerViewForTable, active: true)
     }
     
@@ -144,6 +153,19 @@ class CommentViewController: UIViewController {
     }
     
     func fetchCommentsPost() {
+        guard let uid = post?.user.uid else { return }
+        guard let myUID = Auth.auth().currentUser?.uid else { return }
+        Database.database().fetchCommentsForRaiting(withUID: uid) { value in
+            self.fetchCommentsForRaitin = value
+            print(value)
+        }
+        Database.database().fetchRaitingUser(withUID: uid) { raiting in
+            self.rating = raiting
+        }
+        Database.database().fetchRaitingUser(withUID: myUID) { raiting in
+            self.myRating = raiting
+        }
+        
         guard let postId = self.post?.id else { return }
         Database.database().fetchCommentsForPost(withId: postId) { comments in
             DispatchQueue.main.async {
@@ -156,35 +178,73 @@ class CommentViewController: UIViewController {
         }
     }
     
-    func loadImageCurrentUser() {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        
-        Database.database().fetchUser(withUID: uid) { user in
-            DispatchQueue.main.async {
-                self.myUserComment = user
-                self.authorComment.loadImage(urlString: user.picture)
-            }
-        }
-    }
-    
     @objc func pushComment() {
         self.sendCommentButton.isEnabled = false
         self.sendCommentButton.alpha = 0
         waitingSpinnerEnable(activity: self.spinnerView, active: true)
         guard let postId = post?.id else { return }
         guard let textComment = textfield.text else { return }
+        guard let userId = self.post?.user.uid else { return }
         
         Database.database().addCommentToPost(withId: postId, text: textComment) { error in
             if let error {
                 print(error)
+                return
             }
-            print("success insert comment:", textComment)
-            self.fetchCommentsPost()
-            self.sendCommentButton.isEnabled = true
-            self.sendCommentButton.alpha = 1
-            waitingSpinnerEnable(activity: self.spinnerView, active: false)
+            guard let uid = self.myUserComment?.uid else { return }
+            guard let activity = self.myRating?.commentsRating else { return }
+            guard let getActivity = self.rating?.getCommentsRating else { return }
+            
+            print(activity)
+            
+            if activity == 1.0 {
+                print("success insert comment:", textComment)
+                self.textfield.text = ""
+                self.sendCommentButton.isEnabled = true
+                self.sendCommentButton.alpha = 1
+                waitingSpinnerEnable(activity: self.spinnerView, active: false)
+                self.fetchCommentsPost()
+                return
+            } else {
+                var addActivity = 0.01
+                var addgetActivity = 0.01
+                addgetActivity += getActivity
+                addActivity += activity
+                let getResult = addgetActivity
+                let result = addActivity
+                Database.database().addCommentForUserRaiting(withUID: userId) { error in
+                    if let error {
+                        print(error)
+                        return
+                    }
+                }
+                
+                if self.fetchCommentsForRaitin == false {
+                    Database.database().reference().child("rating").child(uid).updateChildValues(["commentsRating" : result]) { error, _ in
+                        if let error {
+                            print(error)
+                            return
+                        }
+                        print("succes update commentsRaiting in Firebase Library + 0.01")
+                        Database.database().reference().child("rating").child(userId).updateChildValues(["getComments" : getResult]) { error, _ in
+                            if let error {
+                                print(error)
+                                return
+                            }
+                            print("succes update getComments for", userId, "+ 0.01")
+                        }
+                    }
+                }
+                
+
+                print("success insert comment:", textComment)
+                self.textfield.text = ""
+                self.sendCommentButton.isEnabled = true
+                self.sendCommentButton.alpha = 1
+                waitingSpinnerEnable(activity: self.spinnerView, active: false)
+                self.fetchCommentsPost()
+            }
         }
-        textfield.text = ""
     }
     
     func addObserver() {
@@ -313,7 +373,21 @@ extension CommentViewController: UITableViewDataSource {
                 self.commentKeyArray.remove(at: indexPath.row)
                 print("remove",self.comments[indexPath.item].text)
                 self.comments.remove(at: indexPath.item)
-                self.tableView.deleteRows(at: [indexPath], with: .automatic)
+                self.tableView.deleteRows(at: [indexPath], with: .right)
+                guard let uid = Auth.auth().currentUser?.uid else { return }
+                Database.database().fetchRaitingUser(withUID: uid) { raiting in
+                    let activity = raiting.commentsRating
+                    let deleteActivity = 0.05
+                    var activityDouble = activity
+                    activityDouble -= deleteActivity
+                    Database.database().reference().child("rating").child(uid).updateChildValues(["commentsRating" : activityDouble]) { error, _ in
+                        if let error {
+                            print(error)
+                            return
+                        }
+                        print("succes delete rating - 0.01")
+                    }
+                }
             })
             tableView.endUpdates()
         } else {

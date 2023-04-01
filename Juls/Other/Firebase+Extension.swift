@@ -28,6 +28,16 @@ extension Database {
         }
     }
     
+    func fetchRaitingUser(withUID uid: String, completion: @escaping (Raiting) -> ()) {
+        Database.database().reference().child("rating").child(uid).observeSingleEvent(of: .value, with: { (snapshot) in
+            guard let userDictionary = snapshot.value as? [String: Any] else { return }
+            let rating = Raiting(uid: uid, dictionary: userDictionary)
+            completion(rating)
+        }) { (err) in
+            print("Failed to fetch user from database:", err)
+        }
+    }
+    
     func fetchAllUsers(includeCurrentUser: Bool = true, completion: @escaping ([User]) -> (), withCancel cancel: ((Error) -> ())?) {
         let ref = Database.database().reference().child("users")
         ref.observeSingleEvent(of: .value, with: { (snapshot) in
@@ -786,6 +796,162 @@ extension Database {
             } else {
                 completion(0)
             }
+        }
+    }
+    
+    func listeForUserStatusChanges(userid: String, completion: @escaping (_ isOnline: Bool) -> ()) {
+        Database.database().reference().child("users").child(userid).observe(.value, with: { snapshot in
+            if let status = snapshot.value as? String {
+                completion(status == "online")
+            } else {
+                completion(false)
+            }
+        })
+    }
+    
+    //MARK: RAITING
+    
+    func addCommentForUserRaiting(withUID uid: String, completion: @escaping (Error?) -> ()) {
+        guard let currentLoggedInUserId = Auth.auth().currentUser?.uid else { return }
+        
+        let values = [uid: true]
+        Database.database().reference().child("sendCommentsForRaiting").child(currentLoggedInUserId).updateChildValues(values) { (err, _) in
+            if let err {
+                completion(err)
+                return
+            }
+            let values = [currentLoggedInUserId: true]
+            Database.database().reference().child("getCommentsForRaiting").child(uid).updateChildValues(values) { (err, _) in
+                if let err {
+                    completion(err)
+                    return
+                }
+                completion(nil)
+            }
+        }
+    }
+    
+    func fetchCommentsForRaiting(withUID uid: String, completion: @escaping (Bool) -> ()) {
+        guard let currentLoggedInUserId = Auth.auth().currentUser?.uid else { return }
+        
+        let ref = Database.database().reference().child("sendCommentsForRaiting").child(currentLoggedInUserId).child(uid)
+        ref.observeSingleEvent(of: .value, with: { snapshot in
+            guard let snap = snapshot.value as? Bool else { return }
+            if snap == true {
+                completion(true)
+            } else {
+                completion(false)
+            }
+        })
+    }
+    
+    func addMessageForUserRaiting(withUID uid: String, completion: @escaping (Error?) -> ()) {
+        guard let currentLoggedInUserId = Auth.auth().currentUser?.uid else { return }
+        
+        let values = [uid: true]
+        Database.database().reference().child("sendMessagesForRaiting").child(currentLoggedInUserId).updateChildValues(values) { (err, _) in
+            if let err {
+                completion(err)
+                return
+            }
+            let values = [currentLoggedInUserId: true]
+            Database.database().reference().child("getMessagesForRaiting").child(uid).updateChildValues(values) { (err, _) in
+                if let err {
+                    completion(err)
+                    return
+                }
+                completion(nil)
+            }
+        }
+    }
+    
+    func fetchMessagesForRaiting(withUID uid: String, completion: @escaping (Bool) -> ()) {
+        guard let currentLoggedInUserId = Auth.auth().currentUser?.uid else { return }
+        
+        let ref = Database.database().reference().child("sendMessagesForRaiting").child(currentLoggedInUserId).child(uid)
+        ref.observeSingleEvent(of: .value, with: { snapshot in
+            guard let snap = snapshot.value as? Bool else { return }
+            if snap == true {
+                completion(true)
+            } else {
+                completion(false)
+            }
+        })
+    }
+    
+    func addLikeForUserRaiting(withUID uid: String, completion: @escaping (Error?) -> ()) {
+        guard let currentLoggedInUserId = Auth.auth().currentUser?.uid else { return }
+        
+        let values = [uid: true]
+        Database.database().reference().child("sendLikeForRaiting").child(currentLoggedInUserId).updateChildValues(values) { (err, _) in
+            if let err {
+                completion(err)
+                return
+            }
+            let values = [currentLoggedInUserId: true]
+            Database.database().reference().child("getLikeForRaiting").child(uid).updateChildValues(values) { (err, _) in
+                if let err {
+                    completion(err)
+                    return
+                }
+                completion(nil)
+            }
+        }
+    }
+    
+    func fetchLikeForRaiting(withUID uid: String, completion: @escaping (Bool) -> ()) {
+        guard let currentLoggedInUserId = Auth.auth().currentUser?.uid else { return }
+        
+        let ref = Database.database().reference().child("sendLikeForRaiting").child(currentLoggedInUserId).child(uid)
+        ref.observeSingleEvent(of: .value, with: { snapshot in
+            guard let snap = snapshot.value as? Bool else { return }
+            if snap == true {
+                completion(true)
+            } else {
+                completion(false)
+            }
+        })
+    }
+    
+    func likeUserAcc(withUID uid: String, completion: @escaping (Error?) -> ()) {
+        guard let currentLoggedInUserId = Auth.auth().currentUser?.uid else { return }
+        
+        let values = [uid: 1]
+        Database.database().reference().child("YoulikeAcc").child(currentLoggedInUserId).updateChildValues(values) { (err, ref) in
+            if let err = err {
+                completion(err)
+                return
+            }
+            
+            let values = [currentLoggedInUserId: 1]
+            Database.database().reference().child("likeYourAcc").child(uid).updateChildValues(values) { (err, ref) in
+                if let err = err {
+                    completion(err)
+                    return
+                }
+                completion(nil)
+            }
+        }
+    }
+    
+    func unLikeUserAcc(withUID uid: String, completion: @escaping (Error?) -> ()) {
+        guard let currentLoggedInUserId = Auth.auth().currentUser?.uid else { return }
+        
+        Database.database().reference().child("YoulikeAcc").child(currentLoggedInUserId).child(uid).removeValue { (err, _) in
+            if let err = err {
+                print("Failed to remove user from following:", err)
+                completion(err)
+                return
+            }
+            
+            Database.database().reference().child("likeYourAcc").child(uid).child(currentLoggedInUserId).removeValue(completionBlock: { (err, _) in
+                if let err = err {
+                    print("Failed to remove user from followers:", err)
+                    completion(err)
+                    return
+                }
+                completion(nil)
+            })
         }
     }
 }

@@ -14,7 +14,6 @@ protocol MainCollectionDelegate: AnyObject {
     func getUsersIFollow()
     func getUsersFollowMe()
     func tapPosts(for cell: MainCollectionViewCell)
-    func hideCell(for cell: MainCollectionViewCell)
 }
 
 class MainCollectionViewCell: UICollectionViewCell {
@@ -139,10 +138,6 @@ class MainCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    @objc func hideCell() {
-        delegate?.hideCell(for: self)
-    }
-    
     @objc func tapPosts() {
         delegate?.tapPosts(for: self)
     }
@@ -201,14 +196,6 @@ class MainCollectionViewCell: UICollectionViewCell {
     }
     
     func configureMain(user: User?) {
-        guard let currentLoggetUserId = Auth.auth().currentUser?.uid else { return }
-        guard let userId = user?.uid else { return }
         self.status.text = user?.status
-        if currentLoggetUserId != userId {
-            self.editButton.alpha = 0.0
-            self.editButton.isEnabled = true
-        } else {
-            self.editButton.setBackgroundImage(UIImage(systemName: "ellipsis"), for: .normal)
-        }
     }
 }

@@ -26,12 +26,17 @@ class ChatViewController: UIViewController {
         }
     }
     
+    var myRating: Raiting?
+    var rating: Raiting?
+    
     var lastMessage: String?
-    var isRead = Bool()
+    var isRead: Bool = false
     var messages = [Message]()
     private let nc = NotificationCenter.default
     let imagePicker = UIImagePickerController()
     let refreshControl = UIRefreshControl()
+    
+    var fetchMessages: Bool = false
     
     private let spinnerView: UIActivityIndicatorView = {
         let activityView: UIActivityIndicatorView = UIActivityIndicatorView(style: .medium)
@@ -195,6 +200,14 @@ class ChatViewController: UIViewController {
         tabBarController?.tabBar.isHidden = true
     }
     
+    func fetchMessagesForRaitin() {
+        guard let uid = userFriend?.uid else { return }
+        Database.database().fetchMessagesForRaiting(withUID: uid) { value in
+            self.fetchMessages = value
+        }
+    }
+
+    
     @objc func refresh() {
         self.tableView.refreshControl?.endRefreshing()
         guard let userId = user?.uid else { return }
@@ -233,10 +246,6 @@ class ChatViewController: UIViewController {
         }
     }
     
-    @objc func updateMessagesForTimer() {
-        
-    }
-    
     @objc func pushMessage() {
         guard let textMessage = textfield.text else { return }
         guard let userId = user?.uid else { return }
@@ -250,24 +259,80 @@ class ChatViewController: UIViewController {
                 print(error)
                 return
             }
-            DispatchQueue.main.async {
-                self.fetchChat()
+            guard let uid = self.user?.uid else { return }
+            guard let getActivity = self.rating?.getMessagesRating else { return }
+            guard let activity = self.myRating?.messagesRating else { return }
+            
+            print(activity)
+            
+            if activity == 1.0 {
+                print("success insert comment:", textMessage)
+                self.textfield.text = ""
                 self.sendCommentButton.isEnabled = true
                 self.sendCommentButton.alpha = 1
                 waitingSpinnerEnable(activity: self.spinnerView, active: false)
+                self.fetchChat()
+                return
+            } else {
+                var addActivity = 0.1
+                var addgetActivity = 0.1
+                addgetActivity += getActivity
+                addActivity += activity
+                let getResult = addgetActivity
+                let result = addActivity
+
+                Database.database().addMessageForUserRaiting(withUID: friendId) { error in
+                    if let error {
+                        print(error)
+                        return
+                    }
+                }
+                
+                if self.fetchMessages == false {
+                    Database.database().reference().child("rating").child(uid).updateChildValues(["messagesRating" : result]) { error, _ in
+                        if let error {
+                            print(error)
+                            return
+                        }
+                        print("succes update messagesRaiting in Firebase Library + 0.1")
+                        Database.database().reference().child("rating").child(friendId).updateChildValues(["getMessages" : getResult]) { error, _ in
+                            if let error {
+                                print(error)
+                                return
+                            }
+                            print("succes update getMessages for", userId, "+ 0.1")
+                        }
+                    }
+                }
+                self.textfield.text = ""
+                self.sendCommentButton.isEnabled = true
+                self.sendCommentButton.alpha = 1
+                waitingSpinnerEnable(activity: self.spinnerView, active: false)
+                self.fetchChat()
             }
         }
-        self.textfield.text = ""
     }
     
     func fetchChat() {
         guard let userId = user?.uid else { return }
         guard let friendId = userFriend?.uid else { return }
-        self.changeIsRead(read: true)
         self.checkFriendRead()
-            
-        Database.database().fetchMessageWithChatId(userUID: userId, userFriendUID: friendId) { messages in
+        self.fetchMessagesForRaitin()
+        self.changeIsRead(read: true)
         
+        Database.database().fetchMessagesForRaiting(withUID: userId) { value in
+            self.fetchMessages = value
+        }
+        
+        Database.database().fetchRaitingUser(withUID: userId) { raiting in
+            self.myRating = raiting
+        }
+        
+        Database.database().fetchRaitingUser(withUID: friendId) { raiting in
+            self.rating = raiting
+        }
+        
+        Database.database().fetchMessageWithChatId(userUID: userId, userFriendUID: friendId) { messages in
             DispatchQueue.main.async {
                 self.messages = messages
                 self.tableView.setContentOffset(CGPointMake(0, self.containerView.center.y-60), animated: true)

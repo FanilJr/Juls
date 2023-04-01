@@ -19,9 +19,11 @@ class PostTableViewController: UIViewController {
     
     var cgfloatTabBar: CGFloat?
     var post: Post?
+    var raiting: Raiting?
     var juls = JulsView()
     var commentArray = [String]()
-    let sheetComments = CommentsSheetViewController()
+    var rating: Raiting?
+    var fetchLike: Bool = false
     
     lazy var blureForCell: UIVisualEffectView = {
         let bluereEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
@@ -71,11 +73,6 @@ class PostTableViewController: UIViewController {
         setupWillAppear()
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        self.sheetComments.dismiss(animated: true)
-    }
-    
     private func setupDidLoad() {
         setupNavButton()
         layout()
@@ -119,8 +116,11 @@ class PostTableViewController: UIViewController {
         present(alertController, animated: true)
     }
     
-    
     func fetchPost() {
+        guard let uid = post?.user.uid else { return }
+        Database.database().fetchLikeForRaiting(withUID: uid) { value in
+            self.fetchLike = value
+        }
         DispatchQueue.main.async {
             guard let stringTile = self.post?.message else { return }
             self.title = stringTile
@@ -187,6 +187,7 @@ extension PostTableViewController: CommentDelegate {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         guard let indexPath = self.tableView.indexPath(for: cell) else { return }
         guard let postId = self.post?.id else { return }
+
         if var post = self.post {
             if post.hasLiked == false {
             
@@ -196,6 +197,7 @@ extension PostTableViewController: CommentDelegate {
                         print(error)
                         return
                     }
+                    
                     print("successfully liked post:", post.message)
                     post.hasLiked = !post.hasLiked
                     post.likes = post.likes + 1
@@ -222,17 +224,8 @@ extension PostTableViewController: CommentDelegate {
     }
     
     func didtapImageComment() {
-        CommentViewController.showComment(self, post: post)
-    }
-    
-    func didTapComment() {
-        sheetComments.post = self.post
-        if let sheet = sheetComments.sheetPresentationController {
-            sheet.detents = [.medium()]
-            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
-            sheet.largestUndimmedDetentIdentifier = .medium
-            sheet.prefersGrabberVisible = true
-        }
-        present(sheetComments, animated: true)
+        let commentVC = CommentViewController()
+        commentVC.post = post
+        navigationController?.pushViewController(commentVC, animated: true)
     }
 }

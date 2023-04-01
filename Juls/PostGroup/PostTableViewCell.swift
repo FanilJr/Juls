@@ -10,7 +10,6 @@ import UIKit
 import Firebase
 
 protocol CommentDelegate: AnyObject {
-    func didTapComment()
     func didTapLike(for cell: PostTableViewCell)
     func didtapImageComment()
 }
@@ -112,20 +111,6 @@ class PostTableViewCell: UITableViewCell {
         return name
     }()
     
-    lazy var commentCountLabel: UILabel = {
-        let name = UILabel()
-        name.font = UIFont(name: "Futura", size: 13)
-        name.translatesAutoresizingMaskIntoConstraints = false
-        name.textColor = .systemGray
-        name.text = "Комментарии"
-        let gesture = UITapGestureRecognizer()
-        gesture.addTarget(self, action: #selector(tapComment))
-        name.addGestureRecognizer(gesture)
-        name.isUserInteractionEnabled = true
-        name.backgroundColor = .clear
-        return name
-    }()
-    
     lazy var likeCount: UILabel = {
         let name = UILabel()
         name.textColor = UIColor.createColor(light: .systemGray5, dark: .white)
@@ -195,13 +180,8 @@ class PostTableViewCell: UITableViewCell {
     @objc func tapImageComment() {
         delegate?.didtapImageComment()
     }
-    
-    @objc func tapComment() {
-        delegate?.didTapComment()
-    }
-    
     func constraints() {
-         [postImage,whiteView,commentButton,commentCount,likeButton,likeCount,descriptionText,commentCountLabel,datePost].forEach { contentView.addSubview($0) }
+         [postImage,whiteView,commentButton,commentCount,likeButton,likeCount,descriptionText,datePost].forEach { contentView.addSubview($0) }
         
         NSLayoutConstraint.activate([
             postImage.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10),
@@ -234,10 +214,7 @@ class PostTableViewCell: UITableViewCell {
             descriptionText.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 15),
             descriptionText.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             
-            commentCountLabel.topAnchor.constraint(equalTo: descriptionText.bottomAnchor,constant: 10),
-            commentCountLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 15),
-            
-            datePost.topAnchor.constraint(equalTo: commentCountLabel.bottomAnchor,constant: 5),
+            datePost.topAnchor.constraint(equalTo: descriptionText.bottomAnchor,constant: 5),
             datePost.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 15),
             datePost.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -25)
         ])

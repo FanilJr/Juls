@@ -16,6 +16,7 @@ class ProfileViewController: UIViewController {
     
     var user: User?
     var userId: String?
+    var rating: Raiting?
     var posts = [Post]()
     var postsKeyArray = [String]()
     var iFollowUsers: Int?
@@ -33,6 +34,7 @@ class ProfileViewController: UIViewController {
     private let filePicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.mp3], asCopy: true)
     private var currentImage: UIImageView?
     private var header: StretchyCollectionHeaderView?
+    private let ratingVC = RatingViewController()
     
     let systemSoundID: SystemSoundID = 1016
     let systemSoundID2: SystemSoundID = 1018
@@ -40,7 +42,8 @@ class ProfileViewController: UIViewController {
     private lazy var titleImage: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.image = UIImage(named: "pngwing.com-2")
+        imageView.tintColor = #colorLiteral(red: 0.1758851111, green: 0.5897727013, blue: 0.9195605516, alpha: 1)
+        imageView.image = UIImage(systemName: "checkmark.seal.fill")
         imageView.layer.cornerRadius = Const.ImageSizeForLargeState / 2
         let gesture = UITapGestureRecognizer()
         gesture.addTarget(self, action: #selector(openInfoForOfficial))
@@ -164,12 +167,15 @@ class ProfileViewController: UIViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        messagePostViewController.view.endEditing(true)
+        ratingVC.view.endEditing(true)
         showOrAlpha(object: self.titleImage, false)
         showOrAlpha(object: self.newMessage, false)
         self.header?.progressBar.value = 0.0
         self.header?.progressBar.alpha = 0.0
         self.stop()
         self.header?.playSongButton.setBackgroundImage(UIImage(systemName: "play.circle"), for: .normal)
+        
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -208,8 +214,15 @@ class ProfileViewController: UIViewController {
         navigationController?.pushViewController(messageVC, animated: true)
     }
     
-    @objc func addFavorites() {
-        print("add Favorites")
+    @objc func presentUserFriendRating() {
+        ratingVC.rating = rating
+        if let sheet = ratingVC.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
+            sheet.preferredCornerRadius = 25
+            sheet.prefersGrabberVisible = true
+        }
+        present(ratingVC, animated: true)
     }
         
     func setupTableView() {
@@ -290,12 +303,18 @@ extension ProfileViewController {
         
         let xTranslation: CGFloat?
         
-        guard let viewTitle = title else { return }
-        if viewTitle.count >= 9 {
-            xTranslation = max(0, 35 - coeff * 50)
-        } else {
-            xTranslation = max(0, 100 - coeff * 100)
+        guard let LargeMyString = title else { return }
+        var stringWidth = 0.0
+        if let font = UIFont(name: "Futura-Bold", size: 31) {
+            stringWidth = LargeMyString.size(withAttributes: [.font: font]).width + 23
         }
+
+        let fixedNumber = 150 // фиксированное число
+        let coeffs = 1 - (Double(fixedNumber) / stringWidth) // коэффициент обратной пропорциональности
+        let someNumber = 110 // какое-то произвольное число
+        let result = someNumber - Int(coeffs * Double(someNumber) * 1.7)// число, уменьшающееся с увеличением stringWidth
+        let CGFloatResult = CGFloat(result)
+        xTranslation = max(0, CGFloatResult - coeff * CGFloatResult)
         
         titleImage.transform = CGAffineTransform.identity
             .scaledBy(x: scale, y: scale)
@@ -305,25 +324,29 @@ extension ProfileViewController {
     func fetchTick() {
         guard let navBar = navigationController?.navigationBar else { return }
         navBar.addSubview(titleImage)
-        guard let viewTitle = title else { return }
-        
-        if viewTitle.count >= 9 {
-            NSLayoutConstraint.activate([
-                titleImage.centerXAnchor.constraint(equalTo: navBar.centerXAnchor, constant: 35),
-                titleImage.bottomAnchor.constraint(equalTo: navBar.bottomAnchor, constant: -Const.ImageBottomMarginForLargeState),
-                titleImage.heightAnchor.constraint(equalToConstant: Const.ImageSizeForLargeState),
-                titleImage.widthAnchor.constraint(equalTo: titleImage.heightAnchor)
-            ])
-        } else {
-            guard let navBar = navigationController?.navigationBar else { return }
-            navBar.addSubview(titleImage)
-            NSLayoutConstraint.activate([
-                titleImage.centerXAnchor.constraint(equalTo: navBar.centerXAnchor,constant: -30),
-                titleImage.bottomAnchor.constraint(equalTo: navBar.bottomAnchor, constant: -Const.ImageBottomMarginForLargeState),
-                titleImage.heightAnchor.constraint(equalToConstant: Const.ImageSizeForLargeState),
-                titleImage.widthAnchor.constraint(equalTo: titleImage.heightAnchor)
-            ])
+        guard let LargeMyString = title else { return }
+        var stringWidth = 0.0
+        if let font = UIFont(name: "Futura-Bold", size: 31) {
+            stringWidth = LargeMyString.size(withAttributes: [.font: font]).width + 23
         }
+        
+        NSLayoutConstraint.activate([
+            titleImage.leadingAnchor.constraint(equalTo: navBar.leadingAnchor,constant: stringWidth),
+            titleImage.bottomAnchor.constraint(equalTo: navBar.bottomAnchor, constant: -Const.ImageBottomMarginForLargeState),
+            titleImage.heightAnchor.constraint(equalToConstant: Const.ImageSizeForLargeState),
+            titleImage.widthAnchor.constraint(equalTo: titleImage.heightAnchor)
+        ])
+    }
+    
+    func presentRating() {
+        ratingVC.rating = rating
+        if let sheet = ratingVC.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
+            sheet.preferredCornerRadius = 25
+            sheet.prefersGrabberVisible = true
+        }
+        present(ratingVC, animated: true)
     }
 
     func deleteMusic() {
@@ -359,12 +382,17 @@ extension ProfileViewController {
             self.title = user.username
             self.setupNavigationButton(user: user)
             self.header?.user = user
+            
             if user.uid == uid {
                 Database.database().updateMessageInNavigationBar(userId: uid, navigation: self.navigationController!, label: self.newMessage)
             }
             if user.official {
                 print(user.username, "- official status <Public person>")
                 self.fetchTick()
+            }
+            
+            Database.database().fetchRaitingUser(withUID: uid) { raiting in
+                self.rating = raiting
             }
             Database.database().fetchAllPosts(withUID: uid) { posts in
                 DispatchQueue.main.async {
@@ -383,15 +411,62 @@ extension ProfileViewController {
         
         Database.database().numberOfItemsForUser(withUID: uid, category: "posts") { count in
             self.postsCount = count
-            self.collectionView.reloadData()
+            
+            var postRaiting = 0.0
+            postRaiting = min(Double(count) * 0.05, 1.0)
+            
+            let values = ["postsRating": postRaiting]
+            Database.database().reference().child("rating").child(uid).updateChildValues(values) { error, _ in
+                if let error {
+                    print(error)
+                    return
+                }
+                self.collectionView.reloadData()
+            }
         }
         Database.database().numberOfItemsForUser(withUID: uid, category: "followers") { count in
             self.followMeUsers = count
-            self.collectionView.reloadData()
+            
+            var followers = 0.0
+            followers = min(Double(count) * 0.01, 1.0)
+            
+            let values = ["followersRating": followers]
+            Database.database().reference().child("rating").child(uid).updateChildValues(values) { error, _ in
+                if let error {
+                    print(error)
+                    return
+                }
+                self.collectionView.reloadData()
+            }
         }
         Database.database().numberOfItemsForUser(withUID: uid, category: "following") { count in
             self.iFollowUsers = count
             self.collectionView.reloadData()
+        }
+        Database.database().numberOfItemsForUser(withUID: uid, category: "YoulikeAcc") { count in
+            var like = 0.0
+            like = min(Double(count) * 0.01, 1.0)
+            
+            let values = ["likeYouUserAcc": like]
+            Database.database().reference().child("rating").child(uid).updateChildValues(values) { error, _ in
+                if let error {
+                    print(error)
+                    return
+                }
+            }
+        }
+        
+        Database.database().numberOfItemsForUser(withUID: uid, category: "likeYourAcc") { count  in
+            var like = 0.0
+            like = min(Double(count) * 0.01, 1.0)
+            
+            let values = ["likeYourAcc": like]
+            Database.database().reference().child("rating").child(uid).updateChildValues(values) { error, _ in
+                if let error {
+                    print(error)
+                    return
+                }
+            }
         }
     }
     
@@ -400,7 +475,7 @@ extension ProfileViewController {
         let imageName = NSUUID().uuidString
         let storedImage = Storage.storage().reference().child("profile_image").child(userId).child(imageName)
         
-        if let uploadData = header?.userImage.image?.jpegData(compressionQuality: 0.2) {
+        if let uploadData = header?.userImage.image?.jpegData(compressionQuality: 0.1) {
             storedImage.putData(uploadData, metadata: nil) { metadata, error in
                 if let error {
                     print("error upload", error)
@@ -494,7 +569,7 @@ extension ProfileViewController {
         if let sheet = messagePostViewController.sheetPresentationController {
             sheet.detents = [.medium()]
             sheet.prefersScrollingExpandsWhenScrolledToEdge = false
-            sheet.largestUndimmedDetentIdentifier = .medium
+            sheet.preferredCornerRadius = 25
             sheet.prefersGrabberVisible = true
         }
         present(messagePostViewController, animated: true)
@@ -724,6 +799,7 @@ extension ProfileViewController: UICollectionViewDataSource {
         case 1:
             let postVC = PostTableViewController()
             postVC.post = posts[indexPath.row]
+            postVC.rating = rating
             postVC.delegate = self
             self.navigationController?.pushViewController(postVC, animated: true)
             
@@ -734,24 +810,31 @@ extension ProfileViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, contextMenuConfigurationForItemAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         
-            switch indexPath.section {
-            case 1:
-                let configuration = UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
+        switch indexPath.section {
+        case 1:
+            let configuration = UIContextMenuConfiguration(identifier: nil, previewProvider: nil, actionProvider: { _ in
+                let customImage = CustomImageView()
+                customImage.loadImage(urlString: self.posts[indexPath.row].imageUrl)
+                var sharedImage = UIImage()
+                if let image = customImage.image {
+                    sharedImage = image
+                }
+                
+                let shared = UIAction(title: "Поделится", image: UIImage(systemName:"square.and.arrow.up")) { _ in
+                    let avc = UIActivityViewController(activityItems: ["From JULS with LOVE:" as String, "@\(self.posts[indexPath.row].user.username) say" as String, self.posts[indexPath.row].message as String, sharedImage as UIImage], applicationActivities: nil)
+                    self.present(avc, animated: true)
+                }
                     
-                    let shared = UIAction(title: "Поделится", image: UIImage(systemName:"square.and.arrow.up")) { _ in
-                        let avc = UIActivityViewController(activityItems: [self.posts[indexPath.row].user.username as Any, self.posts[indexPath.row].message as Any], applicationActivities: nil)
-                        self.present(avc, animated: true)
-                    }
-                    
-                    if Auth.auth().currentUser?.uid == self.user?.uid {
-                        let menu = UIMenu(title: "", children: [shared])
-                        return menu
-                    } else {
-                        let menu = UIMenu(title: "", children: [shared])
-                        return menu
-                    }
-                })
-                return configuration
+                if Auth.auth().currentUser?.uid == self.user?.uid {
+                    let menu = UIMenu(title: "", children: [shared])
+                    return menu
+                } else {
+                    let menu = UIMenu(title: "", children: [shared])
+                    return menu
+                }
+            })
+            return configuration
+            
             default:
                 return nil
         }
@@ -904,6 +987,7 @@ extension ProfileViewController: UIDocumentPickerDelegate {
 
 //MARK: SETUP NAVIGATIONBUTTON
 extension ProfileViewController {
+    
     func setupNavigationButton(user: User) {
         let plusButton: UIBarButtonItem = {
             let barButtonMenu = UIMenu(title: "Выберите действие", children: [
@@ -923,6 +1007,9 @@ extension ProfileViewController {
         
         let ellipsisButtonForDeleteMusic: UIBarButtonItem = {
             let barButtonMenu = UIMenu(title: "Выберите действие", children: [
+                UIAction(title: NSLocalizedString("Мой рейтинг", comment: ""), image: UIImage(named: "trophy.circle.fill@20x"), handler: { _ in
+                    self.presentRating()
+                }),
                 UIAction(title: NSLocalizedString("Изменить аватар", comment: ""), image: UIImage(systemName: "person.fill.viewfinder"), handler: { _ in
                     self.presentImagePickerForUser()
                 }),
@@ -946,6 +1033,9 @@ extension ProfileViewController {
         
         let ellipsisButton: UIBarButtonItem = {
             let barButtonMenu = UIMenu(title: "Выберите действие", children: [
+                UIAction(title: NSLocalizedString("Мой рейтинг", comment: ""), image: UIImage(named: "trophy.circle.fill@20x"), handler: { _ in
+                    self.presentRating()
+                }),
                 UIAction(title: NSLocalizedString("Изменить аватар", comment: ""), image: UIImage(systemName: "person.fill.viewfinder"), handler: { _ in
                     self.presentImagePickerForUser()
                 }),
@@ -973,8 +1063,8 @@ extension ProfileViewController {
         let messageButtonForFriend = UIBarButtonItem(image: UIImage(systemName: "paperplane.fill"), style: .plain, target: self, action: #selector(pushMessageFriendController))
         messageButtonForFriend.tintColor = #colorLiteral(red: 0.1758851111, green: 0.5897727013, blue: 0.9195605516, alpha: 1)
         
-        let starButton = UIBarButtonItem(image: UIImage(systemName: "star"), style: .plain, target: self, action: #selector(addFavorites))
-        starButton.tintColor = UIColor.createColor(light: .black, dark: .white)
+        let ratingButton = UIBarButtonItem(image: UIImage(systemName: "trophy.fill"), style: .plain, target: self, action: #selector(presentUserFriendRating))
+        ratingButton.tintColor = #colorLiteral(red: 0.6754702926, green: 0.5575380325, blue: 0.4061277211, alpha: 1)
         
         if user.uid == Auth.auth().currentUser?.uid {
             guard let uid = Auth.auth().currentUser?.uid else { return }
@@ -990,7 +1080,7 @@ extension ProfileViewController {
                     }
                 })
         } else {
-            navigationItem.rightBarButtonItems = [messageButtonForFriend,starButton]
+            navigationItem.rightBarButtonItems = [messageButtonForFriend,ratingButton]
         }
     }
 }

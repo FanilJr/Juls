@@ -14,7 +14,20 @@ class AllChatsTableViewCell: UITableViewCell {
     var message: Message? {
         didSet {
             guard let message = message else { return }
-            self.updateLastMessage(message: message)
+            self.lastMessage.text = message.text
+            self.dateMassage.text = message.creationDate.timeAgoDisplay()
+            self.profileImageView.loadImage(urlString: message.user.picture)
+            self.usernameLabel.text = message.user.username
+            
+            if message.isRead {
+                self.usernameLabel.font = UIFont(name: "Futura", size: 14)
+                self.lastMessage.font = UIFont.systemFont(ofSize: 13)
+                self.dateMassage.font = UIFont(name: "Futura", size: 10)
+            } else {
+                self.usernameLabel.font = UIFont(name: "Futura-Bold", size: 15)
+                self.lastMessage.font = UIFont.boldSystemFont(ofSize: 14)
+                self.dateMassage.font = UIFont(name: "Futura-Bold", size: 11)
+            }
         }
     }
     
@@ -35,6 +48,7 @@ class AllChatsTableViewCell: UITableViewCell {
         return user
     }()
     
+    
     let lastMessage: UILabel = {
         let message = UILabel()
         message.translatesAutoresizingMaskIntoConstraints = false
@@ -47,6 +61,14 @@ class AllChatsTableViewCell: UITableViewCell {
         return message
     }()
     
+    let readLabel: UILabel = {
+        let readLabel = UILabel()
+        readLabel.numberOfLines = 0
+        readLabel.font = UIFont.systemFont(ofSize: 12)
+        readLabel.translatesAutoresizingMaskIntoConstraints = false
+        return readLabel
+    }()
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         constraints()
@@ -56,25 +78,8 @@ class AllChatsTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func updateLastMessage(message: Message) {
-        self.lastMessage.text = message.text
-        self.dateMassage.text = message.creationDate.timeAgoDisplay()
-        self.profileImageView.loadImage(urlString: message.user.picture)
-        self.usernameLabel.text = message.user.username
-        
-        if message.isRead {
-            self.usernameLabel.font = UIFont(name: "Futura", size: 14)
-            self.lastMessage.font = UIFont.systemFont(ofSize: 13)
-            self.dateMassage.font = UIFont(name: "Futura", size: 10)
-        } else {
-            self.usernameLabel.font = UIFont(name: "Futura-Bold", size: 15)
-            self.lastMessage.font = UIFont.boldSystemFont(ofSize: 14)
-            self.dateMassage.font = UIFont(name: "Futura-Bold", size: 11)
-        }
-    }
-    
     func constraints() {
-        [profileImageView, usernameLabel,lastMessage, dateMassage].forEach { contentView.addSubview($0) }
+        [profileImageView, usernameLabel,lastMessage, dateMassage,readLabel].forEach { contentView.addSubview($0) }
         
         NSLayoutConstraint.activate([
             profileImageView.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10),
@@ -89,6 +94,9 @@ class AllChatsTableViewCell: UITableViewCell {
             lastMessage.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor,constant: 10),
             lastMessage.widthAnchor.constraint(equalToConstant: 225),
             lastMessage.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor),
+            
+            readLabel.topAnchor.constraint(equalTo: lastMessage.bottomAnchor,constant: 10),
+            readLabel.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor,constant: 10),
             
             dateMassage.centerYAnchor.constraint(equalTo: lastMessage.centerYAnchor),
             dateMassage.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -10),

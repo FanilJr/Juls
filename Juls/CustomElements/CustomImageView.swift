@@ -23,8 +23,6 @@ class CustomImageView: UIImageView {
             return
         }
         
-//        addActivityIndicator()
-        
         guard let url = URL(string: urlString) else { return }
         
         URLSession.shared.dataTask(with: url) { data, response, error in
@@ -43,7 +41,6 @@ class CustomImageView: UIImageView {
             imageCache[url.absoluteString] = photoImage
             
             DispatchQueue.main.async {
-//                self.removeActivityIndicator()
                 self.image = photoImage
             }
         }

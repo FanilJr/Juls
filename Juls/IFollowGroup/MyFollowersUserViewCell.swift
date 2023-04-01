@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import Firebase
 
 class MyFollowersUserViewCell: UITableViewCell {
     
@@ -62,6 +63,12 @@ class MyFollowersUserViewCell: UITableViewCell {
                 self.profileImageView.loadImage(urlString: profileImageUrl)
             }
         }
-        usernameLabel.text = user?.username
+        guard let uid = user?.uid else { return }
+        guard let myUid = Auth.auth().currentUser?.uid else { return }
+        if uid == myUid {
+            usernameLabel.text = "Я"
+        } else {
+            usernameLabel.text = user?.username
+        }
     }
 }

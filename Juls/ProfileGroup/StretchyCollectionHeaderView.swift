@@ -20,7 +20,7 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         didSet {
             guard let imageUrl = user?.picture else { return }
             if imageUrl == "" {
-                self.userImage.image = UIImage(named: "noimage")
+                self.userImage.image = UIImage(named: "Grey_full")
             } else {
                 self.userImage.loadImage(urlString: imageUrl)
             }
@@ -29,6 +29,8 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
             fetchMusic()
         }
     }
+    
+    var message = ["Вам нравится аккаунт?","Вы хотите поднять рейтинг пользователю?","Лайк для него - рейтинг для вас","Возможно, он нуждается в вашей поддержке","Представьте что вы хороший человек", "Лайкни - если нравится", "Твой же рейтинг выше, помоги ему"]
     
     weak var delegate: StretchyProtocol?
     
@@ -47,20 +49,11 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         let image = CustomImageView()
         image.translatesAutoresizingMaskIntoConstraints = false
         image.clipsToBounds = true
-        image.backgroundColor = .black
         image.layer.cornerRadius = 20
+        image.backgroundColor = .systemGray
         image.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
         image.contentMode = .scaleAspectFill
         return image
-    }()
-    
-    private let stackViewVertical: UIStackView = {
-        let stackView = UIStackView()
-        stackView.axis = .vertical
-        stackView.spacing = 1
-        stackView.distribution = .fillEqually
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        return stackView
     }()
     
     lazy var followButton: UIButton = {
@@ -70,6 +63,26 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         button.translatesAutoresizingMaskIntoConstraints = false
         button.clipsToBounds = true
         return button
+    }()
+    
+    lazy var likeForRatingButton: UIButton = {
+        let button = UIButton()
+        button.addTarget(self, action: #selector(likeAcc), for: .touchUpInside)
+        button.tintColor = .white
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.clipsToBounds = true
+        return button
+    }()
+    
+    private lazy var likeForRatingLabel: UILabel = {
+        let name = UILabel()
+        name.textColor = UIColor.createColor(light: .black, dark: .white)
+        name.shadowColor = UIColor.createColor(light: .gray, dark: .gray)
+        name.font = UIFont(name: "Futura-Bold", size: 14)
+        name.shadowOffset = CGSize(width: 1, height: 1)
+        name.clipsToBounds = true
+        name.translatesAutoresizingMaskIntoConstraints = false
+        return name
     }()
     
     lazy var playSongButton: UIButton = {
@@ -138,23 +151,57 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         if currentLoggetUserId == userId {
             self.followButton.alpha = 0.0
             self.followButton.isEnabled = false
+            self.likeForRatingButton.alpha = 0.0
+            self.likeForRatingButton.isEnabled = false
+            self.likeForRatingLabel.alpha = 0.0
         } else {
-            self.followButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100xWhite"), for: .normal)
+            self.followButton.setBackgroundImage(UIImage(named: "person.crop.circle.fill.badge.plus@20x"), for: .normal)
             self.followButton.alpha = 1
             self.followButton.isEnabled = true
+            self.likeForRatingButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100xWhite"), for: .normal)
+            self.likeForRatingButton.alpha = 1
+            self.likeForRatingButton.isEnabled = true
+        }
+    }
+    
+    @objc func likeAcc() {
+        self.likeForRatingButton.alpha = 0
+        guard let userId = user?.uid else { return }
+        if self.likeForRatingButton.backgroundImage(for: .normal) == UIImage(named: "heart.circle.fill@100xWhite") {
+            Database.database().likeUserAcc(withUID: userId) { error in
+                if let error {
+                    print(error)
+                    return
+                }
+                showOrAlpha(object: self.likeForRatingButton, true)
+                print("succes like userAcc: ", self.user?.username ?? "")
+                self.likeForRatingButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100x"), for: .normal)
+            }
+        } else {
+            Database.database().unLikeUserAcc(withUID: userId) { error in
+                if let error {
+                    print(error)
+                    return
+                }
+                showOrAlpha(object: self.likeForRatingButton, true)
+                print("succes unlike userAcc: ", self.user?.username ?? "")
+                self.likeForRatingButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100xWhite"), for: .normal)
+            }
         }
     }
     
     @objc func followFriend() {
+        self.followButton.alpha = 0
         guard let userId = user?.uid else { return }
-        if self.followButton.backgroundImage(for: .normal) == UIImage(named: "heart.circle.fill@100xWhite") {
+        if self.followButton.backgroundImage(for: .normal) == UIImage(named: "person.crop.circle.fill.badge.plus@20x") {
             Database.database().followUser(withUID: userId) { error in
                 if let error {
                     print(error)
                     return
                 }
+                showOrAlpha(object: self.followButton, true)
                 print("succes followed user: ", self.user?.username ?? "")
-                self.followButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100x"), for: .normal)
+                self.followButton.setBackgroundImage(UIImage(named: "person.crop.circle.fill.badge.checkmark@20x"), for: .normal)
             }
         } else {
             Database.database().unfollowUser(withUID: userId) { error in
@@ -162,8 +209,9 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
                     print(error)
                     return
                 }
+                showOrAlpha(object: self.followButton, true)
                 print("succeful unfollow user: ", self.user?.username ?? "")
-                self.followButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100xWhite"), for: .normal)
+                self.followButton.setBackgroundImage(UIImage(named: "person.crop.circle.fill.badge.plus@20x"), for: .normal)
             }
         }
     }
@@ -174,28 +222,31 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         
         Database.database().reference().child("following").child(myId).child(userId).observe(.value) { snapshot in
             if let isFollowing = snapshot.value as? Int, isFollowing == 1 {
-                self.followButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100x"), for: .normal)
-                self.followButton.tintColor = .red
+                self.followButton.setBackgroundImage(UIImage(named: "person.crop.circle.fill.badge.checkmark@20x"), for: .normal)
             } else {
-                self.followButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100xWhite"), for: .normal)
-                self.followButton.tintColor = .white
+                self.followButton.setBackgroundImage(UIImage(named: "person.crop.circle.fill.badge.plus@20x"), for: .normal)
+            }
+        }
+        
+        Database.database().reference().child("YoulikeAcc").child(myId).child(userId).observe(.value) { snapshot in
+            if let isLikeAcc = snapshot.value as? Int, isLikeAcc == 1 {
+                self.likeForRatingButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100x"), for: .normal)
+                self.likeForRatingLabel.text = ""
+            } else {
+                self.likeForRatingButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100xWhite"), for: .normal)
+                self.likeForRatingLabel.text = self.message.randomElement()
             }
         }
     }
     
     func layout() {
-        [userImage,followButton,progressBar,playSongButton].forEach { addSubview($0) }
+        [userImage,progressBar,playSongButton,likeForRatingButton,followButton,likeForRatingLabel].forEach { addSubview($0) }
         
         NSLayoutConstraint.activate([
             userImage.topAnchor.constraint(equalTo: topAnchor),
             userImage.leadingAnchor.constraint(equalTo: leadingAnchor),
             userImage.trailingAnchor.constraint(equalTo: trailingAnchor),
             userImage.bottomAnchor.constraint(equalTo: bottomAnchor),
-            
-            followButton.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -10),
-            followButton.trailingAnchor.constraint(equalTo: trailingAnchor,constant: -10),
-            followButton.heightAnchor.constraint(equalToConstant: 35),
-            followButton.widthAnchor.constraint(equalToConstant: 35),
             
             progressBar.topAnchor.constraint(equalTo: userImage.topAnchor,constant: 10),
             progressBar.centerXAnchor.constraint(equalTo: centerXAnchor),
@@ -205,7 +256,20 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
             playSongButton.topAnchor.constraint(equalTo: userImage.topAnchor,constant: 10),
             playSongButton.trailingAnchor.constraint(equalTo: userImage.trailingAnchor,constant: -10),
             playSongButton.heightAnchor.constraint(equalToConstant: 35),
-            playSongButton.widthAnchor.constraint(equalToConstant: 35)
+            playSongButton.widthAnchor.constraint(equalToConstant: 35),
+            
+            likeForRatingButton.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -10),
+            likeForRatingButton.trailingAnchor.constraint(equalTo: trailingAnchor,constant: -7),
+            likeForRatingButton.heightAnchor.constraint(equalToConstant: 35),
+            likeForRatingButton.widthAnchor.constraint(equalToConstant: 35),
+            
+            followButton.bottomAnchor.constraint(equalTo: likeForRatingButton.topAnchor,constant: -10),
+            followButton.centerXAnchor.constraint(equalTo: likeForRatingButton.centerXAnchor,constant: -3),
+            followButton.heightAnchor.constraint(equalToConstant: 34),
+            followButton.widthAnchor.constraint(equalToConstant: 41),
+            
+            likeForRatingLabel.centerYAnchor.constraint(equalTo: likeForRatingButton.centerYAnchor),
+            likeForRatingLabel.trailingAnchor.constraint(equalTo: likeForRatingButton.leadingAnchor,constant: -10),
         ])
     }
 }
