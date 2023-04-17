@@ -28,6 +28,44 @@ extension Database {
         }
     }
     
+    func fetchUserForLoveBoys(completion: @escaping ([User]) -> ()) {
+        Database.database().reference().child("users").observeSingleEvent(of: .value, with: { (snapshot) in
+            guard let userDictionary = snapshot.value as? [String: Any] else { return }
+            var users = [User]()
+            userDictionary.forEach { key, value in
+                if let userDict = value as? [String: Any],
+                    let isActiveMath = userDict["isActiveMatch"] as? Bool,
+                    isActiveMath == true,
+                    let gender = userDict["sex"] as? String,
+                    gender == "Female" {
+                        // User has the key "isActiveMath" with a value of true and is a female, so include in the result
+                    let user = User(uid: key, dictionary: userDict)
+                    users.append(user)
+                }
+            }
+            completion(users)
+        })
+    }
+    
+    func fetchUserForLoveGirls(completion: @escaping ([User]) -> ()) {
+        Database.database().reference().child("users").observeSingleEvent(of: .value, with: { (snapshot) in
+            guard let userDictionary = snapshot.value as? [String: Any] else { return }
+            var users = [User]()
+            userDictionary.forEach { key, value in
+                if let userDict = value as? [String: Any],
+                    let isActiveMath = userDict["isActiveMatch"] as? Bool,
+                    isActiveMath == true,
+                    let gender = userDict["sex"] as? String,
+                    gender == "Male" {
+                        // User has the key "isActiveMath" with a value of true and is a female, so include in the result
+                    let user = User(uid: key, dictionary: userDict)
+                    users.append(user)
+                }
+            }
+            completion(users)
+        })
+    }
+    
     func fetchRaitingUser(withUID uid: String, completion: @escaping (Raiting) -> ()) {
         Database.database().reference().child("rating").child(uid).observeSingleEvent(of: .value, with: { (snapshot) in
             guard let userDictionary = snapshot.value as? [String: Any] else { return }
@@ -37,6 +75,56 @@ extension Database {
             print("Failed to fetch user from database:", err)
         }
     }
+    //MARK: Рабочий, но внизу измененный, но пока не уверен в измененном
+//    func fetchAllUsersRating(includeCurrentUser: Bool = true, completion: @escaping ([User]) -> ()) {
+//        let ref = Database.database().reference().child("users")
+//        ref.observeSingleEvent(of: .value, with: { (snapshot) in
+//            guard let dictionaries = snapshot.value as? [String: Any] else {
+//                completion([])
+//                return
+//            }
+//
+//            var users = [User]()
+//
+//            dictionaries.forEach({ (key, value) in
+//                if !includeCurrentUser, key == Auth.auth().currentUser?.uid {
+//                    completion([])
+//                    return
+//                }
+//                guard let userDictionary = value as? [String: Any] else { return }
+//                let user = User(uid: key, dictionary: userDictionary)
+//                users.append(user)
+//            })
+//            users.sort { $0.rating > $1.rating }
+//            let topTenUsers = Array(users.prefix(10))
+//            completion(topTenUsers)
+//        })
+//    }
+    
+    func fetchTopTenUsersRating(includeCurrentUser: Bool = true, completion: @escaping ([User]) -> ()) {
+        let ref = Database.database().reference().child("users")
+        ref.queryOrdered(byChild: "rating").queryLimited(toLast: 10).observeSingleEvent(of: .value, with: { snapshot in
+            guard let dictionaries = snapshot.value as? [String: Any] else {
+                completion([])
+                return
+            }
+            
+            var users = [User]()
+            
+            dictionaries.forEach { (key, value) in
+                if !includeCurrentUser, key == Auth.auth().currentUser?.uid {
+                    completion([])
+                    return
+                }
+                guard let userDictionary = value as? [String: Any] else { return }
+                let user = User(uid: key, dictionary: userDictionary)
+                users.append(user)
+            }
+            users.sort { $0.rating > $1.rating }
+            completion(users)
+        })
+    }
+
     
     func fetchAllUsers(includeCurrentUser: Bool = true, completion: @escaping ([User]) -> (), withCancel cancel: ((Error) -> ())?) {
         let ref = Database.database().reference().child("users")
@@ -204,9 +292,17 @@ extension Database {
         let userPostRef = Database.database().reference().child("posts").child(uid).childByAutoId()
         
         guard let postId = userPostRef.key else { return }
+
+        let maxResolutionImage: UIImage?
+        if image.size.height > 3000 {
+            maxResolutionImage = image.resize(to: CGSize(width: image.size.width / 4, height: image.size.height / 4))
+        } else {
+            maxResolutionImage = image.resize(to: CGSize(width: image.size.width / 3.5, height: image.size.height / 3.5))
+        }
+        guard let resolutionImage = maxResolutionImage else { return }
         
-        Storage.storage().uploadPostImage(image: image, filename: postId) { (postImageUrl) in
-            let values = ["imageUrl": postImageUrl, "caption": caption, "imageWidth": image.size.width, "imageHeight": image.size.height, "creationDate": Date().timeIntervalSince1970, "id": postId] as [String : Any]
+        Storage.storage().uploadPostImage(image: resolutionImage, filename: postId) { (postImageUrl) in
+            let values = ["imageUrl": postImageUrl, "caption": caption, "imageWidth": resolutionImage.size.width, "imageHeight": resolutionImage.size.height, "creationDate": Date().timeIntervalSince1970, "id": postId] as [String : Any]
             
             userPostRef.updateChildValues(values) { (err, ref) in
                 if let err = err {
@@ -387,7 +483,6 @@ extension Storage {
 
 //MARK: CHAT ~
 extension Database {
-    
     func pushMessageWithChatId(userUID uid: String, userFriendUID uidFriend: String, textMessage text: String, completion: @escaping (Error?) -> ()) {
             
             let values = ["message": text, "creationDate": Date().timeIntervalSince1970, "uid": uid, "isRead": false] as [String: Any]
@@ -915,14 +1010,12 @@ extension Database {
     
     func likeUserAcc(withUID uid: String, completion: @escaping (Error?) -> ()) {
         guard let currentLoggedInUserId = Auth.auth().currentUser?.uid else { return }
-        
         let values = [uid: 1]
         Database.database().reference().child("YoulikeAcc").child(currentLoggedInUserId).updateChildValues(values) { (err, ref) in
             if let err = err {
                 completion(err)
                 return
             }
-            
             let values = [currentLoggedInUserId: 1]
             Database.database().reference().child("likeYourAcc").child(uid).updateChildValues(values) { (err, ref) in
                 if let err = err {
@@ -936,14 +1029,12 @@ extension Database {
     
     func unLikeUserAcc(withUID uid: String, completion: @escaping (Error?) -> ()) {
         guard let currentLoggedInUserId = Auth.auth().currentUser?.uid else { return }
-        
         Database.database().reference().child("YoulikeAcc").child(currentLoggedInUserId).child(uid).removeValue { (err, _) in
             if let err = err {
                 print("Failed to remove user from following:", err)
                 completion(err)
                 return
             }
-            
             Database.database().reference().child("likeYourAcc").child(uid).child(currentLoggedInUserId).removeValue(completionBlock: { (err, _) in
                 if let err = err {
                     print("Failed to remove user from followers:", err)

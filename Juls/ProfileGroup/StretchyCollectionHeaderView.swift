@@ -30,7 +30,7 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         }
     }
     
-    var message = ["Вам нравится аккаунт?","Вы хотите поднять рейтинг пользователю?","Лайк для него - рейтинг для вас","Возможно, он нуждается в вашей поддержке","Представьте что вы хороший человек", "Лайкни - если нравится", "Твой же рейтинг выше, помоги ему"]
+    var message = ["Вам нравится аккаунт?","Вы хотите поднять рейтинг пользователю?","Лайк для него - рейтинг для вас","Возможно, он нуждается в вашей поддержке","Представьте, что вы - хороший человек", "Лайкни - если нравится", "Твой же рейтинг выше, помоги ему"]
     
     weak var delegate: StretchyProtocol?
     
@@ -78,7 +78,7 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         let name = UILabel()
         name.textColor = UIColor.createColor(light: .black, dark: .white)
         name.shadowColor = UIColor.createColor(light: .gray, dark: .gray)
-        name.font = UIFont(name: "Futura-Bold", size: 14)
+        name.font = UIFont(name: "Futura-Bold", size: 12)
         name.shadowOffset = CGSize(width: 1, height: 1)
         name.clipsToBounds = true
         name.translatesAutoresizingMaskIntoConstraints = false

@@ -11,32 +11,12 @@ import Firebase
 
 class AllChatsTableViewCell: UITableViewCell {
     
-    var message: Message? {
-        didSet {
-            guard let message = message else { return }
-            self.lastMessage.text = message.text
-            self.dateMassage.text = message.creationDate.timeAgoDisplay()
-            self.profileImageView.loadImage(urlString: message.user.picture)
-            self.usernameLabel.text = message.user.username
-            
-            if message.isRead {
-                self.usernameLabel.font = UIFont(name: "Futura", size: 14)
-                self.lastMessage.font = UIFont.systemFont(ofSize: 13)
-                self.dateMassage.font = UIFont(name: "Futura", size: 10)
-            } else {
-                self.usernameLabel.font = UIFont(name: "Futura-Bold", size: 15)
-                self.lastMessage.font = UIFont.boldSystemFont(ofSize: 14)
-                self.dateMassage.font = UIFont(name: "Futura-Bold", size: 11)
-            }
-        }
-    }
-    
     let profileImageView: CustomImageView = {
         let pi = CustomImageView()
         pi.contentMode = .scaleAspectFill
         pi.layer.cornerRadius = 60/2
         pi.clipsToBounds = true
-        pi.image = UIImage(named: "Grey_full")
+        pi.image = UIImage(named: "Black")
         pi.backgroundColor = .gray
         pi.translatesAutoresizingMaskIntoConstraints = false
         return pi
@@ -101,5 +81,23 @@ class AllChatsTableViewCell: UITableViewCell {
             dateMassage.centerYAnchor.constraint(equalTo: lastMessage.centerYAnchor),
             dateMassage.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -10),
         ])
+    }
+    
+    func setupChats(_ message: Message) {
+        profileImageView.image = UIImage(named: "Black")
+        self.lastMessage.text = message.text
+        self.dateMassage.text = message.creationDate.timeAgoDisplay()
+        self.profileImageView.loadImage(urlString: message.user.picture)
+        self.usernameLabel.text = message.user.username
+        
+        if message.isRead {
+            self.usernameLabel.font = UIFont(name: "Futura", size: 14)
+            self.lastMessage.font = UIFont.systemFont(ofSize: 13)
+            self.dateMassage.font = UIFont(name: "Futura", size: 10)
+        } else {
+            self.usernameLabel.font = UIFont(name: "Futura-Bold", size: 15)
+            self.lastMessage.font = UIFont.boldSystemFont(ofSize: 14)
+            self.dateMassage.font = UIFont(name: "Futura-Bold", size: 11)
+        }
     }
 }

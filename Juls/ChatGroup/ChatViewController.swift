@@ -193,11 +193,13 @@ class ChatViewController: UIViewController {
         print("open Chat", username, "with", friendsUsername, "            ~~~~~JULS~~~~~")
         fetchChat()
         refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
+        navigationItem.largeTitleDisplayMode = .always
     }
     
     private func setupWillAppear() {
         addObserver()
         tabBarController?.tabBar.isHidden = true
+        navigationController?.navigationBar.isHidden = false
     }
     
     func fetchMessagesForRaitin() {
@@ -467,6 +469,52 @@ extension ChatViewController: UITableViewDataSource {
             cell.backgroundColor = .clear
             cell.messages = messages[indexPath.row]
             return cell
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let isComing = user?.uid == messages[indexPath.row].uid
+        if isComing {
+            // Create a swipe action for viewing the timestamp
+            let timestampAction = UIContextualAction(style: .normal, title: "", handler: { _,_, completionHandler in
+                completionHandler(true)
+            })
+            
+            // Set the color and image for the action
+            let message = messages[indexPath.row].creationDate
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "dd.MM.yyyy h:mm a"
+            let dateString = dateFormatter.string(from: message)
+            timestampAction.title = dateString
+            
+            // Return the swipe actions configuration with the timestamp action
+            let swipeConfig = UISwipeActionsConfiguration(actions: [timestampAction])
+            return swipeConfig
+        } else {
+            return UISwipeActionsConfiguration()
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let isComing = user?.uid != messages[indexPath.row].uid
+        if isComing {
+            let timestampAction = UIContextualAction(style: .normal, title: "", handler: { _,_, completionHandler in
+                completionHandler(true)
+            })
+            
+            // Set the color and image for the action
+//            timestampAction.image = UIImage(systemName: "clock")
+            let message = messages[indexPath.row].creationDate
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "dd.MM.yyyy h:mm a"
+            let dateString = dateFormatter.string(from: message)
+            timestampAction.title = dateString
+            
+            // Return the swipe actions configuration with the timestamp action
+            let swipeConfig = UISwipeActionsConfiguration(actions: [timestampAction])
+            return swipeConfig
+        } else {
+            return UISwipeActionsConfiguration()
         }
     }
 }

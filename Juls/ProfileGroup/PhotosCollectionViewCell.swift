@@ -43,9 +43,8 @@ class PhotosCollectionViewCell: UICollectionViewCell {
     }
     
     func configureCell(post: Post?) {
-        DispatchQueue.main.async {
-            guard let imageURL = post?.imageUrl else { return }
-            self.image.loadImage(urlString: imageURL)
-        }
+        image.image = UIImage(named: "Grey_full")
+        guard let imageURL = post?.imageUrl else { return }
+        self.image.loadImage(urlString: imageURL)
     }
 }

@@ -15,7 +15,7 @@ class CellIdTableViewCell: UITableViewCell {
         pi.layer.cornerRadius = 80/2
         pi.clipsToBounds = true
         pi.backgroundColor = .gray
-        pi.image = UIImage(named: "Grey_full")
+        pi.image = UIImage(named: "Black")
         pi.translatesAutoresizingMaskIntoConstraints = false
         return pi
     }()
@@ -54,6 +54,7 @@ class CellIdTableViewCell: UITableViewCell {
     }
     
     func configureTable(user: User?) {
+        profileImageView.image = UIImage(named: "Black")
         guard let profileImageUrl = user?.picture else { return }
         if profileImageUrl == "" {
             self.profileImageView.image = UIImage(named: "noimage")

@@ -8,299 +8,229 @@
 import Foundation
 import UIKit
 import Firebase
+import Gifu
 
 class MatchViewController: UIViewController {
     
     var user: User?
-    
-    private var tableView: UITableView = {
-        let table = UITableView(frame: .zero, style: .grouped)
-        table.translatesAutoresizingMaskIntoConstraints = false
-        table.alpha = 0.0
-        table.backgroundColor = .systemBackground
-        return table
-    }()
-    
-    private var imageUser: CustomImageView = {
-        let image = CustomImageView()
-        image.translatesAutoresizingMaskIntoConstraints = false
-        image.layer.cornerRadius = 150/2
-        image.alpha = 0.0
-        image.contentMode = .scaleAspectFill
-        image.clipsToBounds = true
-        return image
-    }()
-    
-    private let iwantLabel: UILabel = {
-        let i = UILabel()
-        i.translatesAutoresizingMaskIntoConstraints = false
-        i.text = "Я здесь чтобы..."
-        i.textColor = UIColor.createColor(light: .black, dark: .white)
-        i.shadowColor = UIColor.createColor(light: .gray, dark: .gray)
-        i.font = UIFont(name: "Futura-Bold", size: 16)
-        i.shadowOffset = CGSize(width: 1, height: 1)
-        i.alpha = 0.0
-        i.clipsToBounds = true
-        return i
-    }()
-    
-    lazy var loveLabel: UILabel = {
-        let love = UILabel()
-        let gesture = UITapGestureRecognizer()
-        gesture.addTarget(self, action: #selector(tapLove))
-        love.addGestureRecognizer(gesture)
-        love.translatesAutoresizingMaskIntoConstraints = false
-        love.text = "Влюбиться"
-        love.isUserInteractionEnabled = true
-        love.textColor = UIColor.createColor(light: .black, dark: .white)
-        love.shadowColor = UIColor.createColor(light: .gray, dark: .gray)
-        love.font = UIFont(name: "Futura-Bold", size: 20)
-        love.shadowOffset = CGSize(width: 1, height: 1)
-        love.alpha = 0.0
-        love.clipsToBounds = true
-        return love
-    }()
-    
-    private let friendLabel: UILabel = {
-        let friend = UILabel()
-        friend.translatesAutoresizingMaskIntoConstraints = false
-        friend.text = "Познакомиться"
-        friend.textColor = UIColor.createColor(light: .black, dark: .white)
-        friend.shadowColor = UIColor.createColor(light: .gray, dark: .gray)
-        friend.font = UIFont(name: "Futura-Bold", size: 18)
-        friend.shadowOffset = CGSize(width: 1, height: 1)
-        friend.alpha = 0.0
-        friend.clipsToBounds = true
-        return friend
-    }()
-    
-    private let talkLabel: UILabel = {
-        let friend = UILabel()
-        friend.translatesAutoresizingMaskIntoConstraints = false
-        friend.text = "Общаться"
-        friend.textColor = UIColor.createColor(light: .black, dark: .white)
-        friend.shadowColor = UIColor.createColor(light: .gray, dark: .gray)
-        friend.font = UIFont(name: "Futura-Bold", size: 18)
-        friend.shadowOffset = CGSize(width: 1, height: 1)
-        friend.alpha = 0.0
-        friend.clipsToBounds = true
-        return friend
-    }()
-    
-    private let otherLabel: UILabel = {
-        let friend = UILabel()
-        friend.translatesAutoresizingMaskIntoConstraints = false
-        friend.text = "Другое"
-        friend.textColor = UIColor.createColor(light: .black, dark: .white)
-        friend.shadowColor = UIColor.createColor(light: .gray, dark: .gray)
-        friend.font = UIFont(name: "Futura-Bold", size: 18)
-        friend.shadowOffset = CGSize(width: 1, height: 1)
-        friend.alpha = 0.0
-        friend.clipsToBounds = true
-        return friend
-    }()
-    
-    private let mainLabel: UILabel = {
-        let friend = UILabel()
-        friend.translatesAutoresizingMaskIntoConstraints = false
-        friend.text = "Juls Match"
-        friend.textColor = UIColor.createColor(light: .black, dark: .white)
-        friend.shadowColor = UIColor.createColor(light: .gray, dark: .gray)
-        friend.font = UIFont(name: "Futura-Bold", size: 30)
-        friend.shadowOffset = CGSize(width: 1, height: 1)
-        friend.alpha = 0.0
-        friend.clipsToBounds = true
-        return friend
-    }()
-    
-    private let imageOne: UIImageView = {
-        let image = UIImageView()
-        image.translatesAutoresizingMaskIntoConstraints = false
-        image.contentMode = .scaleAspectFill
-        image.alpha = 0.0
-        image.image = UIImage(named: "png1")
-        image.clipsToBounds = true
-        return image
-    }()
-    
-    private let imageTwo: UIImageView = {
-        let image = UIImageView()
-        image.translatesAutoresizingMaskIntoConstraints = false
-        image.contentMode = .scaleAspectFill
-        image.alpha = 0.0
-        image.image = UIImage(named: "png2")
-        image.clipsToBounds = true
-        return image
-    }()
-    
-    private let imageThree: UIImageView = {
-        let image = UIImageView()
-        image.translatesAutoresizingMaskIntoConstraints = false
-        image.contentMode = .scaleAspectFill
-        image.alpha = 0.0
-        image.image = UIImage(named: "png5")
-        image.clipsToBounds = true
-        return image
-    }()
-    
-    private let imageFour: UIImageView = {
-        let image = UIImageView()
-        image.translatesAutoresizingMaskIntoConstraints = false
-        image.contentMode = .scaleAspectFill
-        image.alpha = 0.0
-        image.image = UIImage(named: "png4")
-        image.clipsToBounds = true
-        return image
-    }()
+    var raiting: Raiting?
+    var users = [User]()
+    var startMatchView = StartMatchView()
+    var matchView = MatchView()
+    var matchUserView = MatchUserView()
+    var currentIndex = 0
+    var cgfloatTabBar: CGFloat?
+    var tumblerForTransitionLeftorRight: Bool = true
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemGray6
         title = "Match"
         setupDidLoad()
+        navigationItem.largeTitleDisplayMode = .never
     }
     
-    @objc func tapLove() {
-        UIView.animate(withDuration: 1) {
-            self.imageUser.transform = CGAffineTransform(translationX: 0, y: -600)
-            self.iwantLabel.transform = CGAffineTransform(translationX: 0, y: -600)
-            self.iwantLabel.alpha = 0.0
-        }
-        UIView.animate(withDuration: 0.5, delay: 0.5) {
-            self.loveLabel.transform = CGAffineTransform(translationX: 0, y: -900)
-            self.imageOne.transform = CGAffineTransform(translationX: 0, y: -900)
-            self.imageOne.alpha = 0.0
-        }
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        tabBarController?.tabBar.isHidden = false
+    }
+    
+    func showCurrentUser(users: [User]) {
+        matchView.imageUser.image = UIImage(named: "Black")
+        let currentUser = users[currentIndex]
+        matchView.imageUser.loadImage(urlString: currentUser.picture)
+        matchView.name.text = currentUser.name
+    }
+    
+    func showCurrentUserContinue(users: [User]) {
+        matchView.imageUser.image = UIImage(named: "Black")
+        let currentUser = users[currentIndex]
+        matchView.imageUser.loadImage(urlString: currentUser.picture)
+        matchView.name.text = currentUser.name
         
-        UIView.animate(withDuration: 0.5, delay: 0.7) {
-            self.friendLabel.transform = CGAffineTransform(translationX: 0, y: -900)
-            self.imageTwo.transform = CGAffineTransform(translationX: 0, y: -900)
-            self.mainLabel.transform = CGAffineTransform(translationX: 0, y: 100)
+        UIView.transition(with: matchView.imageUser, duration: 0.6, options: tumblerForTransitionLeftorRight ? .transitionFlipFromRight : .transitionFlipFromLeft) {
+            // код обновления внешнего вида карточки
         }
-        
-        UIView.animate(withDuration: 0.5, delay: 0.9) {
-            self.talkLabel.transform = CGAffineTransform(translationX: 0, y: -1200)
-            self.imageThree.transform = CGAffineTransform(translationX: 0, y: -1200)
+        UIView.animate(withDuration: 0.3, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 0.5) {
+            self.matchView.name.transform = CGAffineTransform(translationX: -150, y: 0)
         }
-        
-        UIView.animate(withDuration: 0.5, delay: 1.1) {
-            self.otherLabel.transform = CGAffineTransform(translationX: 0, y: -1400)
-            self.imageFour.transform = CGAffineTransform(translationX: 0, y: -1400)
+        UIView.animate(withDuration: 0.3, delay: 0.4, usingSpringWithDamping: 0.5, initialSpringVelocity: 0.5) {
+            self.matchView.name.transform = CGAffineTransform(translationX: 0, y: 0)
         }
     }
     
     func setupDidLoad() {
         fetchUser()
         layout()
+        startMatchView.delegate = self
+        matchView.delegate = self
     }
-    
-    func startAnimate() {
-        UIView.animate(withDuration: 1.5) {
-            self.imageUser.alpha = 1
-            self.imageUser.transform = CGAffineTransform(translationX: 0, y: -200)
-            self.iwantLabel.alpha = 1
-            self.iwantLabel.transform = CGAffineTransform(translationX: 0, y: -200)
-        }
-        UIView.animate(withDuration: 1, delay: 0.5) {
-            self.mainLabel.alpha = 1
-            
-            self.loveLabel.alpha = 1
-            self.friendLabel.alpha = 1
-            self.talkLabel.alpha = 1
-            self.otherLabel.alpha = 1
-            
-            self.imageOne.alpha = 1
-            self.imageTwo.alpha = 1
-            self.imageThree.alpha = 1
-            self.imageFour.alpha = 1
-            
-            self.imageThree.transform = CGAffineTransform(translationX: 0, y: -200)
-            self.imageTwo.transform = CGAffineTransform(translationX: 0, y: -200)
-            self.imageOne.transform = CGAffineTransform(translationX: 0, y: -200)
-            self.imageFour.transform = CGAffineTransform(translationX: 0, y: -200)
-            
-            self.loveLabel.transform = CGAffineTransform(translationX: 0, y: -200)
-            self.friendLabel.transform = CGAffineTransform(translationX: 0, y: -200)
-            self.talkLabel.transform = CGAffineTransform(translationX: 0, y: -200)
-            self.otherLabel.transform = CGAffineTransform(translationX: 0, y: -200)
-            
-            self.mainLabel.transform = CGAffineTransform(translationX: 0, y: -200)
-        }
-    }
-    
+        
     func layout() {
-        [tableView,imageUser,iwantLabel,imageOne,imageTwo,imageThree,imageFour,loveLabel,friendLabel,talkLabel,otherLabel,mainLabel].forEach { view.addSubview($0) }
+        matchView.alpha = 0
+        [matchView,startMatchView].forEach { view.addSubview($0) }
         
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            matchView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            matchView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            matchView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            matchView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             
-            imageUser.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            imageUser.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            imageUser.heightAnchor.constraint(equalToConstant: 150),
-            imageUser.widthAnchor.constraint(equalToConstant: 150),
-            
-            iwantLabel.topAnchor.constraint(equalTo: imageUser.bottomAnchor,constant: 15),
-            iwantLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            imageOne.topAnchor.constraint(equalTo: iwantLabel.bottomAnchor,constant: 50),
-            imageOne.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 30),
-            imageOne.heightAnchor.constraint(equalToConstant: 110),
-            imageOne.widthAnchor.constraint(equalToConstant: 150),
-            
-            imageTwo.topAnchor.constraint(equalTo: iwantLabel.bottomAnchor,constant: 70),
-            imageTwo.trailingAnchor.constraint(equalTo: view.trailingAnchor,constant: -20),
-            imageTwo.heightAnchor.constraint(equalToConstant: 110),
-            imageTwo.widthAnchor.constraint(equalToConstant: 180),
-            
-            imageThree.topAnchor.constraint(equalTo: imageOne.bottomAnchor,constant: 20),
-            imageThree.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 50),
-            imageThree.heightAnchor.constraint(equalToConstant: 110),
-            imageThree.widthAnchor.constraint(equalToConstant: 190),
-            
-            imageFour.topAnchor.constraint(equalTo: imageTwo.bottomAnchor,constant: 30),
-            imageFour.trailingAnchor.constraint(equalTo: view.trailingAnchor,constant: -30),
-            imageFour.heightAnchor.constraint(equalToConstant: 110),
-            imageFour.widthAnchor.constraint(equalToConstant: 150),
-            
-            loveLabel.centerXAnchor.constraint(equalTo: imageOne.centerXAnchor),
-            loveLabel.centerYAnchor.constraint(equalTo: imageOne.centerYAnchor),
-            loveLabel.heightAnchor.constraint(equalToConstant: 40),
-            
-            friendLabel.centerXAnchor.constraint(equalTo: imageTwo.centerXAnchor),
-            friendLabel.centerYAnchor.constraint(equalTo: imageTwo.centerYAnchor),
-            friendLabel.heightAnchor.constraint(equalToConstant: 40),
-            
-            talkLabel.centerYAnchor.constraint(equalTo: imageThree.centerYAnchor),
-            talkLabel.centerXAnchor.constraint(equalTo: imageThree.centerXAnchor),
-            talkLabel.heightAnchor.constraint(equalToConstant: 40),
-            
-            otherLabel.centerXAnchor.constraint(equalTo: imageFour.centerXAnchor),
-            otherLabel.centerYAnchor.constraint(equalTo: imageFour.centerYAnchor),
-            otherLabel.heightAnchor.constraint(equalToConstant: 40),
-            
-            mainLabel.topAnchor.constraint(equalTo: imageFour.bottomAnchor,constant: 40),
-            mainLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            mainLabel.heightAnchor.constraint(equalToConstant: 40)
+            startMatchView.topAnchor.constraint(equalTo: view.topAnchor),
+            startMatchView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            startMatchView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            startMatchView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
+    }
+    
+    func getGender(user: User) {
+        switch user.sex {
+        case "Female":
+            self.fetchUsersForGirls()
+        case "Male":
+            self.fetchUsersForBoys()
+        default:
+            print("no gender, but what???")
+        }
     }
     
     func fetchUser() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         Database.database().fetchUser(withUID: uid) { user in
+            self.user = user
             DispatchQueue.main.async {
-                self.user = user
                 if user.isActiveMatch {
-                    self.tableView.alpha = 1
-                    print("active Match")
+                    self.startMatchView.removeFromSuperview()
+                    print("active Match with \(user.username)")
+                    self.getGender(user: user)
+                    showOrAlpha(object: self.matchView, true)
                 } else {
-                    self.startAnimate()
-                    print("no active Match")
+                    self.startMatchView.user = user
+                    self.startMatchView.imageUser.loadImage(urlString: user.picture)
+                    self.startMatchView.startAnimate()
                 }
-                self.imageUser.loadImage(urlString: user.picture)
             }
         }
+    }
+    
+    func fetchUsersForBoys() {
+        Database.database().fetchUserForLoveBoys { users in
+            DispatchQueue.main.async {
+                self.users = users
+                self.showCurrentUser(users: users)
+            }
+        }
+    }
+    
+    func fetchUsersForGirls() {
+        Database.database().fetchUserForLoveGirls { users in
+            DispatchQueue.main.async {
+                self.users = users
+                self.showCurrentUser(users: users)
+                print(self.users.count)
+            }
+        }
+    }
+    
+    func addMatchUserView() {
+        matchUserView.user = users[currentIndex]
+        matchUserView.delegate = self
+        let currentUid = users[currentIndex].uid
+        Database.database().fetchRaitingUser(withUID: currentUid) { raiting in
+            self.raiting = raiting
+            self.matchUserView.raiting = raiting
+            self.view.addSubview(self.matchUserView)
+            
+            NSLayoutConstraint.activate([
+                self.matchUserView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
+                self.matchUserView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
+                self.matchUserView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+                self.matchUserView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor)
+            ])
+            showOrAlphaMatch(object: self.matchUserView, true)
+            showOrAlphaMatch(object: self.matchView, false)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: {
+                showAnimate(mainObject: self, firstObject: self.matchUserView.matchLabel, objectSecond: self.matchUserView.nameUserLabel, alphaFirst: self.matchUserView.closedButton, alphaSecond: self.matchUserView.writeButton,alphaThree: self.matchUserView.addFriendButton, alphaFour: self.matchUserView.userRaiting,animate: true)
+            })
+        }
+    }
+}
+
+extension MatchViewController: MatchUserViewProtocol {
+    func write() {
+        let chat = ChatViewController()
+        chat.userFriend = users[currentIndex]
+        chat.user = user
+        navigationController?.pushViewController(chat, animated: true)
+    }
+    
+    func addFriend() {
+        print("setup add Friend")
+    }
+    
+    func closed() {
+        showOrAlphaMatch(object: matchUserView, false)
+        showOrAlphaMatch(object: matchView, true)
+        showAnimate(mainObject: self, firstObject: matchUserView.matchLabel, objectSecond: matchUserView.nameUserLabel, alphaFirst: self.matchUserView.closedButton, alphaSecond: self.matchUserView.writeButton, alphaThree: self.matchUserView.addFriendButton, alphaFour: self.matchUserView.userRaiting,animate: false)
+        
+        self.currentIndex += 1
+        if self.currentIndex == self.users.count {
+            self.currentIndex = 0
+        }
+        showCurrentUserContinue(users: self.users)
+    }
+}
+
+extension MatchViewController: StartMatchProtocol {
+    func start() {
+        self.fetchUser()
+        print("start new LOVE story")
+    }
+}
+
+extension MatchViewController: MatchViewProtocol {
+    
+    func tapLike(completion: @escaping (Error?) -> Void) {
+        tumblerForTransitionLeftorRight = true
+        
+        guard let currentUserID = Auth.auth().currentUser?.uid else { return }
+        let likeValue = ["MatchLike/\(currentUserID)/\(users[currentIndex].uid)": "Like",
+                         "MatchGetLike/\(users[currentIndex].uid)/\(currentUserID)": "GetLike"]
+        Database.database().reference().updateChildValues(likeValue, withCompletionBlock: { error, _ in
+            if let error {
+                print("Error updating values: \(error.localizedDescription)")
+                completion(error)
+            } else {
+                print("Like successful!")
+                let matchLikeRef = Database.database().reference().child("MatchLike").child(self.users[self.currentIndex].uid)
+                let matchGetLikeRef = Database.database().reference().child("MatchGetLike").child(currentUserID)
+                matchLikeRef.observeSingleEvent(of: .value) { snapshot in
+                    if snapshot.hasChild(currentUserID), let getLikeValue = snapshot.childSnapshot(forPath: currentUserID).value as? String, getLikeValue == "Like" {
+                        matchGetLikeRef.observeSingleEvent(of: .value) { snapshot in
+                            if snapshot.hasChild(self.users[self.currentIndex].uid), let likeValue = snapshot.childSnapshot(forPath: self.users[self.currentIndex].uid).value as? String, likeValue == "GetLike" {
+                                print("It's a MATCH!!!!! \(self.user?.username ?? "") LOVE \(self.users[self.currentIndex].username) ❤️❤️❤️")
+                                self.addMatchUserView()
+                            }
+                        }
+                    } else {
+                        self.currentIndex += 1
+                        if self.currentIndex == self.users.count {
+                            self.currentIndex = 0
+                        }
+                        self.showCurrentUserContinue(users: self.users)
+                        completion(nil)
+                    }
+                }
+            }
+        })
+    }
+    
+    func tapDissLike() {
+        currentIndex -= 1
+        if currentIndex < 0 {
+            currentIndex = users.count - 1
+        }
+        tumblerForTransitionLeftorRight = false
+        showCurrentUserContinue(users: self.users)
     }
 }

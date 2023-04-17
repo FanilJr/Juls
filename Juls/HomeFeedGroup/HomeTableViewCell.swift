@@ -20,7 +20,7 @@ class HomeTableViewCell: UITableViewCell {
         let imageView = CustomImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
-        imageView.image = UIImage(named: "Grey_full")
+        imageView.image = UIImage(named: "Black")
         imageView.layer.cornerRadius = 50/2
         imageView.backgroundColor = .gray
         imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -51,7 +51,7 @@ class HomeTableViewCell: UITableViewCell {
         let imageView = CustomImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.backgroundColor = .gray
-        imageView.image = UIImage(named: "Grey_full")
+        imageView.image = UIImage(named: "Black")
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.clipsToBounds = true
         return imageView
@@ -109,20 +109,6 @@ class HomeTableViewCell: UITableViewCell {
         name.font = UIFont(name: "Futura", size: 12)
         name.translatesAutoresizingMaskIntoConstraints = false
         name.textColor = UIColor.createColor(light: .black, dark: .white)
-        name.backgroundColor = .clear
-        return name
-    }()
-    
-    lazy var commentCountLabel: UILabel = {
-        let name = UILabel()
-        name.font = UIFont(name: "Futura", size: 13)
-        name.translatesAutoresizingMaskIntoConstraints = false
-        name.textColor = .systemGray
-        name.text = "Комментарии"
-        let gesture = UITapGestureRecognizer()
-        gesture.addTarget(self, action: #selector(tapComment))
-        name.addGestureRecognizer(gesture)
-        name.isUserInteractionEnabled = true
         name.backgroundColor = .clear
         return name
     }()
@@ -241,6 +227,9 @@ class HomeTableViewCell: UITableViewCell {
     }
     
     func configureHomeTable(post: Post?) {
+        postImage.image = UIImage(named: "Black")
+        authorImage.image = UIImage(named: "Black")
+        
         guard let postImageUrl = post?.imageUrl else { return }
         guard let authorImageUrl = post?.user.picture else { return }
         guard let likes = post?.likes else { return }

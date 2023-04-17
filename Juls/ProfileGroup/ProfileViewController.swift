@@ -148,7 +148,6 @@ class ProfileViewController: UIViewController {
         self.navigationController?.setNavigationBarHidden(false, animated: false)
         self.navigationController?.navigationBar.prefersLargeTitles = true
         self.navigationItem.largeTitleDisplayMode = .automatic
-        
         setupTableView()
     }
     
@@ -472,26 +471,29 @@ extension ProfileViewController {
     
     func saveChanges() {
         guard let userId = Auth.auth().currentUser?.uid else { return }
-        let imageName = NSUUID().uuidString
-        let storedImage = Storage.storage().reference().child("profile_image").child(userId).child(imageName)
-        
-        if let uploadData = header?.userImage.image?.jpegData(compressionQuality: 0.1) {
-            storedImage.putData(uploadData, metadata: nil) { metadata, error in
-                if let error {
-                    print("error upload", error)
-                    return
-                }
-                storedImage.downloadURL(completion: { url, error in
+            let imageName = NSUUID().uuidString
+            let storedImage = Storage.storage().reference().child("profile_image").child(userId).child(imageName)
+            
+            if let originalImage = header?.userImage.image, let compressedData = originalImage.jpegData(compressionQuality: 0.1) {
+                let resizedImage = originalImage.resize(to: CGSize(width: (header?.userImage.image?.size.width ?? 0.0) / 3.5, height: (header?.userImage.image?.size.height ?? 0.0) / 3.5))
+                let resizedData = resizedImage?.jpegData(compressionQuality: 0.1)
+                
+                storedImage.putData(resizedData ?? compressedData, metadata: nil) { metadata, error in
                     if let error {
-                        print(error)
+                        print("error upload", error)
                         return
                     }
-                    if let urlText = url?.absoluteString {
-                        Database.database().reference().child("users").child(userId).updateChildValues(["picture" : urlText]) { error, ref in
-                            if let error {
-                                print(error)
-                                return
-                            }
+                    storedImage.downloadURL(completion: { url, error in
+                        if let error {
+                            print(error)
+                            return
+                        }
+                        if let urlText = url?.absoluteString {
+                            Database.database().reference().child("users").child(userId).updateChildValues(["picture" : urlText]) { error, ref in
+                                if let error {
+                                    print(error)
+                                    return
+                                }
                             print("succes download Photo in Firebase Library")
                             waitingSpinnerEnable(activity: self.spinnerView, active: false)
                             self.view.addSubview(self.saveView)
@@ -802,9 +804,8 @@ extension ProfileViewController: UICollectionViewDataSource {
             postVC.rating = rating
             postVC.delegate = self
             self.navigationController?.pushViewController(postVC, animated: true)
-            
         default:
-            print(indexPath.section)
+            collectionView.selectionFollowsFocus = true
         }
     }
     

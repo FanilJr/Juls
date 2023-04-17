@@ -241,7 +241,7 @@ class LoginView: UIView {
             self.registerButton.isEnabled = true
             guard let uid = user?.user.uid else { return }
             
-            let allValues = ["username": nicknameText, "name": "","sex": "","secondName": "","picture": "", "age": Int(), "status": "", "life status": "", "official": Bool()]
+            let allValues = ["username": nicknameText, "name": "","sex": "","secondName": "","picture": "", "age": Int(), "status": "", "life status": "", "official": Bool(), "isActiveMatch": Bool()]
             let values = [uid: allValues]
             
             Database.database().reference().child("users").updateChildValues(values) { error, ref in
@@ -249,7 +249,7 @@ class LoginView: UIView {
                     print("failed ooooops", error)
                     return
                 }
-                let allValues = ["rating": 0.0,"commentsRating": 0.0,"postsRating": 0.0,"userProfileRating": 0.0,"likeRating": 0.0,"timeRating": 0.0,"messagesRating": 0.0,"getComments": 0.0,"getMessages": 0.0]
+                let allValues = ["rating": 0.0,"commentsRating": 0.0,"postsRating": 0.0,"likeYouUserAcc": 0.0,"likeYourAcc": 0.0,"messagesRating": 0.0,"getComments": 0.0,"getMessages": 0.0,"followersRating": 0.0,"playGameCount": 0.0]
                 let values = [uid: allValues]
                 Database.database().reference().child("rating").updateChildValues(values) { error, ref in
                     if let error {

@@ -53,7 +53,7 @@ class HomeViewController: UIViewController {
         tableView.separatorStyle = .none
         tableView.backgroundView = HomeEmptyStateView()
         tableView.refreshControl = refreshControler
-        tableView.register(StorysTableViewCell.self, forCellReuseIdentifier: "StorysTableViewCell")
+        tableView.register(BestRatingPeopleViewCell.self, forCellReuseIdentifier: "BestRatingPeopleViewCell")
         tableView.register(HomeTableViewCell.self, forCellReuseIdentifier: "HomeTableViewCell")
         return tableView
     }()
@@ -102,8 +102,6 @@ class HomeViewController: UIViewController {
     fileprivate func fetchAllPosts() {
         fetchUserForImageBack()
         showEmptyStateViewIfNeeded()
-        
-        //MARK: helping ChatGPT :/
         Database.database().fetchFeedPosts { posts in
             DispatchQueue.main.async {
                 self.tableView.refreshControl?.endRefreshing()
@@ -161,34 +159,66 @@ class HomeViewController: UIViewController {
 extension HomeViewController: UITableViewDataSource {
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return 2
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return posts.count
+        switch section {
+        case 0:
+            return 1
+        case 1:
+            return posts.count
+        default:
+            return 0
+        }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
+        switch indexPath.section {
+        case 0:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "BestRatingPeopleViewCell", for: indexPath) as! BestRatingPeopleViewCell
+            cell.selectionStyle = .none
+            cell.backgroundColor = .clear
+            cell.fetchUsers()
+            cell.delegate = self
+            return cell
+        case 1:
             let cell = tableView.dequeueReusableCell(withIdentifier: "HomeTableViewCell", for: indexPath) as! HomeTableViewCell
-            cell.selectionStyle = UITableViewCell.SelectionStyle.none
+            cell.selectionStyle = .none
             if indexPath.row < posts.count {
                 cell.configureHomeTable(post: posts[indexPath.row])
             }
             cell.delegate = self
             cell.backgroundColor = .clear
             return cell
+        default:
+            return UITableViewCell()
+        }
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        CommentViewController.showComment(self, post: posts[indexPath.row])
+        switch indexPath.section {
+        case 0:
+            print(indexPath)
+        case 1:
+            CommentViewController.showComment(self, post: posts[indexPath.row])
+        default:
+            tableView.cellForRow(at: indexPath)?.selectionStyle = .none
+        }
     }
 }
 
 extension HomeViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UITableView.automaticDimension
+        switch indexPath.section {
+        case 0:
+            return UITableView.automaticDimension
+        case 1:
+            return UITableView.automaticDimension
+        default:
+            return 200
+        }
     }
 }
 
@@ -234,6 +264,24 @@ extension HomeViewController: HomeTableDelegate {
                     print(post.likes)
                     self.tableView.reloadRows(at: [indexPath], with: .automatic)
                 }
+            }
+        }
+    }
+}
+
+extension HomeViewController: BestRatingPeopleProtocol {
+    func getRating(user: User) {
+        let ratingVC = RatingViewController()
+        Database.database().fetchRaitingUser(withUID: user.uid) { rating in
+            DispatchQueue.main.async {
+                ratingVC.rating = rating
+                if let sheet = ratingVC.sheetPresentationController {
+                    sheet.detents = [.medium()]
+                    sheet.prefersScrollingExpandsWhenScrolledToEdge = false
+                    sheet.preferredCornerRadius = 25
+                    sheet.prefersGrabberVisible = true
+                }
+                self.present(ratingVC, animated: true)
             }
         }
     }

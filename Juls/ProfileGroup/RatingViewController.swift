@@ -41,7 +41,7 @@ class RatingViewController: UIViewController {
             self.getYourLikeeCount.text = "\(Int(progressLikeYourAcc.progress * 100))/100"
             self.followersCount.text = "\(Int(progressFollowers.progress * 100))/100"
             self.postsCount.text = "\(Int(progressPostsRating.progress * 10 * 2))/20"
-            self.gameCount.text = "\(Int(progressPlayGameCount.progress * 10))/5"
+            self.gameCount.text = "\(Int(progressPlayGameCount.progress * 10))/10"
             
             [progressComments,progressPostsRating,progressLikeYouUserAcc,progressMessages,progressGetComments,progressGetMessages,progressFollowers,progressLikeYourAcc,progressPlayGameCount].forEach { progress in
                 if progress.progress == 1 {
@@ -87,7 +87,13 @@ class RatingViewController: UIViewController {
                     print(error)
                     return
                 }
-                print("succes download rating in Firebase Library")
+                Database.database().reference().child("users").child(userId).updateChildValues(["rating": result]) { error, _ in
+                    if let error {
+                        print(error)
+                        return
+                    }
+                    print("succes download rating in Firebase Library")
+                }
             }
         }
     }

@@ -9,14 +9,11 @@ import Foundation
 
 final class LoginViewModel {
     var showProfileVc: (() -> Void)?
-    var showRegistrationVc: (() -> Void)?
 
     func send(_ action: Action){
         switch action {
         case .showProfileVc:
             showProfileVc?()
-        case .showRegistrationVc:
-            showRegistrationVc?()
         }
     }
 }
@@ -24,6 +21,5 @@ final class LoginViewModel {
 extension LoginViewModel {
     enum Action {
         case showProfileVc
-        case showRegistrationVc
     }
 }

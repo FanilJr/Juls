@@ -157,7 +157,7 @@ extension MessagesViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "AllChatsTableViewCell", for: indexPath) as! AllChatsTableViewCell
         cell.backgroundColor = .clear
-        cell.message = filteredMessage[indexPath.row]
+        cell.setupChats(filteredMessage[indexPath.row])
         cell.selectionStyle = UITableViewCell.SelectionStyle.none
         return cell
     }

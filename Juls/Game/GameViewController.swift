@@ -7,44 +7,52 @@
 
 import Foundation
 import UIKit
+import Firebase
 
 class GameViewController: UIViewController {
     
-    private let waitLabel: UILabel = {
-        let i = UILabel()
-        i.translatesAutoresizingMaskIntoConstraints = false
-        i.text = "В разработке..."
-        i.textColor = UIColor.createColor(light: .black, dark: .white)
-        i.shadowColor = UIColor.createColor(light: .gray, dark: .gray)
-        i.font = UIFont(name: "Futura-Bold", size: 25)
-        i.shadowOffset = CGSize(width: 1, height: 1)
-        i.alpha = 0.0
-        i.clipsToBounds = true
-        return i
-    }()
+    var user: User?
+    var gameStartView = GameStartView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemGray6
-        title = "Game"
-        layout()
+        setupDidLoad()
     }
     
-    func animate() {
-        UIView.animate(withDuration: 1) {
-            self.waitLabel.alpha = 1
-            self.waitLabel.transform = CGAffineTransform(translationX: 0, y: -100)
+    func setupDidLoad() {
+        view.backgroundColor = .systemGray6
+        title = "Game"
+        gameStartView.delegate = self
+        layout()
+        fetchUser()
+    }
+    
+    func fetchUser() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        Database.database().fetchUser(withUID: uid) { user in
+            DispatchQueue.main.async {
+                self.user = user
+                self.gameStartView.user = user
+                self.gameStartView.imageUser.loadImage(urlString: user.picture)
+                self.gameStartView.startAnimate()
+            }
         }
     }
     
     func layout() {
-        view.addSubview(waitLabel)
+        [gameStartView].forEach { view.addSubview($0) }
         
         NSLayoutConstraint.activate([
-            waitLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            waitLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor,constant: 100)
+            gameStartView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            gameStartView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            gameStartView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            gameStartView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
-        
-        self.animate()
+    }
+}
+
+extension GameViewController: GameStartProtocol {
+    func start() {
+        print("start Game")
     }
 }

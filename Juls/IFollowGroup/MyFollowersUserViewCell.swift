@@ -15,7 +15,7 @@ class MyFollowersUserViewCell: UITableViewCell {
         let pi = CustomImageView()
         pi.contentMode = .scaleAspectFill
         pi.layer.cornerRadius = 60/2
-        pi.image = UIImage(named: "Grey_full")
+        pi.image = UIImage(named: "Black")
         pi.clipsToBounds = true
         pi.backgroundColor = .gray
         pi.translatesAutoresizingMaskIntoConstraints = false
@@ -55,9 +55,10 @@ class MyFollowersUserViewCell: UITableViewCell {
     }
     
     func configureTable(user: User?) {
+        profileImageView.image = UIImage(named: "Black")
         guard let profileImageUrl = user?.picture else { return }
         if profileImageUrl == "" {
-            self.profileImageView.image = UIImage(named: "noimage")
+            self.profileImageView.image = UIImage(named: "Black")
         } else {
             DispatchQueue.main.async {
                 self.profileImageView.loadImage(urlString: profileImageUrl)
