@@ -10,6 +10,7 @@ import UIKit
 import Firebase
 
 class CommentViewController: UIViewController {
+    
     var myUserComment: User?
     var post: Post?
     var rating: Raiting?
@@ -17,6 +18,8 @@ class CommentViewController: UIViewController {
     var comments = [Comment]()
     var headerComment = HeaderCommment()
     var commentKeyArray = [String]()
+    var currentIndex = 0
+    var ratingView = RatingView()
     private let nc = NotificationCenter.default
     
     var fetchCommentsForRaitin: Bool = false
@@ -225,6 +228,7 @@ class CommentViewController: UIViewController {
                             print(error)
                             return
                         }
+                        self.animateRating()
                         print("succes update commentsRaiting in Firebase Library + 0.01")
                         Database.database().reference().child("rating").child(userId).updateChildValues(["getComments" : getResult]) { error, _ in
                             if let error {
@@ -235,7 +239,6 @@ class CommentViewController: UIViewController {
                         }
                     }
                 }
-                
 
                 print("success insert comment:", textComment)
                 self.textfield.text = ""
@@ -271,6 +274,21 @@ class CommentViewController: UIViewController {
         tableView.contentInset.bottom = .zero
         tableView.verticalScrollIndicatorInsets = .zero
         self.containerView.transform = CGAffineTransform(translationX: 0, y: 0)
+    }
+    
+    func animateRating() {
+        print("ANIMATE")
+        view.addSubview(ratingView)
+        ratingView.rating.text = "+ 0.01"
+        
+        NSLayoutConstraint.activate([
+            ratingView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            ratingView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            ratingView.heightAnchor.constraint(equalTo: view.widthAnchor),
+            ratingView.widthAnchor.constraint(equalTo: view.widthAnchor),
+        ])
+        animateElementRating(object: ratingView, animate: true, duration: 0.8, delay: 0, yTransform: -200, xTransform: 0)
+        animateElementRating(object: ratingView, animate: false, duration: 0.5, delay: 1, yTransform: 0, xTransform: 0)
     }
     
     func setupLayout() {

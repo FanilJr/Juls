@@ -229,7 +229,7 @@ extension Database {
             guard let postDictionary = snapshot.value as? [String: Any] else { return }
             
             Database.database().fetchUser(withUID: uid, completion: { (user) in
-                var post = Post(user: user, dictionary: postDictionary)
+                let post = Post(user: user, dictionary: postDictionary)
                 post.id = postId
                 
                 //check likes
@@ -445,6 +445,27 @@ extension Storage {
         })
     }
     
+    func uploadImageForMessage(image: UIImage, filename: String, completion: @escaping (String) -> ()) {
+        guard let uploadData = image.jpegData(compressionQuality: 0.1) else { return } //changed from 0.5
+        
+        let storageRef = Storage.storage().reference().child("message_images").child(filename)
+        storageRef.putData(uploadData, metadata: nil, completion: { (_, err) in
+            if let err = err {
+                print("Failed to upload post image:", err)
+                return
+            }
+            
+            storageRef.downloadURL(completion: { (downloadURL, err) in
+                if let err = err {
+                    print("Failed to obtain download url for post image:", err)
+                    return
+                }
+                guard let postImageUrl = downloadURL?.absoluteString else { return }
+                completion(postImageUrl)
+            })
+        })
+    }
+    
     func uploadSongToFirebase(fileURL: URL) {
         let storageRef = Storage.storage().reference()
         let songRef = storageRef.child("songs/\(fileURL.lastPathComponent)")
@@ -485,42 +506,43 @@ extension Storage {
 extension Database {
     func pushMessageWithChatId(userUID uid: String, userFriendUID uidFriend: String, textMessage text: String, completion: @escaping (Error?) -> ()) {
             
-            let values = ["message": text, "creationDate": Date().timeIntervalSince1970, "uid": uid, "isRead": false] as [String: Any]
+        let valuesForMessages = ["message": text, "creationDate": Date().timeIntervalSince1970, "uid": uid] as [String: Any]
+        let valuesForLastMessage = ["message": text, "creationDate": Date().timeIntervalSince1970, "uid": uid, "isRead": false] as [String: Any]
             
-            let lastMessageRef = Database.database().reference().child("lastMessage")
-            let messageRef = Database.database().reference().child("messages")
+        let lastMessageRef = Database.database().reference().child("lastMessage")
+        let messageRef = Database.database().reference().child("messages")
             
-            let group = DispatchGroup()
-            var error: Error?
+        let group = DispatchGroup()
+        var error: Error?
             
-            group.enter()
-            lastMessageRef.child(uid).child(uidFriend).updateChildValues(values) { err, _ in
-                error = err
-                group.leave()
-            }
-            
-            group.enter()
-            lastMessageRef.child(uidFriend).child(uid).updateChildValues(values) { err, _ in
-                error = error ?? err
-                group.leave()
-            }
-            
-            group.enter()
-            messageRef.child(uid).child(uidFriend).childByAutoId().updateChildValues(values) { err, _ in
-                error = error ?? err
-                group.leave()
-            }
-            
-            group.enter()
-            messageRef.child(uidFriend).child(uid).childByAutoId().updateChildValues(values) { err, _ in
-                error = error ?? err
-                group.leave()
-            }
-            
-            group.notify(queue: .main) {
-                completion(error)
-            }
+        group.enter()
+        lastMessageRef.child(uid).child(uidFriend).updateChildValues(valuesForLastMessage) { err, _ in
+            error = err
+            group.leave()
         }
+            
+        group.enter()
+        lastMessageRef.child(uidFriend).child(uid).updateChildValues(valuesForLastMessage) { err, _ in
+            error = error ?? err
+            group.leave()
+        }
+            
+        group.enter()
+        messageRef.child(uid).child(uidFriend).childByAutoId().updateChildValues(valuesForMessages) { err, _ in
+            error = error ?? err
+            group.leave()
+        }
+            
+        group.enter()
+        messageRef.child(uidFriend).child(uid).childByAutoId().updateChildValues(valuesForMessages) { err, _ in
+            error = error ?? err
+            group.leave()
+        }
+            
+        group.notify(queue: .main) {
+            completion(error)
+        }
+    }
 
     
     func fetchMessageWithChatId(userUID uid: String, userFriendUID uidFriend: String, completion: @escaping ([Message]) -> ()) {

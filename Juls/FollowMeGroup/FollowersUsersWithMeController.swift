@@ -14,7 +14,6 @@ class FollowersUsersWithMeController: UIViewController {
     var user: User?
     var filteredUsers = [User]()
     var users = [User]()
-    let juls = JulsView()
     var refreshControler = UIRefreshControl()
     
     private let spinnerView: UIActivityIndicatorView = {

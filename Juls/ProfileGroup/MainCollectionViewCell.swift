@@ -10,7 +10,6 @@ import UIKit
 import Firebase
 
 protocol MainCollectionDelegate: AnyObject {
-    func editInfo()
     func getUsersIFollow()
     func getUsersFollowMe()
     func tapPosts(for cell: MainCollectionViewCell)
@@ -85,15 +84,6 @@ class MainCollectionViewCell: UICollectionViewCell {
         return nothing
     }()
     
-    private lazy var editButton: UIButton = {
-        let button = UIButton()
-        button.tintColor = UIColor.createColor(light: .black, dark: .white)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.menu = addMenuItems()
-        button.showsMenuAsPrimaryAction = true
-        return button
-    }()
-    
     lazy var iFollowButton: UIButton = {
         let button = UIButton()
         button.setTitle("-", for: .normal)
@@ -148,14 +138,6 @@ class MainCollectionViewCell: UICollectionViewCell {
     
     @objc func getUsersIFollow() {
         delegate?.getUsersIFollow()
-    }
-    
-    private func addMenuItems() -> UIMenu {
-        let changeInfo = UIAction(title: "Редактировать инфо",image: UIImage(systemName: "person.fill.viewfinder")) { _ in
-            self.delegate?.editInfo()
-        }
-        let menu = UIMenu(title: "Выберите действие", children: [changeInfo])
-        return menu
     }
     
     func setupCell() {

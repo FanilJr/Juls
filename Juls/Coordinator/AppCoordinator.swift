@@ -19,7 +19,7 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
         static let newsImageName: String = "newspaper.circle"
         static let profileImageName: String = "person.circle"
         static let searchImageName: String = "magnifyingglass.circle"
-        static let ribbonImageName: String = "house.circle"
+        static let homeImageName: String = "house.circle"
         static let matchImageName: String = "heart.circle"
         static let gameImageName: String = "trophy.circle"
     }
@@ -28,7 +28,7 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
         static let newsImageName: String = "newspaper.circle.fill"
         static let profileImageName: String = "person.circle.fill"
         static let searchImageName: String = "magnifyingglass.circle.fill"
-        static let ribbonImageName: String = "house.circle.fill"
+        static let homeImageName: String = "house.circle.fill"
         static let matchImageName: String = "heart.circle.fill"
         static let gameImageName: String = "trophy.circle.fill"
     }
@@ -58,11 +58,6 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
     
     private func settingsViewControllers() -> [UIViewController] {
         
-        //MARK: NEWS
-//        let newsVc = viewControllerFactory.viewController(for: .news)
-//        let navNewsVC = createNavController(for: newsVc, title: String("Новости"), image: UIImage(systemName: Constants.newsImageName)!, selectImage: UIImage(systemName: ConstantsSelect.newsImageName)!)
-//        let newsCoordinator = NewsCoordinator(navigationController: navNewsVC, viewControllerFactory: viewControllerFactory)
-        
         //MARK: MATCH
         let matchVc = viewControllerFactory.viewController(for: .match)
         let navMatchVC = createNavController(for: matchVc, title: String("Match"), image: UIImage(systemName: Constants.matchImageName)!, selectImage: UIImage(systemName: ConstantsSelect.matchImageName)!)
@@ -80,18 +75,16 @@ final class AppCoordinator: BaseCoordinator, Coordinator {
         
         //MARK: HOME
         let homeVC = viewControllerFactory.viewController(for: .home)
-        let navHomeVC = createNavController(for: homeVC, title: String("Лента"), image: UIImage(systemName: Constants.ribbonImageName)!, selectImage: UIImage(systemName: ConstantsSelect.ribbonImageName) ?? UIImage())
+        let navHomeVC = createNavController(for: homeVC, title: String("Лента"), image: UIImage(systemName: Constants.homeImageName)!, selectImage: UIImage(systemName: ConstantsSelect.homeImageName) ?? UIImage())
         let homeCoordinator = HomeCoordinator(navigationController: navHomeVC, viewControllerFactory: viewControllerFactory)
 
         addDependency(searchCoordinator)
         addDependency(homeCoordinator)
-//        addDependency(newsCoordinator)
         addDependency(matchCoordinator)
         addDependency(gameCoordinator)
 
         searchCoordinator.start()
         homeCoordinator.start()
-//        newsCoordinator.start()
         matchCoordinator.start()
         gameCoordinator.start()
         

@@ -30,8 +30,6 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
         }
     }
     
-    var message = ["Вам нравится аккаунт?","Вы хотите поднять рейтинг пользователю?","Лайк для него - рейтинг для вас","Возможно, он нуждается в вашей поддержке","Представьте, что вы - хороший человек", "Лайкни - если нравится", "Твой же рейтинг выше, помоги ему"]
-    
     weak var delegate: StretchyProtocol?
     
     lazy var progressBar: UISlider = {
@@ -173,7 +171,7 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
                     print(error)
                     return
                 }
-                showOrAlpha(object: self.likeForRatingButton, true)
+                showOrAlpha(object: self.likeForRatingButton, true, 0.1)
                 print("succes like userAcc: ", self.user?.username ?? "")
                 self.likeForRatingButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100x"), for: .normal)
             }
@@ -183,7 +181,7 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
                     print(error)
                     return
                 }
-                showOrAlpha(object: self.likeForRatingButton, true)
+                showOrAlpha(object: self.likeForRatingButton, true, 0.1)
                 print("succes unlike userAcc: ", self.user?.username ?? "")
                 self.likeForRatingButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100xWhite"), for: .normal)
             }
@@ -199,7 +197,7 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
                     print(error)
                     return
                 }
-                showOrAlpha(object: self.followButton, true)
+                showOrAlpha(object: self.followButton, true, 0.1)
                 print("succes followed user: ", self.user?.username ?? "")
                 self.followButton.setBackgroundImage(UIImage(named: "person.crop.circle.fill.badge.checkmark@20x"), for: .normal)
             }
@@ -209,7 +207,7 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
                     print(error)
                     return
                 }
-                showOrAlpha(object: self.followButton, true)
+                showOrAlpha(object: self.followButton, true, 0.1)
                 print("succeful unfollow user: ", self.user?.username ?? "")
                 self.followButton.setBackgroundImage(UIImage(named: "person.crop.circle.fill.badge.plus@20x"), for: .normal)
             }
@@ -217,6 +215,9 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
     }
     
     func checkUserFollow() {
+        
+        let message = ["Вам нравится аккаунт?","Вы хотите поднять рейтинг пользователю?","Лайк для него - рейтинг для вас","Возможно, он нуждается в вашей поддержке","Представьте, что вы - хороший человек", "Лайкни - если нравится", "Твой же рейтинг выше, помоги ему"]
+        
         guard let myId = Auth.auth().currentUser?.uid else { return }
         guard let userId = user?.uid else { return }
         
@@ -234,7 +235,7 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
                 self.likeForRatingLabel.text = ""
             } else {
                 self.likeForRatingButton.setBackgroundImage(UIImage(named: "heart.circle.fill@100xWhite"), for: .normal)
-                self.likeForRatingLabel.text = self.message.randomElement()
+                self.likeForRatingLabel.text = message.randomElement()
             }
         }
     }

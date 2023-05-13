@@ -14,7 +14,6 @@ class MyFollowersUserViewController: UIViewController {
     var user: User?
     var users: [User] = []
     var filteredUsers: [User] = []
-    let juls = JulsView()
     var refreshControler = UIRefreshControl()
     
     var searchController: UISearchController = {

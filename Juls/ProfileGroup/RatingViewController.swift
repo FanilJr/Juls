@@ -16,9 +16,7 @@ class RatingViewController: UIViewController {
             guard let commentsRating = rating?.commentsRating else { return }
             guard let postsRating = rating?.postsRating else { return }
             guard let likeYouUserAcc = rating?.likeYouUserAcc else { return }
-            guard let messageRating = rating?.messagesRating else { return }
             guard let getCommentsRating = rating?.getCommentsRating else { return }
-            guard let getMessagesRating = rating?.getMessagesRating else { return }
             guard let followersRating = rating?.followersRating else { return }
             guard let likeYourAcc = rating?.likeYourAcc else { return }
             guard let playGameCount = rating?.playGameCount else { return }
@@ -26,30 +24,26 @@ class RatingViewController: UIViewController {
             progressComments.progress = Float(commentsRating)
             progressPostsRating.progress = Float(postsRating)
             progressLikeYouUserAcc.progress = Float(likeYouUserAcc)
-            progressMessages.progress = Float(messageRating)
             progressGetComments.progress = Float(getCommentsRating)
-            progressGetMessages.progress = Float(getMessagesRating)
             progressFollowers.progress = Float(followersRating)
             progressLikeYourAcc.progress = Float(likeYourAcc)
             progressPlayGameCount.progress = Float(playGameCount)
             
             self.commentCount.text = "\(Int(progressComments.progress * 100))/100"
-            self.messageCount.text = "\(Int(progressMessages.progress * 10))/10"
             self.likeUserCount.text = "\(Int(progressLikeYouUserAcc.progress * 100))/100"
             self.getCommentCount.text = "\(Int(progressGetComments.progress * 100))/100"
-            self.getMessageCount.text = "\(Int(progressGetMessages.progress * 10))/10"
             self.getYourLikeeCount.text = "\(Int(progressLikeYourAcc.progress * 100))/100"
             self.followersCount.text = "\(Int(progressFollowers.progress * 100))/100"
             self.postsCount.text = "\(Int(progressPostsRating.progress * 10 * 2))/20"
             self.gameCount.text = "\(Int(progressPlayGameCount.progress * 10))/10"
             
-            [progressComments,progressPostsRating,progressLikeYouUserAcc,progressMessages,progressGetComments,progressGetMessages,progressFollowers,progressLikeYourAcc,progressPlayGameCount].forEach { progress in
+            [progressComments,progressPostsRating,progressLikeYouUserAcc,progressGetComments,progressFollowers,progressLikeYourAcc,progressPlayGameCount].forEach { progress in
                 if progress.progress == 1 {
                     progress.progressTintColor = #colorLiteral(red: 0.4666666687, green: 0.7647058964, blue: 0.2666666806, alpha: 1)
                 }
             }
             
-            let value = progressPostsRating.progress + progressComments.progress + progressLikeYouUserAcc.progress + progressMessages.progress + progressGetComments.progress + progressGetMessages.progress + progressFollowers.progress + progressLikeYourAcc.progress + progressPlayGameCount.progress
+            let value = progressPostsRating.progress + progressComments.progress + progressLikeYouUserAcc.progress + progressGetComments.progress + progressFollowers.progress + progressLikeYourAcc.progress + progressPlayGameCount.progress
             
             let str = String(format: "%.3f", value)
             let result: Double = Double(str)!
@@ -126,21 +120,7 @@ class RatingViewController: UIViewController {
         return progress
     }()
     
-    private let progressMessages: UIProgressView = {
-        let progress = UIProgressView()
-        progress.setProgress(0, animated: false)
-        progress.translatesAutoresizingMaskIntoConstraints = false
-        return progress
-    }()
-    
     private let progressGetComments: UIProgressView = {
-        let progress = UIProgressView()
-        progress.setProgress(0, animated: false)
-        progress.translatesAutoresizingMaskIntoConstraints = false
-        return progress
-    }()
-    
-    private let progressGetMessages: UIProgressView = {
         let progress = UIProgressView()
         progress.setProgress(0, animated: false)
         progress.translatesAutoresizingMaskIntoConstraints = false
@@ -252,36 +232,10 @@ class RatingViewController: UIViewController {
         return i
     }()
     
-    private let messagesOfUser: UILabel = {
-        let i = UILabel()
-        i.translatesAutoresizingMaskIntoConstraints = false
-        i.text = "Сообщения"
-        i.textColor = UIColor.createColor(light: .black, dark: .white)
-        i.shadowColor = UIColor.createColor(light: .gray, dark: .gray)
-        i.font = UIFont(name: "Futura-Bold", size: 15)
-        i.shadowOffset = CGSize(width: 1, height: 1)
-        i.alpha = 1
-        i.clipsToBounds = true
-        return i
-    }()
-    
     private let getCommentsLabel: UILabel = {
         let i = UILabel()
         i.translatesAutoresizingMaskIntoConstraints = false
         i.text = "Получено комментариев"
-        i.textColor = UIColor.createColor(light: .black, dark: .white)
-        i.shadowColor = UIColor.createColor(light: .gray, dark: .gray)
-        i.font = UIFont(name: "Futura-Bold", size: 15)
-        i.shadowOffset = CGSize(width: 1, height: 1)
-        i.alpha = 1
-        i.clipsToBounds = true
-        return i
-    }()
-    
-    private let getMessagesLabel: UILabel = {
-        let i = UILabel()
-        i.translatesAutoresizingMaskIntoConstraints = false
-        i.text = "Получено сообщений"
         i.textColor = UIColor.createColor(light: .black, dark: .white)
         i.shadowColor = UIColor.createColor(light: .gray, dark: .gray)
         i.font = UIFont(name: "Futura-Bold", size: 15)
@@ -329,18 +283,6 @@ class RatingViewController: UIViewController {
         return i
     }()
     
-    private let messageCount: UILabel = {
-        let i = UILabel()
-        i.translatesAutoresizingMaskIntoConstraints = false
-        i.textColor = UIColor.createColor(light: .black, dark: .white)
-        i.shadowColor = UIColor.createColor(light: .gray, dark: .gray)
-        i.font = UIFont(name: "Futura-Bold", size: 10)
-        i.shadowOffset = CGSize(width: 1, height: 1)
-        i.alpha = 1
-        i.clipsToBounds = true
-        return i
-    }()
-    
     private let likeUserCount: UILabel = {
         let i = UILabel()
         i.translatesAutoresizingMaskIntoConstraints = false
@@ -354,18 +296,6 @@ class RatingViewController: UIViewController {
     }()
     
     private let getCommentCount: UILabel = {
-        let i = UILabel()
-        i.translatesAutoresizingMaskIntoConstraints = false
-        i.textColor = UIColor.createColor(light: .black, dark: .white)
-        i.shadowColor = UIColor.createColor(light: .gray, dark: .gray)
-        i.font = UIFont(name: "Futura-Bold", size: 10)
-        i.shadowOffset = CGSize(width: 1, height: 1)
-        i.alpha = 1
-        i.clipsToBounds = true
-        return i
-    }()
-    
-    private let getMessageCount: UILabel = {
         let i = UILabel()
         i.translatesAutoresizingMaskIntoConstraints = false
         i.textColor = UIColor.createColor(light: .black, dark: .white)
@@ -440,9 +370,9 @@ class RatingViewController: UIViewController {
     }
     
     func setupLayout() {
-        [raitingLabel,imageRating,commentsLabel,commentCount,messagesOfUser,messageCount,likedUserProfileLabel,likeUserCount,getCommentsLabel,getCommentCount,likedYourUserLabel,getYourLikeeCount,getMessagesLabel,getMessageCount,followersLabel,followersCount,postsLabel,postsCount,playGameCountLabel,gameCount].forEach { view.addSubview($0) }
+        [raitingLabel,imageRating,commentsLabel,commentCount,likedUserProfileLabel,likeUserCount,getCommentsLabel,getCommentCount,likedYourUserLabel,getYourLikeeCount,followersLabel,followersCount,postsLabel,postsCount,playGameCountLabel,gameCount].forEach { view.addSubview($0) }
         
-        [progressComments,progressMessages,progressLikeYouUserAcc,progressGetComments,progressGetMessages,progressFollowers,progressLikeYourAcc,progressPostsRating,progressPlayGameCount].forEach { view.addSubview($0) }
+        [progressComments,progressLikeYouUserAcc,progressGetComments,progressFollowers,progressLikeYourAcc,progressPostsRating,progressPlayGameCount].forEach { view.addSubview($0) }
         NSLayoutConstraint.activate([
             raitingLabel.topAnchor.constraint(equalTo: view.topAnchor,constant: 30),
             raitingLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 20),
@@ -459,15 +389,7 @@ class RatingViewController: UIViewController {
             commentCount.trailingAnchor.constraint(equalTo: progressComments.leadingAnchor,constant: -5),
             commentCount.centerYAnchor.constraint(equalTo: progressComments.centerYAnchor),
             
-            messagesOfUser.topAnchor.constraint(equalTo: commentsLabel.bottomAnchor,constant: 10),
-            messagesOfUser.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 20),
-            progressMessages.centerYAnchor.constraint(equalTo: messagesOfUser.centerYAnchor),
-            progressMessages.trailingAnchor.constraint(equalTo: view.trailingAnchor,constant: -20),
-            progressMessages.widthAnchor.constraint(equalToConstant: 100),
-            messageCount.trailingAnchor.constraint(equalTo: progressMessages.leadingAnchor,constant: -5),
-            messageCount.centerYAnchor.constraint(equalTo: progressMessages.centerYAnchor),
-            
-            likedUserProfileLabel.topAnchor.constraint(equalTo: messagesOfUser.bottomAnchor,constant: 10),
+            likedUserProfileLabel.topAnchor.constraint(equalTo: commentsLabel.bottomAnchor,constant: 10),
             likedUserProfileLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 20),
             progressLikeYouUserAcc.centerYAnchor.constraint(equalTo: likedUserProfileLabel.centerYAnchor),
             progressLikeYouUserAcc.trailingAnchor.constraint(equalTo: view.trailingAnchor,constant: -20),
@@ -483,15 +405,7 @@ class RatingViewController: UIViewController {
             getCommentCount.trailingAnchor.constraint(equalTo: progressGetComments.leadingAnchor,constant: -5),
             getCommentCount.centerYAnchor.constraint(equalTo: progressGetComments.centerYAnchor),
             
-            getMessagesLabel.topAnchor.constraint(equalTo: getCommentsLabel.bottomAnchor,constant: 10),
-            getMessagesLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 20),
-            progressGetMessages.centerYAnchor.constraint(equalTo: getMessagesLabel.centerYAnchor),
-            progressGetMessages.trailingAnchor.constraint(equalTo: view.trailingAnchor,constant: -20),
-            progressGetMessages.widthAnchor.constraint(equalToConstant: 100),
-            getMessageCount.trailingAnchor.constraint(equalTo: progressGetMessages.leadingAnchor,constant: -5),
-            getMessageCount.centerYAnchor.constraint(equalTo: progressGetMessages.centerYAnchor),
-            
-            likedYourUserLabel.topAnchor.constraint(equalTo: getMessagesLabel.bottomAnchor,constant: 10),
+            likedYourUserLabel.topAnchor.constraint(equalTo: getCommentsLabel.bottomAnchor,constant: 10),
             likedYourUserLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 20),
             progressLikeYourAcc.centerYAnchor.constraint(equalTo: likedYourUserLabel.centerYAnchor),
             progressLikeYourAcc.trailingAnchor.constraint(equalTo: view.trailingAnchor,constant: -20),

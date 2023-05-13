@@ -13,7 +13,6 @@ enum TypeOfViewController {
     case login(viewModel: LoginViewModel)
     case profile(viewModel: ProfileViewModel)
     case home
-    case news
     case search
     case match
     case game
@@ -30,8 +29,6 @@ extension TypeOfViewController {
             return ProfileViewController(viewModel: viewModel)
         case .home:
             return HomeViewController()
-        case .news:
-            return NewsListController()
         case .search:
             return SearchViewController()
         case .match:

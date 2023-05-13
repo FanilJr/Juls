@@ -91,7 +91,7 @@ class HomeTableViewCell: UITableViewCell {
     
     lazy var descriptionText: UILabel = {
         let name = UILabel()
-        name.numberOfLines = 0
+//        name.numberOfLines = 0
         name.textColor = UIColor.createColor(light: .black, dark: .white)
         name.shadowColor = UIColor.createColor(light: .white, dark: .black)
         name.font = UIFont(name: "Futura", size: 14)
@@ -191,7 +191,7 @@ class HomeTableViewCell: UITableViewCell {
             nameAuthor.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             
             postImage.topAnchor.constraint(equalTo: nameAuthor.bottomAnchor,constant: 10),
-            postImage.heightAnchor.constraint(lessThanOrEqualToConstant: 530),
+            postImage.heightAnchor.constraint(lessThanOrEqualToConstant: 500),
             postImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 5),
             postImage.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -5),
             
@@ -200,7 +200,7 @@ class HomeTableViewCell: UITableViewCell {
             whiteViewForDescription.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -5),
             whiteViewForDescription.bottomAnchor.constraint(equalTo: datePost.bottomAnchor,constant: 15),
             
-            commentButton.bottomAnchor.constraint(equalTo: likeButton.topAnchor,constant: -10),
+            commentButton.bottomAnchor.constraint(equalTo: likeButton.topAnchor,constant: -15),
             commentButton.trailingAnchor.constraint(equalTo: postImage.trailingAnchor,constant: -10),
             commentButton.heightAnchor.constraint(equalToConstant: 30),
             commentButton.widthAnchor.constraint(equalToConstant: 30),              
@@ -218,7 +218,7 @@ class HomeTableViewCell: UITableViewCell {
             
             descriptionText.topAnchor.constraint(equalTo: postImage.bottomAnchor,constant: 10),
             descriptionText.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 15),
-            descriptionText.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            descriptionText.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -10),
             
             datePost.topAnchor.constraint(equalTo: descriptionText.bottomAnchor,constant: 5),
             datePost.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 15),

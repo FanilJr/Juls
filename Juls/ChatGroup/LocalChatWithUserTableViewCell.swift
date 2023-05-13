@@ -86,10 +86,10 @@ class LocalChatWithUserTableViewCell: UITableViewCell {
             viewForBack.trailingAnchor.constraint(equalTo: descriptionNameandText.trailingAnchor,constant: 12),
             viewForBack.bottomAnchor.constraint(equalTo: descriptionNameandText.bottomAnchor,constant: 7),
             
-            descriptionNameandText.topAnchor.constraint(equalTo: profileImageView.topAnchor,constant: 5),
+            descriptionNameandText.topAnchor.constraint(equalTo: profileImageView.topAnchor,constant: 6),
             descriptionNameandText.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor,constant: 16),
             descriptionNameandText.widthAnchor.constraint(lessThanOrEqualToConstant: 300),
-            descriptionNameandText.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -10),
+            descriptionNameandText.bottomAnchor.constraint(equalTo: contentView.bottomAnchor,constant: -7),
         ])
     }
 }

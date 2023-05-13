@@ -185,7 +185,7 @@ class PostTableViewCell: UITableViewCell {
         
         NSLayoutConstraint.activate([
             postImage.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10),
-            postImage.heightAnchor.constraint(lessThanOrEqualToConstant: 600),
+            postImage.heightAnchor.constraint(lessThanOrEqualToConstant: 500),
             postImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 5),
             postImage.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -5),
             
@@ -194,7 +194,7 @@ class PostTableViewCell: UITableViewCell {
             whiteView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -5),
             whiteView.bottomAnchor.constraint(equalTo: datePost.bottomAnchor,constant: 15),
             
-            commentButton.bottomAnchor.constraint(equalTo: likeButton.topAnchor,constant: -10),
+            commentButton.bottomAnchor.constraint(equalTo: likeButton.topAnchor,constant: -15),
             commentButton.trailingAnchor.constraint(equalTo: postImage.trailingAnchor,constant: -10),
             commentButton.heightAnchor.constraint(equalToConstant: 30),
             commentButton.widthAnchor.constraint(equalToConstant: 30),

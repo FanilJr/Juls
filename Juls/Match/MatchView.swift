@@ -19,9 +19,6 @@ class MatchView: UIView {
     var users = [User]()
     var delegate: MatchViewProtocol?
     
-    let likeGif = UIImage.gifImageWithName("smiling_face_with_heart_eyes")
-    let dissLikeGif = UIImage.gifImageWithName("unamused_face")
-    
     var gifLikeImageView: UIImageView = {
         let gif = UIImageView()
         gif.contentMode = .scaleAspectFill
@@ -67,7 +64,6 @@ class MatchView: UIView {
     var money: UILabel = {
         let money = UILabel()
         money.translatesAutoresizingMaskIntoConstraints = false
-        money.text = "300.00"
         money.font = UIFont(name: "Futura-Bold", size: 14)
         money.shadowColor = UIColor.createColor(light: .gray, dark: .gray)
         money.shadowOffset = CGSize(width: 1, height: 1)
@@ -108,12 +104,13 @@ class MatchView: UIView {
     }
     
     @objc func tapLike() {
+        let likeGif = UIImage.gifImageWithName("smiling_face_with_heart_eyes", speed: 5000)
         self.likeImage.alpha = 0.0
         self.gifLikeImageView.image = likeGif
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: {
             self.likeImage.alpha = 1.0
-            self.gifLikeImageView.image = UIImage()
+            self.gifLikeImageView.image = nil
         })
         
         delegate?.tapLike(completion: { error in
@@ -125,12 +122,13 @@ class MatchView: UIView {
     }
     
     @objc func tapDissLike() {
+        let dissLikeGif = UIImage.gifImageWithName("unamused_face", speed: 5000)
         self.dissLikeImage.alpha = 0.0
         self.gifDissLikeImageView.image = dissLikeGif
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
             self.dissLikeImage.alpha = 1.0
-            self.gifDissLikeImageView.image = UIImage()
+            self.gifDissLikeImageView.image = nil
         })
         delegate?.tapDissLike()
     }
@@ -153,7 +151,7 @@ class MatchView: UIView {
             imageUser.topAnchor.constraint(equalTo: moneyImage.bottomAnchor,constant: 20),
             imageUser.leadingAnchor.constraint(equalTo: leadingAnchor,constant: 5),
             imageUser.trailingAnchor.constraint(equalTo: trailingAnchor,constant: -5),
-            imageUser.heightAnchor.constraint(lessThanOrEqualToConstant: 510),
+            imageUser.heightAnchor.constraint(equalToConstant: 510),
             
             dissLikeImage.bottomAnchor.constraint(equalTo: bottomAnchor,constant: -60),
             dissLikeImage.leadingAnchor.constraint(equalTo: leadingAnchor,constant: 80),

@@ -15,8 +15,6 @@ class SearchViewController: UIViewController {
     var users = [User]()
     var experimentUser = [User]()
     var post = [Post]()
-    let juls = JulsView()
-    var refreshControler = UIRefreshControl()
     
     var searchController: UISearchController = {
         let search = UISearchController(searchResultsController: nil)
@@ -35,7 +33,6 @@ class SearchViewController: UIViewController {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
-        tableView.refreshControl = refreshControler
         tableView.register(CellIdTableViewCell.self, forCellReuseIdentifier: "CellIdTableViewCell")
         return tableView
     }()
@@ -54,9 +51,11 @@ class SearchViewController: UIViewController {
         view.backgroundColor = .systemBackground
         title = "Поиск"
         navigationItem.searchController = searchController
+        let refreshControler = UIRefreshControl()
         layout()
         refreshControler.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
         refreshControler.attributedTitle = NSAttributedString(string: "Обновление")
+        tableView.refreshControl = refreshControler
         searchController.searchBar.delegate = self
         tableView.delegate = self
         tableView.dataSource = self

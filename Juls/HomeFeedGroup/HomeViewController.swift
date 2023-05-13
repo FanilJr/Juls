@@ -11,13 +11,20 @@ import Firebase
 class HomeViewController: UIViewController {
 
     var posts = [Post]()
-    var juls = JulsView()
     var user: User?
     var commentArray = [String]()
     var commentCount: Int?
     var likeCount: Int?
     var postIndexPath = 0
-    var refreshControler = UIRefreshControl()
+    
+    var imageGif: UIImageView = {
+        let image = UIImageView()
+        image.translatesAutoresizingMaskIntoConstraints = false
+        image.contentMode = .scaleAspectFill
+        image.clipsToBounds = true
+        image.layer.cornerRadius = 100/2
+        return image
+    }()
     
     lazy var blureForCell: UIVisualEffectView = {
         let bluereEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
@@ -52,7 +59,6 @@ class HomeViewController: UIViewController {
         tableView.backgroundColor = .clear
         tableView.separatorStyle = .none
         tableView.backgroundView = HomeEmptyStateView()
-        tableView.refreshControl = refreshControler
         tableView.register(BestRatingPeopleViewCell.self, forCellReuseIdentifier: "BestRatingPeopleViewCell")
         tableView.register(HomeTableViewCell.self, forCellReuseIdentifier: "HomeTableViewCell")
         return tableView
@@ -70,14 +76,20 @@ class HomeViewController: UIViewController {
     
     private func setupDidLoad() {
         title = "Лента"
-        tableView.refreshControl?.beginRefreshing()
         view.backgroundColor = .systemBackground
-        tableView.delegate = self
-        tableView.dataSource = self
         layout()
-        fetchAllPosts()
+        addInTable()
+    }
+    
+    func addInTable() {
+        let refreshControler = UIRefreshControl()
         refreshControler.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
         refreshControler.attributedTitle = NSAttributedString(string: "Обновление")
+        tableView.refreshControl = refreshControler
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.alpha = 0.2
+        fetchAllPosts()
     }
     
     private func setupWillAppear() {
@@ -85,8 +97,14 @@ class HomeViewController: UIViewController {
     }
     
     @objc func didTapRefresh() {
-        self.fetchUserForImageBack()
-        self.fetchAllPosts()
+        let loadPostGif = UIImage.gifImageWithName("J2", speed: 4000)
+        self.imageGif.image = loadPostGif
+        UIView.animate(withDuration: 0.3) {
+            self.tableView.alpha = 0.2
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
+            self.fetchAllPosts()
+        })
     }
     
     func fetchUserForImageBack() {
@@ -105,6 +123,12 @@ class HomeViewController: UIViewController {
         Database.database().fetchFeedPosts { posts in
             DispatchQueue.main.async {
                 self.tableView.refreshControl?.endRefreshing()
+                self.tableView.backgroundView = nil
+                self.tableView.refreshControl?.endRefreshing()
+                self.imageGif.image = nil
+                UIView.animate(withDuration: 0.3) {
+                    self.tableView.alpha = 1
+                }
                 self.posts = posts
                 self.tableView.reloadData()
             }
@@ -130,7 +154,9 @@ class HomeViewController: UIViewController {
     }
     
     func layout() {
-        [background,imageBack,blureForCell,tableView].forEach { view.addSubview($0) }
+        let loadPostGif = UIImage.gifImageWithName("J2", speed: 4000)
+        imageGif.image = loadPostGif
+        [background,imageBack,blureForCell,tableView,imageGif].forEach { view.addSubview($0) }
         
         NSLayoutConstraint.activate([
             background.topAnchor.constraint(equalTo: view.topAnchor),
@@ -151,7 +177,12 @@ class HomeViewController: UIViewController {
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.leftAnchor.constraint(equalTo: view.leftAnchor),
             tableView.rightAnchor.constraint(equalTo: view.rightAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            imageGif.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            imageGif.centerYAnchor.constraint(equalTo: view.centerYAnchor,constant: -50),
+            imageGif.heightAnchor.constraint(equalToConstant: 100),
+            imageGif.widthAnchor.constraint(equalToConstant: 100)
         ])
     }
 }
@@ -232,7 +263,7 @@ extension HomeViewController: HomeTableDelegate {
     func didLike(for cell: HomeTableViewCell) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
         
-        var post = self.posts[indexPath.row]
+        let post = self.posts[indexPath.row]
         
         guard let postId = post.id else { return }
         guard let uid = Auth.auth().currentUser?.uid else { return }

@@ -20,7 +20,6 @@ class PostTableViewController: UIViewController {
     var cgfloatTabBar: CGFloat?
     var post: Post?
     var raiting: Raiting?
-    var juls = JulsView()
     var commentArray = [String]()
     var rating: Raiting?
     var fetchLike: Bool = false
@@ -94,7 +93,6 @@ class PostTableViewController: UIViewController {
             }
         }
     }
-    
     
     private func setupNavButton() {
         if post?.user.uid == Auth.auth().currentUser?.uid {
@@ -188,7 +186,7 @@ extension PostTableViewController: CommentDelegate {
         guard let indexPath = self.tableView.indexPath(for: cell) else { return }
         guard let postId = self.post?.id else { return }
 
-        if var post = self.post {
+        if let post = self.post {
             if post.hasLiked == false {
             
                 let values = [uid : 1]

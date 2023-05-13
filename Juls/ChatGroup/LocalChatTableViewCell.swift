@@ -40,6 +40,16 @@ class LocalChatTableViewCell: UITableViewCell {
         return pi
     }()
     
+    lazy var chatImage: CustomImageView = {
+        let pi = CustomImageView()
+        pi.contentMode = .scaleAspectFill
+        pi.layer.cornerRadius = 20
+        pi.clipsToBounds = true
+        pi.isUserInteractionEnabled = true
+        pi.translatesAutoresizingMaskIntoConstraints = false
+        return pi
+    }()
+    
     let descriptionNameandText: UILabel = {
         let descriptionNameandText = UILabel()
         descriptionNameandText.numberOfLines = 0

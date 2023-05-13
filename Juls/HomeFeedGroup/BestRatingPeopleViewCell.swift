@@ -17,10 +17,11 @@ class BestRatingPeopleViewCell: UITableViewCell {
     
     var peoples = [User]()
     weak var delegate: BestRatingPeopleProtocol?
+    
     var bestRatingLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Лучшие в рейтинге"
+        label.text = "Лучшие в Juls"
         label.shadowColor = UIColor.createColor(light: .gray, dark: .gray)
         label.font = UIFont(name: "Futura-Bold", size: 25)
         label.shadowOffset = CGSize(width: 1, height: 1)

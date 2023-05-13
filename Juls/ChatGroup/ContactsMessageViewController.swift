@@ -20,7 +20,6 @@ class ContactsMessagesViewController: UIViewController {
     var users = [User]()
     var experimentUser = [User]()
     var post = [Post]()
-    let juls = JulsView()
 
     let background: UIImageView = {
         let back = UIImageView()

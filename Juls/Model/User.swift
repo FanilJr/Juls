@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct User {
+class User {
     let uid: String
     let sex: String
     let username: String
@@ -22,6 +22,7 @@ struct User {
     let loveSong: String
     let isActiveMatch: Bool
     let rating: Double
+    let balance: Int
     
     init(uid: String, dictionary: [String: Any]) {
         self.uid = uid
@@ -37,8 +38,12 @@ struct User {
         self.loveSong = dictionary["loveSong"] as? String ?? ""
         self.isActiveMatch = dictionary["isActiveMatch"] as? Bool ?? false
         self.rating = dictionary["rating"] as? Double ?? 0.0
+        self.balance = dictionary["balance"] as? Int ?? 0
         
         let secondsFrom1970 = dictionary["creationDateLastMessage"] as? Double ?? 0
         self.creationDateLastMessage = Date(timeIntervalSince1970: secondsFrom1970)
+    }
+    deinit {
+        print("class User", username, " deinit")
     }
 }

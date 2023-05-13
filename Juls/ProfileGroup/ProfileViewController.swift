@@ -25,19 +25,12 @@ class ProfileViewController: UIViewController {
     var cgfloatTabBar: CGFloat?
     var player: AVPlayer?
     
-    private var refreshController = UIRefreshControl()
     private let messagePostViewController = MessagePostViewController()
     private let viewModel: ProfileViewModel
-    private let saveView = SaveView()
-    private let infoView = InfoView()
     private let imagePicker = UIImagePickerController()
     private let filePicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.mp3], asCopy: true)
     private var currentImage: UIImageView?
     private var header: StretchyCollectionHeaderView?
-    private let ratingVC = RatingViewController()
-    
-    let systemSoundID: SystemSoundID = 1016
-    let systemSoundID2: SystemSoundID = 1018
 
     private lazy var titleImage: UIImageView = {
         let imageView = UIImageView()
@@ -122,7 +115,6 @@ class ProfileViewController: UIViewController {
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.backgroundColor = .clear
-        collectionView.refreshControl = refreshController
         collectionView.register(StretchyCollectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: "StretchyCollectionHeaderView")
         collectionView.register(MainCollectionViewCell.self, forCellWithReuseIdentifier: "MainCollectionViewCell")
         collectionView.register(PhotosCollectionViewCell.self, forCellWithReuseIdentifier: "PhotosCollectionViewCell")
@@ -139,20 +131,43 @@ class ProfileViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    deinit {
+        print("deinit ProfileViewModel")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemGray6
-        cgfloatTabBar = tabBarController?.tabBar.frame.origin.y
-        
-        self.tabBarController?.tabBar.isHidden = false
-        self.navigationController?.setNavigationBarHidden(false, animated: false)
-        self.navigationController?.navigationBar.prefersLargeTitles = true
-        self.navigationItem.largeTitleDisplayMode = .automatic
-        setupTableView()
+        setupMain()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        setupWillAppear()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        disappear()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        if (-150...(-140)).contains(collectionView.contentOffset.y) {
+            titleImage.alpha = 1
+        } else {
+            titleImage.alpha = 0
+        }
+        showOrAlpha(object: self.newMessage, true, 0.1)
+    }
+    
+    func setupMain() {
+        cgfloatTabBar = tabBarController?.tabBar.frame.origin.y
+        navigationDidLoad()
+    }
+    
+    func setupWillAppear() {
         navigationController?.hidesBarsOnSwipe = false
         let height = self.tabBarController?.tabBar.frame.height
         self.tabBarController?.tabBar.isHidden = false
@@ -164,28 +179,63 @@ class ProfileViewController: UIViewController {
         }
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        messagePostViewController.view.endEditing(true)
-        ratingVC.view.endEditing(true)
-        showOrAlpha(object: self.titleImage, false)
-        showOrAlpha(object: self.newMessage, false)
-        self.header?.progressBar.value = 0.0
-        self.header?.progressBar.alpha = 0.0
-        self.stop()
-        self.header?.playSongButton.setBackgroundImage(UIImage(systemName: "play.circle"), for: .normal)
-        
+    func navigationDidLoad() {
+        self.tabBarController?.tabBar.isHidden = false
+        self.navigationController?.setNavigationBarHidden(false, animated: false)
+        self.navigationController?.navigationBar.prefersLargeTitles = true
+        self.navigationItem.largeTitleDisplayMode = .automatic
+        layout()
     }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        showOrAlpha(object: self.titleImage, true)
-        showOrAlpha(object: self.newMessage, true)
+    
+    func layout() {
+        [collectionView, spinnerView,titleSpinner,spinnerViewForPutTrack].forEach({ view.addSubview($0) })
+            
+        NSLayoutConstraint.activate([
+            collectionView.topAnchor.constraint(equalTo: view.topAnchor),
+            collectionView.leftAnchor.constraint(equalTo: view.leftAnchor),
+            collectionView.rightAnchor.constraint(equalTo: view.rightAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            spinnerView.topAnchor.constraint(equalTo: collectionView.topAnchor,constant: 300),
+            spinnerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            titleSpinner.centerYAnchor.constraint(equalTo: view.centerYAnchor,constant: -50),
+            titleSpinner.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            spinnerViewForPutTrack.topAnchor.constraint(equalTo: titleSpinner.bottomAnchor,constant: 10),
+            spinnerViewForPutTrack.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+        ])
+        refreshControlFunc()
+        addDelegates()
     }
+    
+    func addDelegates() {
+        filePicker.delegate = self
+        imagePicker.delegate = self
+        messagePostViewController.delegate = self
+        fetchUser()
+    }
+    
+    func refreshControlFunc() {
+        let refreshController = UIRefreshControl()
+        refreshController.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
+        collectionView.refreshControl = refreshController
+    }
+    
     
     @objc func didTapRefresh() {
         self.fetchUser()
         print("refresh friend Profile")
+    }
+    func disappear() {
+        showOrAlpha(object: self.titleImage, false, 0.1)
+        titleImage.alpha = 0
+        showOrAlpha(object: self.newMessage, false, 0.1)
+        
+        self.header?.progressBar.value = 0.0
+        self.header?.progressBar.alpha = 0.0
+        self.stop()
+        self.header?.playSongButton.setBackgroundImage(UIImage(systemName: "play.circle"), for: .normal)
     }
     
     @objc func openInfoForOfficial() {
@@ -214,6 +264,7 @@ class ProfileViewController: UIViewController {
     }
     
     @objc func presentUserFriendRating() {
+        let ratingVC = RatingViewController()
         ratingVC.rating = rating
         if let sheet = ratingVC.sheetPresentationController {
             sheet.detents = [.medium()]
@@ -222,32 +273,6 @@ class ProfileViewController: UIViewController {
             sheet.prefersGrabberVisible = true
         }
         present(ratingVC, animated: true)
-    }
-        
-    func setupTableView() {
-        filePicker.delegate = self
-        imagePicker.delegate = self
-        messagePostViewController.delegate = self
-        refreshController.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
-        fetchUser()
-        loadDatabase()
-        [collectionView, spinnerView,titleSpinner,spinnerViewForPutTrack].forEach({ view.addSubview($0) })
-            
-        NSLayoutConstraint.activate([
-            collectionView.topAnchor.constraint(equalTo: view.topAnchor),
-            collectionView.leftAnchor.constraint(equalTo: view.leftAnchor),
-            collectionView.rightAnchor.constraint(equalTo: view.rightAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            spinnerView.topAnchor.constraint(equalTo: collectionView.topAnchor,constant: 300),
-            spinnerView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            titleSpinner.centerYAnchor.constraint(equalTo: view.centerYAnchor,constant: -50),
-            titleSpinner.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            spinnerViewForPutTrack.topAnchor.constraint(equalTo: titleSpinner.bottomAnchor,constant: 10),
-            spinnerViewForPutTrack.centerXAnchor.constraint(equalTo: view.centerXAnchor)
-        ])
     }
 }
 
@@ -277,49 +302,6 @@ extension ProfileViewController: UIImagePickerControllerDelegate & UINavigationC
 //MARK: FETCH USER, FETCH POSTS, SAVE CHANGE
 extension ProfileViewController {
     
-    private func moveAndResizeImage(for height: CGFloat) {
-        let coeff: CGFloat = {
-            let delta = height - Const.NavBarHeightSmallState
-            let heightDifferenceBetweenStates = (Const.NavBarHeightLargeState - Const.NavBarHeightSmallState)
-            return delta / heightDifferenceBetweenStates
-        }()
-        
-        let factor = Const.ImageSizeForSmallState / Const.ImageSizeForLargeState
-        
-        let scale: CGFloat = {
-            let sizeAddendumFactor = coeff * (1.0 - factor)
-            return min(1.0, sizeAddendumFactor + factor)
-        }()
-        
-        // Value of difference between icons for large and small states
-        let sizeDiff = Const.ImageSizeForLargeState * (1.0 - factor) // 8.0
-        
-        let yTranslation: CGFloat = {
-            /// This value = 14. It equals to difference of 12 and 6 (bottom margin for large and small states). Also it adds 8.0 (size difference when the image gets smaller size)
-            let maxYTranslation = Const.ImageBottomMarginForLargeState - Const.ImageBottomMarginForSmallState + sizeDiff
-            return max(0, min(maxYTranslation, (maxYTranslation - coeff * (Const.ImageBottomMarginForSmallState + sizeDiff))))
-        }()
-        
-        let xTranslation: CGFloat?
-        
-        guard let LargeMyString = title else { return }
-        var stringWidth = 0.0
-        if let font = UIFont(name: "Futura-Bold", size: 31) {
-            stringWidth = LargeMyString.size(withAttributes: [.font: font]).width + 23
-        }
-
-        let fixedNumber = 150 // фиксированное число
-        let coeffs = 1 - (Double(fixedNumber) / stringWidth) // коэффициент обратной пропорциональности
-        let someNumber = 110 // какое-то произвольное число
-        let result = someNumber - Int(coeffs * Double(someNumber) * 1.7)// число, уменьшающееся с увеличением stringWidth
-        let CGFloatResult = CGFloat(result)
-        xTranslation = max(0, CGFloatResult - coeff * CGFloatResult)
-        
-        titleImage.transform = CGAffineTransform.identity
-            .scaledBy(x: scale, y: scale)
-            .translatedBy(x: xTranslation!, y: yTranslation)
-    }
-    
     func fetchTick() {
         guard let navBar = navigationController?.navigationBar else { return }
         navBar.addSubview(titleImage)
@@ -328,16 +310,16 @@ extension ProfileViewController {
         if let font = UIFont(name: "Futura-Bold", size: 31) {
             stringWidth = LargeMyString.size(withAttributes: [.font: font]).width + 23
         }
-        
         NSLayoutConstraint.activate([
             titleImage.leadingAnchor.constraint(equalTo: navBar.leadingAnchor,constant: stringWidth),
             titleImage.bottomAnchor.constraint(equalTo: navBar.bottomAnchor, constant: -Const.ImageBottomMarginForLargeState),
-            titleImage.heightAnchor.constraint(equalToConstant: Const.ImageSizeForLargeState),
-            titleImage.widthAnchor.constraint(equalTo: titleImage.heightAnchor)
+            titleImage.heightAnchor.constraint(equalToConstant: 32),
+            titleImage.widthAnchor.constraint(equalToConstant: 32)
         ])
     }
     
     func presentRating() {
+        let ratingVC = RatingViewController()
         ratingVC.rating = rating
         if let sheet = ratingVC.sheetPresentationController {
             sheet.detents = [.medium()]
@@ -363,6 +345,7 @@ extension ProfileViewController {
                         print(error)
                         return
                     }
+                    self.player?.pause()
                     self.fetchUser()
                     print("succes delete Music")
                 }
@@ -375,7 +358,7 @@ extension ProfileViewController {
     
     func fetchUser() {
         let uid = userId ?? (Auth.auth().currentUser?.uid ?? "")
-        
+        loadDatabase()
         Database.database().fetchUser(withUID: uid) { user in
             self.user = user
             self.title = user.username
@@ -385,6 +368,7 @@ extension ProfileViewController {
             if user.uid == uid {
                 Database.database().updateMessageInNavigationBar(userId: uid, navigation: self.navigationController!, label: self.newMessage)
             }
+            
             if user.official {
                 print(user.username, "- official status <Public person>")
                 self.fetchTick()
@@ -496,22 +480,7 @@ extension ProfileViewController {
                                 }
                             print("succes download Photo in Firebase Library")
                             waitingSpinnerEnable(activity: self.spinnerView, active: false)
-                            self.view.addSubview(self.saveView)
                             self.didTapRefresh()
-                            NSLayoutConstraint.activate([
-                                self.saveView.topAnchor.constraint(equalTo: self.collectionView.topAnchor,constant: 300),
-                                self.saveView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-                                self.saveView.heightAnchor.constraint(equalToConstant: 150),
-                                self.saveView.widthAnchor.constraint(equalToConstant: 150)
-                            ])
-                            UIView.animate(withDuration: 0.7) {
-                                self.saveView.alpha = 1
-                            }
-                            DispatchQueue.main.asyncAfter(deadline: .now()+1.1) {
-                                UIView.animate(withDuration: 1) {
-                                    self.saveView.alpha = 0
-                                }
-                            }
                         }
                     }
                 })
@@ -523,7 +492,8 @@ extension ProfileViewController {
         let alert = UIAlertController(title: "Введите статус", message: "", preferredStyle: .alert)
         let alertOK = UIAlertAction(title: "Ok", style: .default)  { [self] _ in
             let text = alert.textFields?.first?.text
-            AudioServicesPlaySystemSound(self.systemSoundID)
+            let systemSoundID: SystemSoundID = 1016
+            AudioServicesPlaySystemSound(systemSoundID)
             if let urlText = text {
                 DispatchQueue.main.async {
                     Database.database().reference().child("users").child(Auth.auth().currentUser?.uid ?? "").updateChildValues(["status" : urlText]) { error, ref in
@@ -567,92 +537,10 @@ extension ProfileViewController {
         present(alert, animated: true)
     }
     
-    func addPostInCollection() {
-        if let sheet = messagePostViewController.sheetPresentationController {
-            sheet.detents = [.medium()]
-            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
-            sheet.preferredCornerRadius = 25
-            sheet.prefersGrabberVisible = true
-        }
+    @objc func addPostInCollection() {
+        messagePostViewController.user = self.user
+        messagePostViewController.modalPresentationStyle = .fullScreen
         present(messagePostViewController, animated: true)
-    }
-}
-
-//MARK: Редактирование информации пользователя
-extension ProfileViewController: InfoDelegate {
-    
-    func cancelSave() {
-        UIView.animate(withDuration: 0.8, animations: {
-            self.infoView.transform = CGAffineTransform(translationX: 0, y: -790)
-            self.blure.alpha = 0
-        })
-        tabBarController?.tabBar.isHidden = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            self.infoView.removeFromSuperview()
-            self.blure.removeFromSuperview()
-            self.collectionView.reloadData()
-        }
-    }
-    
-    func saveInfo() {
-        print("tut save info")
-        if let urlText = infoView.name.text {
-            Database.database().reference().child("users").child(Auth.auth().currentUser?.uid ?? "").updateChildValues(["name" : urlText]) { error, ref in
-                if let error {
-                    print(error)
-                    return
-                }
-                print("succes download name in Firebase Library")
-            }
-        }
-        if let urlText = infoView.secondName.text {
-            Database.database().reference().child("users").child(Auth.auth().currentUser?.uid ?? "").updateChildValues(["secondName" : urlText]) { error, ref in
-                if let error {
-                    print(error)
-                    return
-                }
-                print("succes download secondname in Firebase Library")
-            }
-        }
-        if let urlText = infoView.age.text {
-            Database.database().reference().child("users").child(Auth.auth().currentUser?.uid ?? "").updateChildValues(["age" : urlText]) { error, ref in
-                if let error {
-                    print(error)
-                    return
-                }
-                print("succes download age in Firebase Library")
-            }
-        }
-        if let urlText = infoView.height.text {
-            Database.database().reference().child("users").child(Auth.auth().currentUser?.uid ?? "").updateChildValues(["height" : urlText]) { error, ref in
-                if let error {
-                    print(error)
-                    return
-                }
-                print("succes download height in Firebase Library")
-            }
-        }
-        
-        if let urlText = infoView.statusLife.text {
-            Database.database().reference().child("users").child(Auth.auth().currentUser?.uid ?? "").updateChildValues(["life status" : urlText]) { error, ref in
-                if let error {
-                    print(error)
-                    return
-                }
-                print("succes download height in Firebase Library")
-            }
-        }
-        
-        UIView.animate(withDuration: 0.8, animations: {
-            self.infoView.transform = CGAffineTransform(translationX: 0, y: -790)
-            self.blure.alpha = 0
-        })
-        tabBarController?.tabBar.isHidden = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            self.infoView.removeFromSuperview()
-            self.blure.removeFromSuperview()
-            self.didTapRefresh()
-        }
     }
 }
 
@@ -677,19 +565,29 @@ extension ProfileViewController: MessagePostDelegate {
             if let error {
                 print(error)
             }
-            AudioServicesPlaySystemSound(self.systemSoundID2)
-            self.messagePostViewController.waitingSpinnerPostEnable(false)
-            self.messagePostViewController.sendPostButton.setTitle("Отправить", for: .normal)
-            self.messagePostViewController.sendPostButton.setImage(UIImage(systemName: "paperplane.fill"), for: .normal)
-
-            
-            UIView.animate(withDuration: 0.5, animations: {
-                self.fetchUser()
-            })
+            self.messagePostViewController.imageGif.image = nil
+            self.messagePostViewController.removeFromParent()
+            let systemSoundID2: SystemSoundID = 1018
+            AudioServicesPlaySystemSound(systemSoundID2)
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.messagePostViewController.waitingSpinnerPostEnable(false)
+                self.messagePostViewController.sendPostButton.setTitle("Отправить", for: .normal)
+                self.messagePostViewController.customTextfield.text = "Что нового?"
                 self.messagePostViewController.customImage.image = nil
-                self.messagePostViewController.customTextfield.text = ""
+                self.messagePostViewController.customTextfield.textColor = UIColor.lightGray
+                self.messagePostViewController.sendPostButton.backgroundColor = #colorLiteral(red: 0.6288032532, green: 0.868211925, blue: 1, alpha: 1)
+                self.messagePostViewController.sendPostButton.transform = CGAffineTransform(scaleX: 1, y: 1.0)
+                self.fetchUser()
+                
+                /// return back interface
+                self.messagePostViewController.view.backgroundColor = .systemBackground
+                self.messagePostViewController.cancelButton.alpha = 1
+                self.messagePostViewController.sendPostButton.alpha = 1
+                self.messagePostViewController.customAddPhotoButton.alpha = 1
+                self.messagePostViewController.customImage.alpha = 1
+                self.messagePostViewController.customTextfield.alpha = 1
+                self.messagePostViewController.imageUser.alpha = 1
             }
             self.dismiss(animated: true)
         }
@@ -715,31 +613,6 @@ extension ProfileViewController: MainCollectionDelegate {
         let iFollowUsers = MyFollowersUserViewController()
         iFollowUsers.user = user
         navigationController?.pushViewController(iFollowUsers, animated: true)
-    }
-    
-    func editInfo() {
-        view.addSubview(blure)
-        view.addSubview(infoView)
-        infoView.delegateInfo = self
-            
-        NSLayoutConstraint.activate([
-            blure.topAnchor.constraint(equalTo: view.topAnchor),
-            blure.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            blure.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            blure.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-                
-            infoView.topAnchor.constraint(equalTo: view.topAnchor,constant: -680),
-            infoView.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 50),
-            infoView.trailingAnchor.constraint(equalTo: view.trailingAnchor,constant: -50),
-            infoView.heightAnchor.constraint(equalToConstant: 680),
-        ])
-        
-        UIView.animate(withDuration: 0.8, animations: {
-            self.infoView.transform = CGAffineTransform(translationX: 0, y: 790)
-            self.infoView.alpha = 1
-            self.blure.alpha = 1
-        })
-        tabBarController?.tabBar.isHidden = true
     }
 }
 
@@ -853,8 +726,14 @@ extension ProfileViewController: UICollectionViewDataSource {
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        guard let height = navigationController?.navigationBar.frame.height else { return }
-        moveAndResizeImage(for: height)
+        let heightScroll = scrollView.contentOffset.y
+        guard let LargeMyString = title else { return }
+        var stringHeight = 0.0
+        if let font = UIFont(name: "Futura-Bold", size: 31) {
+            stringHeight = LargeMyString.size(withAttributes: [.font: font]).height
+        }
+        let alpha = 1 - ((heightScroll + 100 + stringHeight) / 30)
+        titleImage.alpha = alpha
     }
 }
 
@@ -990,21 +869,7 @@ extension ProfileViewController: UIDocumentPickerDelegate {
 extension ProfileViewController {
     
     func setupNavigationButton(user: User) {
-        let plusButton: UIBarButtonItem = {
-            let barButtonMenu = UIMenu(title: "Выберите действие", children: [
-                UIAction(title: NSLocalizedString("Создать пост", comment: ""), image: UIImage(systemName: "square.and.pencil"), handler: { _ in
-                    self.addPostInCollection()
-                }),
-                UIAction(title: NSLocalizedString("Создать историю", comment: ""), image: UIImage(systemName: "hand.tap"), handler: { _ in
-                    print("Story's")
-                })
-            ])
-            let plus = UIBarButtonItem()
-            plus.image = UIImage(systemName: "plus")
-            plus.tintColor = UIColor.createColor(light: .black, dark: .white)
-            plus.menu = barButtonMenu
-            return plus
-        }()
+        let plusButton = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(addPostInCollection))
         
         let ellipsisButtonForDeleteMusic: UIBarButtonItem = {
             let barButtonMenu = UIMenu(title: "Выберите действие", children: [

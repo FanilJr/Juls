@@ -122,7 +122,7 @@ class LoginView: UIView {
     }()
 
     lazy var logInButton: CustomButton = {
-        logInButton = CustomButton(title: "Вход", titleColor: .white, onTap: { [weak self] in
+        logInButton = CustomButton(title: "Вход", titleColor: .white, image: UIImage(), onTap: { [weak self] in
                 self?.tappedButton()
             })
         logInButton.setBackgroundImage(UIImage(named: "blue_pixel"), for: .normal)
@@ -133,7 +133,7 @@ class LoginView: UIView {
     }()
     
     lazy var registerButton: CustomButton = {
-        registerButton = CustomButton(title: "Зарегистрироваться", titleColor: .white, onTap: { [weak self] in
+        registerButton = CustomButton(title: "Зарегистрироваться", titleColor: .white, image: UIImage(), onTap: { [weak self] in
                 self?.tappedRegister()
             })
         registerButton.backgroundColor = #colorLiteral(red: 0.2745098174, green: 0.4862745106, blue: 0.1411764771, alpha: 1)
@@ -144,7 +144,7 @@ class LoginView: UIView {
     }()
     
     private lazy var registrationButton: CustomButton = {
-        registrationButton = CustomButton(title: "Регистрация", titleColor: .white, onTap: { [weak self] in
+        registrationButton = CustomButton(title: "Регистрация", titleColor: .white, image: UIImage(), onTap: { [weak self] in
                 self?.signUpTapped()
             })
         registrationButton.backgroundColor = #colorLiteral(red: 0.2745098174, green: 0.4862745106, blue: 0.1411764771, alpha: 1)
@@ -155,7 +155,7 @@ class LoginView: UIView {
     }()
     
     private lazy var backButton: CustomButton = {
-        backButton = CustomButton(title: "", titleColor: .white, onTap: { [weak self] in
+        backButton = CustomButton(title: "", titleColor: .white, image: UIImage(), onTap: { [weak self] in
                 self?.backUpButton()
             })
         backButton.setBackgroundImage(UIImage(systemName: "arrow.backward.circle.fill"), for: .normal)
@@ -384,7 +384,7 @@ class LoginView: UIView {
             logInButton.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             logInButton.heightAnchor.constraint(equalToConstant: 45),
             
-            registrationButton.topAnchor.constraint(equalTo: logInButton.bottomAnchor,constant: 277),
+            registrationButton.topAnchor.constraint(equalTo: logInButton.bottomAnchor,constant: 250),
             registrationButton.widthAnchor.constraint(equalToConstant: 350),
             registrationButton.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             registrationButton.heightAnchor.constraint(equalToConstant: 45),

@@ -7,11 +7,13 @@
 
 import Foundation
 import UIKit
+import Firebase
 
 protocol MatchUserViewProtocol: AnyObject {
     func closed()
     func write()
     func addFriend()
+    func tapImage()
 }
 
 class MatchUserView: UIView {
@@ -24,6 +26,7 @@ class MatchUserView: UIView {
             guard let name = user?.username else { return }
             self.userImage.loadImage(urlString: image)
             self.nameUserLabel.text = name
+            self.checkUserFollow()
         }
     }
     
@@ -33,8 +36,6 @@ class MatchUserView: UIView {
             self.userRaiting.text = "Рейтинг - \(raiting)"
         }
     }
-    
-    let confettiGif = UIImage.gifImageWithName2("confetti")
     
     var confettiGifImage: UIImageView = {
         let gif = UIImageView()
@@ -54,9 +55,13 @@ class MatchUserView: UIView {
         return label
     }()
     
-    var userImage: CustomImageView = {
+    lazy var userImage: CustomImageView = {
         let image = CustomImageView()
+        let gesture = UITapGestureRecognizer()
+        gesture.addTarget(self, action: #selector(tapImage))
         image.translatesAutoresizingMaskIntoConstraints = false
+        image.addGestureRecognizer(gesture)
+        image.isUserInteractionEnabled = true
         image.clipsToBounds = true
         image.layer.cornerRadius = 30
         image.contentMode = .scaleAspectFill
@@ -128,11 +133,44 @@ class MatchUserView: UIView {
         translatesAutoresizingMaskIntoConstraints = false
         alpha = 0.0
         layout()
+        addConfetti()
+    }
+    
+    func addConfetti() {
+        let confettiGif = UIImage.gifImageWithName("confetti", speed: 3000)
         confettiGifImage.image = confettiGif
     }
 
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func checkUserFollow() {
+        guard let myId = Auth.auth().currentUser?.uid else { return }
+        guard let userId = user?.uid else { return }
+        
+        Database.database().reference().child("following").child(myId).child(userId).observe(.value) { snapshot in
+            if let isFollowing = snapshot.value as? Int, isFollowing == 1 {
+                var config = UIButton.Configuration.filled()
+                config.image = UIImage(systemName: "person.crop.circle.fill.badge.checkmark")
+                config.imagePadding = 5
+                self.addFriendButton.configuration = config
+                self.addFriendButton.tintColor = .systemGreen
+                self.addFriendButton.setTitle("it's Friend", for: .normal)
+            } else {
+                var config = UIButton.Configuration.filled()
+                config.image = UIImage(systemName: "person.crop.circle.fill.badge.plus")
+                config.imagePadding = 5
+                self.addFriendButton.configuration = config
+                self.addFriendButton.tintColor = .systemBlue
+                self.addFriendButton.setTitle("Добавить в друзья", for: .normal)
+                self.addFriendButton.tintColor = .systemBlue
+            }
+        }
+    }
+    
+    @objc func tapImage() {
+        delegate?.tapImage()
     }
     
     @objc func writeUser() {
@@ -141,7 +179,6 @@ class MatchUserView: UIView {
     
     @objc func addFriendMatch() {
         delegate?.addFriend()
-        self.addFriendButton.tintColor = .systemGreen
     }
     
     @objc func tapClosed() {

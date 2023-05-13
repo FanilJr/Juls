@@ -16,14 +16,8 @@ public func waitingSpinnerEnable(activity: UIActivityIndicatorView, active: Bool
     }
 }
 
-public func showOrAlpha(object: UIView, _ show: Bool) {
-    UIView.animate(withDuration: 0.1) {
-        object.alpha = show ? 1.0 : 0.0
-    }
-}
-
-public func showOrAlphaMatch(object: UIView, _ show: Bool) {
-    UIView.animate(withDuration: 0.4) {
+public func showOrAlpha(object: UIView, _ show: Bool, _ duration: TimeInterval) {
+    UIView.animate(withDuration: duration) {
         object.alpha = show ? 1.0 : 0.0
     }
 }
@@ -39,3 +33,9 @@ public func showAnimate(mainObject: UIViewController,firstObject: UIView, object
     }
 }
 
+public func animateElementRating(object: UIView, animate: Bool, duration: TimeInterval, delay: TimeInterval, yTransform: CGFloat, xTransform: CGFloat) {
+    UIView.animate(withDuration: duration, delay: delay) {
+        object.transform = animate ? CGAffineTransform(translationX: xTransform, y: yTransform) : CGAffineTransform(translationX: 0, y: 0)
+        object.alpha = animate ? 1.0 : 0.0
+    }
+}
