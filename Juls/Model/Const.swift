@@ -23,8 +23,4 @@ class Const {
         static let NavBarHeightSmallState: CGFloat = 44
         /// Height of NavBar for Large state. Usually it's just 96.5 but if you have a custom font for the title, please make sure to edit this value since it changes the height for Large state of NavBar
         static let NavBarHeightLargeState: CGFloat = 96.5
-    
-    deinit {
-        print("deinit class Const")
-    }
 }

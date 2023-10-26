@@ -21,7 +21,6 @@ class CommentViewController: UIViewController {
     var currentIndex = 0
     var ratingView = RatingView()
     private let nc = NotificationCenter.default
-    
     var fetchCommentsForRaitin: Bool = false
 
     lazy var containerView: UIView = {
@@ -136,6 +135,17 @@ class CommentViewController: UIViewController {
     }
     
     private func setupDidLoad() {
+        title = "Комментарии"
+        self.setupLayout()
+        waitingSpinnerEnable(activity: self.spinnerViewForTable, active: true)
+    }
+    
+    private func setupWillAppear() {
+        addObserver()
+        tabBarController?.tabBar.isHidden = true
+    }
+    
+    func setupOther() {
         headerComment.post = post
         guard let imageUrl = post?.imageUrl else { return }
         imageBack.loadImage(urlString: imageUrl)
@@ -143,16 +153,8 @@ class CommentViewController: UIViewController {
         Database.database().fetchUser(withUID: uid) { user in
             self.myUserComment = user
             self.authorComment.loadImage(urlString: user.picture)
+            self.fetchCommentsPost()
         }
-        title = "Комментарии"
-        setupLayout()
-        fetchCommentsPost()
-        waitingSpinnerEnable(activity: self.spinnerViewForTable, active: true)
-    }
-    
-    private func setupWillAppear() {
-        addObserver()
-        tabBarController?.tabBar.isHidden = true
     }
     
     func fetchCommentsPost() {
@@ -168,7 +170,6 @@ class CommentViewController: UIViewController {
         Database.database().fetchRaitingUser(withUID: myUID) { raiting in
             self.myRating = raiting
         }
-        
         guard let postId = self.post?.id else { return }
         Database.database().fetchCommentsForPost(withId: postId) { comments in
             DispatchQueue.main.async {
@@ -199,7 +200,7 @@ class CommentViewController: UIViewController {
             guard let getActivity = self.rating?.getCommentsRating else { return }
             
             print(activity)
-            
+    
             if activity == 1.0 {
                 print("success insert comment:", textComment)
                 self.textfield.text = ""
@@ -221,7 +222,6 @@ class CommentViewController: UIViewController {
                         return
                     }
                 }
-                
                 if self.fetchCommentsForRaitin == false {
                     Database.database().reference().child("rating").child(uid).updateChildValues(["commentsRating" : result]) { error, _ in
                         if let error {
@@ -239,7 +239,6 @@ class CommentViewController: UIViewController {
                         }
                     }
                 }
-
                 print("success insert comment:", textComment)
                 self.textfield.text = ""
                 self.sendCommentButton.isEnabled = true
@@ -265,7 +264,7 @@ class CommentViewController: UIViewController {
         if let kdbSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
             tableView.contentInset.bottom = kdbSize.height
             tableView.verticalScrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: kdbSize.height, right: 0)
-            self.containerView.transform = CGAffineTransform(translationX: 0, y: -kdbSize.height)
+            containerView.transform = CGAffineTransform(translationX: 0, y: -kdbSize.height)
             tableView.setContentOffset(CGPointMake(0, containerView.center.y-60), animated: true)
         }
     }
@@ -273,7 +272,7 @@ class CommentViewController: UIViewController {
     @objc func kdbHide() {
         tableView.contentInset.bottom = .zero
         tableView.verticalScrollIndicatorInsets = .zero
-        self.containerView.transform = CGAffineTransform(translationX: 0, y: 0)
+        containerView.transform = CGAffineTransform(translationX: 0, y: 0)
     }
     
     func animateRating() {
@@ -340,6 +339,7 @@ class CommentViewController: UIViewController {
             spinnerView.centerYAnchor.constraint(equalTo: sendCommentButton.centerYAnchor),
             spinnerView.centerXAnchor.constraint(equalTo: sendCommentButton.centerXAnchor)
         ])
+        setupOther()
     }
     
     func getAllKeys() {
@@ -444,7 +444,7 @@ extension UITextField {
 extension CommentViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         view.endEditing(true)
-        self.containerView.transform = CGAffineTransform(translationX: 0, y: 0)
+        containerView.transform = CGAffineTransform(translationX: 0, y: 0)
         return true
     }
 }
@@ -458,6 +458,6 @@ extension CommentViewController {
     
     @objc func dismissKeyboard() {
         view.endEditing(true)
-        self.containerView.transform = CGAffineTransform(translationX: 0, y: 0)
+        containerView.transform = CGAffineTransform(translationX: 0, y: 0)
     }
 }

@@ -14,7 +14,6 @@ class MessagesViewController: UIViewController {
     var messages = [Message]()
     var filteredMessage = [Message]()
     var cgfloatTabBar: CGFloat?
-    var refreshControler = UIRefreshControl()
     
     lazy var addButton = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(addContact))
     lazy var filteredButton = UIBarButtonItem(image: UIImage(systemName: "line.3.horizontal.decrease.circle"), style: .plain, target: self, action: #selector(filteredUnRead))
@@ -38,7 +37,6 @@ class MessagesViewController: UIViewController {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
-        tableView.refreshControl = refreshControler
         tableView.register(AllChatsTableViewCell.self, forCellReuseIdentifier: "AllChatsTableViewCell")
         return tableView
     }()
@@ -47,13 +45,11 @@ class MessagesViewController: UIViewController {
         super.viewDidLoad()
         setupDidLoad()
     }
-    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         searchController.searchBar.isHidden = false
         
         let height = self.tabBarController?.tabBar.frame.height
-        
         if self.tabBarController?.tabBar.frame.origin.y != self.cgfloatTabBar {
             UIView.animate(withDuration: 0.3) {
                 self.tabBarController?.tabBar.frame.origin.y += height!
@@ -62,27 +58,14 @@ class MessagesViewController: UIViewController {
     }
     
     private func setupDidLoad() {
-        setupNavButton()
-        fetchAllMessages()
         view.backgroundColor = .systemBackground
         title = "Сообщения"
-        navigationItem.searchController = searchController
-        waitingSpinnerEnable(activity: self.spinnerView, active: true)
-        layout()
-        refreshControler.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
-        refreshControler.attributedTitle = NSAttributedString(string: "Обновление")
-        searchController.searchBar.delegate = self
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.alwaysBounceVertical = true
-        tableView.keyboardDismissMode = .onDrag
-        addButton.tintColor = UIColor.createColor(light: .black, dark: .white)
-        
         let height = self.tabBarController?.tabBar.frame.height
         UIView.animate(withDuration: 0.3) {
             self.tabBarController?.tabBar.frame.origin.y += height!
             self.cgfloatTabBar = self.tabBarController?.tabBar.frame.origin.y
         }
+        setupNavButton()
     }
     
     func fetchAllMessages() {
@@ -104,7 +87,27 @@ class MessagesViewController: UIViewController {
     }
 
     func setupNavButton() {
+        navigationItem.searchController = searchController
         navigationItem.rightBarButtonItems = [addButton,filteredButton]
+        addButton.tintColor = UIColor.createColor(light: .black, dark: .white)
+        addDelegate()
+    }
+    
+    func addDelegate() {
+        searchController.searchBar.delegate = self
+        tableView.delegate = self
+        tableView.dataSource = self
+        settingTable()
+    }
+    
+    func settingTable() {
+        let refreshControler = UIRefreshControl()
+        refreshControler.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
+        refreshControler.attributedTitle = NSAttributedString(string: "Обновление")
+        tableView.refreshControl = refreshControler
+        tableView.alwaysBounceVertical = true
+        tableView.keyboardDismissMode = .onDrag
+        layout()
     }
     
     @objc func filteredUnRead() {
@@ -141,6 +144,8 @@ class MessagesViewController: UIViewController {
             spinnerView.centerXAnchor.constraint(equalTo: tableView.centerXAnchor),
             spinnerView.centerYAnchor.constraint(equalTo: tableView.centerYAnchor)
         ])
+        waitingSpinnerEnable(activity: self.spinnerView, active: true)
+        fetchAllMessages()
     }
 }
 

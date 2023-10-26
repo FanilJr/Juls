@@ -26,10 +26,10 @@ class MatchViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationItem.largeTitleDisplayMode = .never
         view.backgroundColor = .systemGray6
         title = "Match"
         setupDidLoad()
-        navigationItem.largeTitleDisplayMode = .never
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -37,34 +37,14 @@ class MatchViewController: UIViewController {
         tabBarController?.tabBar.isHidden = false
     }
     
-    func showCurrentUser(users: [User]) {
-        matchView.imageUser.image = UIImage(named: "Black")
-        let currentUser = users[currentIndex]
-        matchView.imageUser.loadImage(urlString: currentUser.picture)
-        matchView.name.text = currentUser.name
-    }
-    
-    func showCurrentUserContinue(users: [User]) {
-        matchView.imageUser.image = UIImage(named: "Black")
-        let currentUser = users[currentIndex]
-        matchView.imageUser.loadImage(urlString: currentUser.picture)
-        matchView.name.text = currentUser.name
-        
-        UIView.transition(with: matchView.imageUser, duration: 0.6, options: tumblerForTransitionLeftorRight ? .transitionFlipFromRight : .transitionFlipFromLeft) {
-        }
-        UIView.animate(withDuration: 0.3, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 0.5) {
-            self.matchView.name.transform = CGAffineTransform(translationX: -150, y: 0)
-        }
-        UIView.animate(withDuration: 0.3, delay: 0.4, usingSpringWithDamping: 0.5, initialSpringVelocity: 0.5) {
-            self.matchView.name.transform = CGAffineTransform(translationX: 0, y: 0)
-        }
-    }
-    
     func setupDidLoad() {
-        fetchUser()
-        layout()
+        addDelegate()
+    }
+    
+    func addDelegate() {
         startMatchView.delegate = self
         matchView.delegate = self
+        layout()
     }
         
     func layout() {
@@ -82,17 +62,7 @@ class MatchViewController: UIViewController {
             startMatchView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             startMatchView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
-    }
-    
-    func getGender(user: User) {
-        switch user.sex {
-        case "Female":
-            self.fetchUsersForGirls()
-        case "Male":
-            self.fetchUsersForBoys()
-        default:
-            print("no gender, but what???")
-        }
+        fetchUser()
     }
     
     func fetchUser() {
@@ -113,6 +83,17 @@ class MatchViewController: UIViewController {
                     self.startMatchView.startAnimate()
                 }
             }
+        }
+    }
+    
+    func getGender(user: User) {
+        switch user.sex {
+        case "Female":
+            self.fetchUsersForGirls()
+        case "Male":
+            self.fetchUsersForBoys()
+        default:
+            print("no gender, but what???")
         }
     }
     
@@ -173,6 +154,29 @@ class MatchViewController: UIViewController {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: {
                 showAnimate(mainObject: self, firstObject: self.matchUserView.matchLabel, objectSecond: self.matchUserView.nameUserLabel, alphaFirst: self.matchUserView.closedButton, alphaSecond: self.matchUserView.writeButton,alphaThree: self.matchUserView.addFriendButton, alphaFour: self.matchUserView.userRaiting,animate: true)
             })
+        }
+    }
+    
+    func showCurrentUser(users: [User]) {
+        matchView.imageUser.image = UIImage(named: "Black")
+        let currentUser = users[currentIndex]
+        matchView.imageUser.loadImage(urlString: currentUser.picture)
+        matchView.name.text = currentUser.name
+    }
+    
+    func showCurrentUserContinue(users: [User]) {
+        matchView.imageUser.image = UIImage(named: "Black")
+        let currentUser = users[currentIndex]
+        matchView.imageUser.loadImage(urlString: currentUser.picture)
+        matchView.name.text = currentUser.name
+        
+        UIView.transition(with: matchView.imageUser, duration: 0.6, options: tumblerForTransitionLeftorRight ? .transitionFlipFromRight : .transitionFlipFromLeft) {
+        }
+        UIView.animate(withDuration: 0.3, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 0.5) {
+            self.matchView.name.transform = CGAffineTransform(translationX: -150, y: 0)
+        }
+        UIView.animate(withDuration: 0.3, delay: 0.4, usingSpringWithDamping: 0.5, initialSpringVelocity: 0.5) {
+            self.matchView.name.transform = CGAffineTransform(translationX: 0, y: 0)
         }
     }
 }

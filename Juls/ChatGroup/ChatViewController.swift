@@ -23,7 +23,7 @@ class ChatViewController: UIViewController {
     var user: User? {
         didSet {
             guard let image = user?.picture else { return }
-            self.authorComment.loadImage(urlString: image)
+            authorComment.loadImage(urlString: image)
         }
     }
     
@@ -35,7 +35,6 @@ class ChatViewController: UIViewController {
     var messages = [Message]()
     private let nc = NotificationCenter.default
     let imagePicker = UIImagePickerController()
-    let refreshControl = UIRefreshControl()
     
     var fetchMessages: Bool = false
     
@@ -157,9 +156,6 @@ class ChatViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
         tableView.separatorStyle = .none
-        tableView.dataSource = self
-        tableView.delegate = self
-        tableView.refreshControl = refreshControl
         let recognizer: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         recognizer.cancelsTouchesInView = false
         tableView.addGestureRecognizer(recognizer)
@@ -181,26 +177,34 @@ class ChatViewController: UIViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         view.endEditing(true)
-        self.changeIsRead(read: true)
+        changeIsRead(read: true)
     }
     
     private func setupDidLoad() {
         view.backgroundColor = .systemBackground
-        waitingSpinnerEnable(activity: self.spinnerViewForChat, active: true)
-        setupLayout()
-        imagePicker.delegate = self
-        guard let username = user?.username else { return }
-        guard let friendsUsername = userFriend?.username else { return }
-        print("open Chat", username, "with", friendsUsername, "            ~~~~~JULS~~~~~")
-        fetchChat()
-        refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
         navigationItem.largeTitleDisplayMode = .always
+        waitingSpinnerEnable(activity: self.spinnerViewForChat, active: true)
+        addDelegate()
     }
     
     private func setupWillAppear() {
         addObserver()
         tabBarController?.tabBar.isHidden = true
         navigationController?.navigationBar.isHidden = false
+    }
+    
+    func addDelegate() {
+        tableView.dataSource = self
+        tableView.delegate = self
+        imagePicker.delegate = self
+        settingsTable()
+    }
+    
+    func settingsTable() {
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
+        tableView.refreshControl = refreshControl
+        setupLayout()
     }
     
     func fetchMessagesForRaitin() {
@@ -254,8 +258,8 @@ class ChatViewController: UIViewController {
         guard let userId = user?.uid else { return }
         guard let friendId = userFriend?.uid else { return }
         
-        self.sendCommentButton.isEnabled = false
-        self.sendCommentButton.alpha = 0
+        sendCommentButton.isEnabled = false
+        sendCommentButton.alpha = 0
         waitingSpinnerEnable(activity: self.spinnerView, active: true)
         
         Database.database().pushMessageWithChatId(userUID: userId, userFriendUID: friendId, textMessage: textMessage) { error in
@@ -274,11 +278,15 @@ class ChatViewController: UIViewController {
     }
     
     func fetchChat() {
+        guard let username = user?.username else { return }
+        guard let friendsUsername = userFriend?.username else { return }
+        print("open Chat", username, "with", friendsUsername, "            ~~~~~JULS~~~~~")
+        
         guard let userId = user?.uid else { return }
         guard let friendId = userFriend?.uid else { return }
-        self.checkFriendRead()
-        self.fetchMessagesForRaitin()
-        self.changeIsRead(read: true)
+        checkFriendRead()
+        fetchMessagesForRaitin()
+        changeIsRead(read: true)
         
         Database.database().fetchMessagesForRaiting(withUID: userId) { value in
             self.fetchMessages = value
@@ -335,7 +343,7 @@ class ChatViewController: UIViewController {
     @objc func kdbHide() {
         tableView.contentInset.bottom = .zero
         tableView.verticalScrollIndicatorInsets = .zero
-        self.containerView.transform = CGAffineTransform(translationX: 0, y: 0)
+        containerView.transform = CGAffineTransform(translationX: 0, y: 0)
     }
     
     func addImage() {
@@ -392,6 +400,7 @@ class ChatViewController: UIViewController {
             spinnerView.centerXAnchor.constraint(equalTo: sendCommentButton.centerXAnchor),
             spinnerView.centerYAnchor.constraint(equalTo: sendCommentButton.centerYAnchor)
         ])
+        fetchChat()
     }
 }
 
@@ -488,7 +497,7 @@ extension ChatViewController: UITableViewDelegate {
 extension ChatViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         view.endEditing(true)
-        self.containerView.transform = CGAffineTransform(translationX: 0, y: 0)
+        containerView.transform = CGAffineTransform(translationX: 0, y: 0)
         return true
     }
 }
@@ -502,7 +511,7 @@ extension ChatViewController {
     
     @objc func dismissKeyboard() {
         view.endEditing(true)
-        self.containerView.transform = CGAffineTransform(translationX: 0, y: 0)
+        containerView.transform = CGAffineTransform(translationX: 0, y: 0)
     }
 }
 
@@ -511,6 +520,6 @@ extension ChatViewController: UIImagePickerControllerDelegate & UINavigationCont
         guard let pickedImage = info[UIImagePickerController.InfoKey.originalImage] as? UIImage else { return }
         imageChat.image = pickedImage
         dismiss(animated: true)
-        self.addImage()
+        addImage()
     }
 }

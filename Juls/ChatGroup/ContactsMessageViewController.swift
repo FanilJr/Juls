@@ -47,12 +47,19 @@ class ContactsMessagesViewController: UIViewController {
     private func setupDidLoad() {
         view.backgroundColor = .systemBackground
         title = "Сообщения"
-        layout()
+        addDelegate()
+    }
+    
+    func addDelegate() {
         tableView.delegate = self
         tableView.dataSource = self
+        setupTable()
+    }
+    
+    func setupTable() {
         tableView.alwaysBounceVertical = true
         tableView.keyboardDismissMode = .onDrag
-        fetchUsersIFollow()
+        layout()
     }
     
     func fetchUsersIFollow() {
@@ -75,6 +82,7 @@ class ContactsMessagesViewController: UIViewController {
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
+        fetchUsersIFollow()
     }
 }
 

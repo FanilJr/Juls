@@ -51,17 +51,21 @@ class LogInViewController: UIViewController {
     }
     
     private func setupDidLoad() {
-        self.navigationController?.navigationBar.backgroundColor = .clear
+        navigationController?.navigationBar.backgroundColor = .clear
         view.backgroundColor = .systemBackground
-        layout()
-        loginView.delegate = self
-        loginView.checkerDelegate = delegate
         navigationController?.setNavigationBarHidden(true, animated: false)
+        addDelegate()
     }
     
     private func setupWillAppear() {
         tabBarController?.tabBar.isHidden = true
         navigationController?.setNavigationBarHidden(true, animated: false)
+    }
+    
+    func addDelegate() {
+        loginView.delegate = self
+        loginView.checkerDelegate = delegate
+        layout()
     }
 
     private func layout() {

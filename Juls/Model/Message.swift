@@ -7,7 +7,7 @@
 
 import Foundation
 
-class Message {
+struct Message {
     
     var id: String?
     let user: User
@@ -25,9 +25,5 @@ class Message {
         let secondsFrom1970 = dictionary["creationDate"] as? Double ?? 0
         self.creationDate = Date(timeIntervalSince1970: secondsFrom1970)
         self.image = dictionary["imageURL"] as? String ?? ""
-    }
-    deinit {
-        print("class Message", text, "deinit")
-    }
-    
+    }    
 }

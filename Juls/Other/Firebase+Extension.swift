@@ -229,7 +229,7 @@ extension Database {
             guard let postDictionary = snapshot.value as? [String: Any] else { return }
             
             Database.database().fetchUser(withUID: uid, completion: { (user) in
-                let post = Post(user: user, dictionary: postDictionary)
+                var post = Post(user: user, dictionary: postDictionary)
                 post.id = postId
                 
                 //check likes

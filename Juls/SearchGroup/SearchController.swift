@@ -51,17 +51,24 @@ class SearchViewController: UIViewController {
         view.backgroundColor = .systemBackground
         title = "Поиск"
         navigationItem.searchController = searchController
-        let refreshControler = UIRefreshControl()
-        layout()
-        refreshControler.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
-        refreshControler.attributedTitle = NSAttributedString(string: "Обновление")
-        tableView.refreshControl = refreshControler
+        addDelegate()
+    }
+    
+    func addDelegate() {
         searchController.searchBar.delegate = self
         tableView.delegate = self
         tableView.dataSource = self
+        settingsTable()
+    }
+    
+    func settingsTable() {
+        let refreshControler = UIRefreshControl()
+        refreshControler.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
+        refreshControler.attributedTitle = NSAttributedString(string: "Обновление")
+        tableView.refreshControl = refreshControler
         tableView.alwaysBounceVertical = true
         tableView.keyboardDismissMode = .onDrag
-        self.fetchUsers()
+        layout()
     }
     
     @objc func didTapRefresh() {
@@ -88,6 +95,7 @@ class SearchViewController: UIViewController {
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
+        fetchUsers()
     }
 }
 

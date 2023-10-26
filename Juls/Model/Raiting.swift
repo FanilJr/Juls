@@ -7,7 +7,7 @@
 
 import Foundation
 
-class Raiting {
+struct Raiting {
     let uid: String
     let rating: Double
     let commentsRating: Double
@@ -28,8 +28,5 @@ class Raiting {
         self.getCommentsRating = dictionary["getComments"] as? Double ?? 0.0
         self.followersRating = dictionary["followersRating"] as? Double ?? 0.0
         self.playGameCount = dictionary["playGameCount"] as? Double ?? 0.0
-    }
-    deinit {
-        print("class Raiting", rating, "deinit")
     }
 }

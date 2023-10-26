@@ -23,6 +23,9 @@ class PostTableViewCell: UITableViewCell {
             guard let likes = post?.likes else { return }
             guard let comments = post?.comments else { return }
             
+            self.authorImage.loadImage(urlString: authorImageUrl)
+            self.postImage.loadImage(urlString: postImageUrl)
+            
             self.commentCount.text = "\(comments)"
             self.likeCount.text = "\(likes)"
             self.nameAuthor.text = post?.user.username
@@ -35,9 +38,6 @@ class PostTableViewCell: UITableViewCell {
             self.descriptionText.attributedText = attributedText
             
             likeButton.setBackgroundImage(post?.hasLiked == true ? UIImage(named: "heart.circle.fill@100x") : UIImage(systemName: "heart.circle.fill"), for: .normal)
-            
-            self.authorImage.loadImage(urlString: authorImageUrl)
-            self.postImage.loadImage(urlString: postImageUrl)
         }
     }
     
@@ -185,7 +185,7 @@ class PostTableViewCell: UITableViewCell {
         
         NSLayoutConstraint.activate([
             postImage.topAnchor.constraint(equalTo: contentView.topAnchor,constant: 10),
-            postImage.heightAnchor.constraint(lessThanOrEqualToConstant: 500),
+            postImage.heightAnchor.constraint(lessThanOrEqualToConstant: 530),
             postImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: 5),
             postImage.trailingAnchor.constraint(equalTo: contentView.trailingAnchor,constant: -5),
             

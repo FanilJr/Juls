@@ -7,7 +7,7 @@
 
 import Foundation
 
-class User {
+struct User {
     let uid: String
     let sex: String
     let username: String
@@ -42,8 +42,5 @@ class User {
         
         let secondsFrom1970 = dictionary["creationDateLastMessage"] as? Double ?? 0
         self.creationDateLastMessage = Date(timeIntervalSince1970: secondsFrom1970)
-    }
-    deinit {
-        print("class User", username, " deinit")
     }
 }

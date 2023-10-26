@@ -14,7 +14,6 @@ class MyFollowersUserViewController: UIViewController {
     var user: User?
     var users: [User] = []
     var filteredUsers: [User] = []
-    var refreshControler = UIRefreshControl()
     
     var searchController: UISearchController = {
         let search = UISearchController(searchResultsController: nil)
@@ -34,7 +33,6 @@ class MyFollowersUserViewController: UIViewController {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
-        tableView.refreshControl = refreshControler
         tableView.register(MyFollowersUserViewCell.self, forCellReuseIdentifier: "MyFollowersUserViewCell")
         return tableView
     }()
@@ -51,17 +49,9 @@ class MyFollowersUserViewController: UIViewController {
     
     private func setupDidLoad() {
         title = "Подписки"
-        layout()
         view.backgroundColor = .systemBackground
-        refreshControler.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
-        refreshControler.attributedTitle = NSAttributedString(string: "Обновление")
         navigationItem.searchController = searchController
-        searchController.searchBar.delegate = self
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.alwaysBounceVertical = true
-        tableView.keyboardDismissMode = .onDrag
-        fetchUsers()
+        addDelegate()
         waitingSpinnerEnable(activity: self.spinnerView, active: true)
     }
     
@@ -69,6 +59,23 @@ class MyFollowersUserViewController: UIViewController {
         searchController.searchBar.isHidden = false
         searchController.searchBar.resignFirstResponder()
         navigationItem.searchController = searchController
+    }
+    
+    func settingTable() {
+        let refreshControler = UIRefreshControl()
+        refreshControler.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
+        refreshControler.attributedTitle = NSAttributedString(string: "Обновление")
+        tableView.refreshControl = refreshControler
+        tableView.alwaysBounceVertical = true
+        tableView.keyboardDismissMode = .onDrag
+        layout()
+    }
+    
+    func addDelegate() {
+        tableView.delegate = self
+        tableView.dataSource = self
+        searchController.searchBar.delegate = self
+        settingTable()
     }
     
     func fetchUsers() {
@@ -100,6 +107,7 @@ class MyFollowersUserViewController: UIViewController {
             spinnerView.centerXAnchor.constraint(equalTo: tableView.centerXAnchor),
             spinnerView.centerYAnchor.constraint(equalTo: tableView.centerYAnchor)
         ])
+        fetchUsers()
     }
 }
 

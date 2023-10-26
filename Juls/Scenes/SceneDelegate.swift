@@ -40,12 +40,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             UINavigationBar.appearance().tintColor = UIColor.createColor(light: .black, dark: .white)
             
             UITabBar.appearance().backgroundColor = .systemGray6
-            UITabBar.appearance().tintColor = #colorLiteral(red: 0.9294139743, green: 0.2863991261, blue: 0.3659052849, alpha: 1)
+            UITabBar.appearance().tintColor = #colorLiteral(red: 0, green: 0.2927100634, blue: 0.7048576402, alpha: 1)
             UITabBar.appearance().unselectedItemTintColor = UIColor.createColor(light: .black, dark: .systemGray)
         }
         
         guard let windowScene = (scene as? UIWindowScene) else { return }
-
         window = UIWindow(windowScene: windowScene)
         viewControllerFactory = ViewControllerFactory()
         

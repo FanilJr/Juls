@@ -371,7 +371,6 @@ class RatingViewController: UIViewController {
     
     func setupLayout() {
         [raitingLabel,imageRating,commentsLabel,commentCount,likedUserProfileLabel,likeUserCount,getCommentsLabel,getCommentCount,likedYourUserLabel,getYourLikeeCount,followersLabel,followersCount,postsLabel,postsCount,playGameCountLabel,gameCount].forEach { view.addSubview($0) }
-        
         [progressComments,progressLikeYouUserAcc,progressGetComments,progressFollowers,progressLikeYourAcc,progressPostsRating,progressPlayGameCount].forEach { view.addSubview($0) }
         NSLayoutConstraint.activate([
             raitingLabel.topAnchor.constraint(equalTo: view.topAnchor,constant: 30),

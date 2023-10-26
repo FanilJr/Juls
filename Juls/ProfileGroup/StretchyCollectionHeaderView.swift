@@ -215,7 +215,6 @@ class StretchyCollectionHeaderView: UICollectionReusableView {
     }
     
     func checkUserFollow() {
-        
         let message = ["Вам нравится аккаунт?","Вы хотите поднять рейтинг пользователю?","Лайк для него - рейтинг для вас","Возможно, он нуждается в вашей поддержке","Представьте, что вы - хороший человек", "Лайкни - если нравится", "Твой же рейтинг выше, помоги ему"]
         
         guard let myId = Auth.auth().currentUser?.uid else { return }

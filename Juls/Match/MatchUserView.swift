@@ -133,12 +133,6 @@ class MatchUserView: UIView {
         translatesAutoresizingMaskIntoConstraints = false
         alpha = 0.0
         layout()
-        addConfetti()
-    }
-    
-    func addConfetti() {
-        let confettiGif = UIImage.gifImageWithName("confetti", speed: 3000)
-        confettiGifImage.image = confettiGif
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -221,5 +215,7 @@ class MatchUserView: UIView {
             addFriendButton.trailingAnchor.constraint(equalTo: trailingAnchor,constant: -40),
             addFriendButton.heightAnchor.constraint(equalToConstant: 40)
         ])
+        let confettiGif = UIImage.gifImageWithName("confetti", speed: 3000)
+        confettiGifImage.image = confettiGif
     }
 }

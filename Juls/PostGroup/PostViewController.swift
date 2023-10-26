@@ -18,27 +18,30 @@ class PostTableViewController: UIViewController {
     weak var delegate: PostViewControllerDelegate?
     
     var cgfloatTabBar: CGFloat?
-    var post: Post?
+    var post: Post? {
+        didSet {
+            if post?.user.uid == Auth.auth().currentUser?.uid {
+                let deleteButton = UIBarButtonItem(image: UIImage(systemName: "trash"), style: .plain, target: self, action: #selector(deleteAction))
+                deleteButton.tintColor = UIColor.createColor(light: .red, dark: .red)
+                navigationItem.rightBarButtonItem = deleteButton
+            }
+            guard let stringTile = self.post?.message else { return }
+            title = stringTile
+            guard let imageUrl = self.post?.imageUrl else { return }
+            imageBack.loadImage(urlString: imageUrl)
+        }
+    }
     var raiting: Raiting?
     var commentArray = [String]()
     var rating: Raiting?
     var fetchLike: Bool = false
-    
-    lazy var blureForCell: UIVisualEffectView = {
-        let bluereEffect = UIBlurEffect(style: .systemUltraThinMaterialDark)
-        let blure = UIVisualEffectView()
-        blure.effect = bluereEffect
-        blure.translatesAutoresizingMaskIntoConstraints = false
-        blure.clipsToBounds = true
-        return blure
-    }()
     
     lazy var imageBack: CustomImageView = {
         let imageView = CustomImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.backgroundColor = .gray
-        imageView.layer.cornerRadius = 50/2
+        imageView.alpha = 0.1
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
@@ -55,6 +58,8 @@ class PostTableViewController: UIViewController {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
+        tableView.delegate = self
+        tableView.dataSource = self
         tableView.separatorStyle = .none
         tableView.register(PostTableViewCell.self, forCellReuseIdentifier: "PostTableViewCell")
         return tableView
@@ -62,7 +67,6 @@ class PostTableViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        fetchPost()
         view.backgroundColor = .systemGray
         setupDidLoad()
     }
@@ -73,32 +77,21 @@ class PostTableViewController: UIViewController {
     }
     
     private func setupDidLoad() {
-        setupNavButton()
-        layout()
-        tableView.delegate = self
-        tableView.dataSource = self
-        self.navigationItem.largeTitleDisplayMode = .never
+        navigationItem.largeTitleDisplayMode = .never
         let height = self.tabBarController?.tabBar.frame.height
         UIView.animate(withDuration: 0.3) {
             self.tabBarController?.tabBar.frame.origin.y += height!
             self.cgfloatTabBar = self.tabBarController?.tabBar.frame.origin.y
         }
+        layout()
     }
     
     private func setupWillAppear() {
         let height = self.tabBarController?.tabBar.frame.height
-        if self.tabBarController?.tabBar.frame.origin.y != self.cgfloatTabBar {
+        if tabBarController?.tabBar.frame.origin.y != self.cgfloatTabBar {
             UIView.animate(withDuration: 0.3) {
                 self.tabBarController?.tabBar.frame.origin.y += height!
             }
-        }
-    }
-    
-    private func setupNavButton() {
-        if post?.user.uid == Auth.auth().currentUser?.uid {
-            let deleteButton = UIBarButtonItem(image: UIImage(systemName: "trash"), style: .plain, target: self, action: #selector(deleteAction))
-            deleteButton.tintColor = UIColor.createColor(light: .red, dark: .red)
-            navigationItem.rightBarButtonItem = deleteButton
         }
     }
     
@@ -114,16 +107,12 @@ class PostTableViewController: UIViewController {
         present(alertController, animated: true)
     }
     
-    func fetchPost() {
+    func fetchLikes() {
         guard let uid = post?.user.uid else { return }
         Database.database().fetchLikeForRaiting(withUID: uid) { value in
-            self.fetchLike = value
-        }
-        DispatchQueue.main.async {
-            guard let stringTile = self.post?.message else { return }
-            self.title = stringTile
-            guard let imageUrl = self.post?.imageUrl else { return }
-            self.imageBack.loadImage(urlString: imageUrl)
+            DispatchQueue.main.async {
+                self.fetchLike = value
+            }
         }
     }
     
@@ -134,24 +123,20 @@ class PostTableViewController: UIViewController {
     }
 
     func layout() {
-        [imageBack,blureForCell,tableView].forEach { view.addSubview($0) }
+        [imageBack,tableView].forEach { view.addSubview($0) }
         
         NSLayoutConstraint.activate([
             imageBack.topAnchor.constraint(equalTo: view.topAnchor),
-            imageBack.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            imageBack.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            imageBack.leftAnchor.constraint(equalTo: view.leftAnchor),
+            imageBack.rightAnchor.constraint(equalTo: view.rightAnchor),
             imageBack.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            blureForCell.topAnchor.constraint(equalTo: view.topAnchor),
-            blureForCell.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            blureForCell.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            blureForCell.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.leftAnchor.constraint(equalTo: view.leftAnchor),
             tableView.rightAnchor.constraint(equalTo: view.rightAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
+        fetchLikes()
     }
 }
 
@@ -186,7 +171,7 @@ extension PostTableViewController: CommentDelegate {
         guard let indexPath = self.tableView.indexPath(for: cell) else { return }
         guard let postId = self.post?.id else { return }
 
-        if let post = self.post {
+        if var post = self.post {
             if post.hasLiked == false {
             
                 let values = [uid : 1]
@@ -202,7 +187,7 @@ extension PostTableViewController: CommentDelegate {
                     self.post = post
                     print(post.likes)
                     self.tableView.reloadRows(at: [indexPath], with: .automatic)
-                    self.fetchPost()
+                    self.fetchLikes()
                 }
             } else {
                 Database.database().reference().child("likes").child(postId).child(uid).removeValue { (err, _) in
@@ -215,7 +200,7 @@ extension PostTableViewController: CommentDelegate {
                     self.post = post
                     print(post.likes)
                     self.tableView.reloadRows(at: [indexPath], with: .automatic)
-                    self.fetchPost()
+                    self.fetchLikes()
                 }
             }
         }

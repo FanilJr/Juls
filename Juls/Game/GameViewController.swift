@@ -22,9 +22,7 @@ class GameViewController: UIViewController {
     func setupDidLoad() {
         view.backgroundColor = .systemGray6
         title = "Game"
-        gameStartView.delegate = self
         layout()
-        fetchUser()
     }
     
     func fetchUser() {
@@ -41,13 +39,14 @@ class GameViewController: UIViewController {
     
     func layout() {
         [gameStartView].forEach { view.addSubview($0) }
-        
         NSLayoutConstraint.activate([
             gameStartView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             gameStartView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             gameStartView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             gameStartView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
+        gameStartView.delegate = self
+        fetchUser()
     }
 }
 

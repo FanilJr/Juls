@@ -58,6 +58,9 @@ class HomeViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
         tableView.separatorStyle = .none
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.alpha = 0.2
         tableView.backgroundView = HomeEmptyStateView()
         tableView.register(BestRatingPeopleViewCell.self, forCellReuseIdentifier: "BestRatingPeopleViewCell")
         tableView.register(HomeTableViewCell.self, forCellReuseIdentifier: "HomeTableViewCell")
@@ -77,26 +80,23 @@ class HomeViewController: UIViewController {
     private func setupDidLoad() {
         title = "Лента"
         view.backgroundColor = .systemBackground
-        layout()
-        addInTable()
-    }
-    
-    func addInTable() {
-        let refreshControler = UIRefreshControl()
-        refreshControler.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
-        refreshControler.attributedTitle = NSAttributedString(string: "Обновление")
-        tableView.refreshControl = refreshControler
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.alpha = 0.2
-        fetchAllPosts()
+        settingsTable()
     }
     
     private func setupWillAppear() {
         tabBarController?.tabBar.isHidden = false
     }
     
+    func settingsTable() {
+        let refreshControler = UIRefreshControl()
+        refreshControler.addTarget(self, action: #selector(didTapRefresh), for: .valueChanged)
+        refreshControler.attributedTitle = NSAttributedString(string: "Обновление")
+        tableView.refreshControl = refreshControler
+        layout()
+    }
+    
     @objc func didTapRefresh() {
+        tableView.refreshControl?.endRefreshing()
         let loadPostGif = UIImage.gifImageWithName("J2", speed: 4000)
         self.imageGif.image = loadPostGif
         UIView.animate(withDuration: 0.3) {
@@ -184,6 +184,7 @@ class HomeViewController: UIViewController {
             imageGif.heightAnchor.constraint(equalToConstant: 100),
             imageGif.widthAnchor.constraint(equalToConstant: 100)
         ])
+        fetchAllPosts()
     }
 }
 
@@ -263,7 +264,7 @@ extension HomeViewController: HomeTableDelegate {
     func didLike(for cell: HomeTableViewCell) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
         
-        let post = self.posts[indexPath.row]
+        var post = self.posts[indexPath.row]
         
         guard let postId = post.id else { return }
         guard let uid = Auth.auth().currentUser?.uid else { return }
