@@ -15,8 +15,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     private var viewControllerFactory: ViewControllersFactoryProtocol!
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        
-        FirebaseApp.configure()
+//        if FIRApp.defaultApp() == nil {
+//            FirebaseApp.configure()
+//        }
+//        FirebaseApp.configure()
             
         if #available(iOS 15, *) {
             let appearance = UINavigationBarAppearance()

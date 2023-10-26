@@ -53,6 +53,14 @@
 		8488828E2968BCF5006BE6A1 /* HomeCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8488828D2968BCF5006BE6A1 /* HomeCoordinator.swift */; };
 		848AFC872A0B9A7900B3A6F9 /* J1.gif in Resources */ = {isa = PBXBuildFile; fileRef = 848AFC852A0B9A7700B3A6F9 /* J1.gif */; };
 		848AFC882A0B9A7900B3A6F9 /* J2.gif in Resources */ = {isa = PBXBuildFile; fileRef = 848AFC862A0B9A7800B3A6F9 /* J2.gif */; };
+		848C93F92AEA4128009D5304 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 848C93F82AEA4128009D5304 /* FirebaseAnalytics */; };
+		848C93FB2AEA4128009D5304 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 848C93FA2AEA4128009D5304 /* FirebaseAuth */; };
+		848C93FD2AEA4128009D5304 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 848C93FC2AEA4128009D5304 /* FirebaseDatabase */; };
+		848C93FF2AEA4128009D5304 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 848C93FE2AEA4128009D5304 /* FirebaseMessaging */; };
+		848C94012AEA4128009D5304 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 848C94002AEA4128009D5304 /* FirebaseStorage */; };
+		848C94092AEA42FD009D5304 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848C94082AEA42FD009D5304 /* NotificationService.swift */; };
+		848C940D2AEA42FD009D5304 /* JulstNotifications.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 848C94062AEA42FD009D5304 /* JulstNotifications.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		848C94142AEA44AE009D5304 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 848C94132AEA44AE009D5304 /* FirebaseMessaging */; };
 		849ABB4229700EAC000ABEA2 /* HomeTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849ABB4129700EAC000ABEA2 /* HomeTableViewCell.swift */; };
 		84A42BFA29786439001FD432 /* MessagePostViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A42BF929786439001FD432 /* MessagePostViewController.swift */; };
 		84A7309129A8785900FF3888 /* MessagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A7309029A8785800FF3888 /* MessagesViewController.swift */; };
@@ -76,10 +84,6 @@
 		84BB3CEF2987854A003795C3 /* MyFollowersUserViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BB3CEE2987854A003795C3 /* MyFollowersUserViewCell.swift */; };
 		84BB3CF1298A15EE003795C3 /* FollowersUsersWithMeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BB3CF0298A15EE003795C3 /* FollowersUsersWithMeController.swift */; };
 		84BB3CF3298A1657003795C3 /* FollowersUserWithMeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BB3CF2298A1657003795C3 /* FollowersUserWithMeCell.swift */; };
-		84D0A3DE2994241200B2DE8F /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 84D0A3DD2994241200B2DE8F /* FirebaseAnalytics */; };
-		84D0A3E02994241200B2DE8F /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 84D0A3DF2994241200B2DE8F /* FirebaseAuth */; };
-		84D0A3E22994241200B2DE8F /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 84D0A3E12994241200B2DE8F /* FirebaseDatabase */; };
-		84D0A3E42994241200B2DE8F /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 84D0A3E32994241200B2DE8F /* FirebaseStorage */; };
 		84D0A3E629973AF600B2DE8F /* CommentViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D0A3E529973AF600B2DE8F /* CommentViewController.swift */; };
 		84D0A3E8299742B200B2DE8F /* CommentsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D0A3E7299742B100B2DE8F /* CommentsTableViewCell.swift */; };
 		84D0A3EA2997442300B2DE8F /* HeaderCommment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D0A3E92997442300B2DE8F /* HeaderCommment.swift */; };
@@ -94,6 +98,30 @@
 		84FFA65729D93EAF008E6A1F /* ImageExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84FFA65629D93EAF008E6A1F /* ImageExtension.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		848C940B2AEA42FD009D5304 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 848881A12964C97D006BE6A1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 848C94052AEA42FD009D5304;
+			remoteInfo = JulstNotifications;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		848C94112AEA42FE009D5304 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				848C940D2AEA42FD009D5304 /* JulstNotifications.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		8401E76729C8617300A7C95D /* MatchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchViewController.swift; sourceTree = "<group>"; };
 		8401E76929C861A900A7C95D /* MatchCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchCoordinator.swift; sourceTree = "<group>"; };
@@ -102,6 +130,7 @@
 		8414E76029CB9FD4004FF5A4 /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
 		8414E76229CBA114004FF5A4 /* GameCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCoordinator.swift; sourceTree = "<group>"; };
 		8437C87E2A0F5962003FC86D /* CustomButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomButton.swift; sourceTree = "<group>"; };
+		84423E112AEA3CA700C11AFF /* Juls.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Juls.entitlements; sourceTree = "<group>"; };
 		8479F67F29B89E0F00933375 /* HomeEmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeEmptyStateView.swift; sourceTree = "<group>"; };
 		8479F68329B9A21600933375 /* ContactsMessageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactsMessageViewController.swift; sourceTree = "<group>"; };
 		8479F68629B9A87200933375 /* AllChatsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllChatsTableViewCell.swift; sourceTree = "<group>"; };
@@ -143,6 +172,9 @@
 		8488828D2968BCF5006BE6A1 /* HomeCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeCoordinator.swift; sourceTree = "<group>"; };
 		848AFC852A0B9A7700B3A6F9 /* J1.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = J1.gif; sourceTree = "<group>"; };
 		848AFC862A0B9A7800B3A6F9 /* J2.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = J2.gif; sourceTree = "<group>"; };
+		848C94062AEA42FD009D5304 /* JulstNotifications.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = JulstNotifications.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		848C94082AEA42FD009D5304 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		848C940A2AEA42FD009D5304 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		849ABB4129700EAC000ABEA2 /* HomeTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeTableViewCell.swift; sourceTree = "<group>"; };
 		84A42BF929786439001FD432 /* MessagePostViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagePostViewController.swift; sourceTree = "<group>"; };
 		84A7309029A8785800FF3888 /* MessagesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesViewController.swift; sourceTree = "<group>"; };
@@ -185,10 +217,19 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84D0A3E22994241200B2DE8F /* FirebaseDatabase in Frameworks */,
-				84D0A3E42994241200B2DE8F /* FirebaseStorage in Frameworks */,
-				84D0A3DE2994241200B2DE8F /* FirebaseAnalytics in Frameworks */,
-				84D0A3E02994241200B2DE8F /* FirebaseAuth in Frameworks */,
+				848C93FF2AEA4128009D5304 /* FirebaseMessaging in Frameworks */,
+				848C93FD2AEA4128009D5304 /* FirebaseDatabase in Frameworks */,
+				848C93F92AEA4128009D5304 /* FirebaseAnalytics in Frameworks */,
+				848C94012AEA4128009D5304 /* FirebaseStorage in Frameworks */,
+				848C93FB2AEA4128009D5304 /* FirebaseAuth in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		848C94032AEA42FD009D5304 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				848C94142AEA44AE009D5304 /* FirebaseMessaging in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -292,7 +333,9 @@
 			isa = PBXGroup;
 			children = (
 				848881AB2964C97D006BE6A1 /* Juls */,
+				848C94072AEA42FD009D5304 /* JulstNotifications */,
 				848881AA2964C97D006BE6A1 /* Products */,
+				848C94122AEA44AE009D5304 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -300,6 +343,7 @@
 			isa = PBXGroup;
 			children = (
 				848881A92964C97D006BE6A1 /* Juls.app */,
+				848C94062AEA42FD009D5304 /* JulstNotifications.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -307,6 +351,7 @@
 		848881AB2964C97D006BE6A1 /* Juls */ = {
 			isa = PBXGroup;
 			children = (
+				84423E112AEA3CA700C11AFF /* Juls.entitlements */,
 				84B2DF8229ED5FAF00154910 /* GIF */,
 				8414E75F29CB9FBC004FF5A4 /* Game */,
 				8401E76629C8615900A7C95D /* Match */,
@@ -419,6 +464,22 @@
 			path = ProfileGroup;
 			sourceTree = "<group>";
 		};
+		848C94072AEA42FD009D5304 /* JulstNotifications */ = {
+			isa = PBXGroup;
+			children = (
+				848C94082AEA42FD009D5304 /* NotificationService.swift */,
+				848C940A2AEA42FD009D5304 /* Info.plist */,
+			);
+			path = JulstNotifications;
+			sourceTree = "<group>";
+		};
+		848C94122AEA44AE009D5304 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		84A7309929AB1D8000FF3888 /* Model */ = {
 			isa = PBXGroup;
 			children = (
@@ -454,21 +515,44 @@
 				848881A52964C97D006BE6A1 /* Sources */,
 				848881A62964C97D006BE6A1 /* Frameworks */,
 				848881A72964C97D006BE6A1 /* Resources */,
+				848C94112AEA42FE009D5304 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				848C940C2AEA42FD009D5304 /* PBXTargetDependency */,
+			);
+			name = Juls;
+			packageProductDependencies = (
+				848C93F82AEA4128009D5304 /* FirebaseAnalytics */,
+				848C93FA2AEA4128009D5304 /* FirebaseAuth */,
+				848C93FC2AEA4128009D5304 /* FirebaseDatabase */,
+				848C93FE2AEA4128009D5304 /* FirebaseMessaging */,
+				848C94002AEA4128009D5304 /* FirebaseStorage */,
+			);
+			productName = Juls;
+			productReference = 848881A92964C97D006BE6A1 /* Juls.app */;
+			productType = "com.apple.product-type.application";
+		};
+		848C94052AEA42FD009D5304 /* JulstNotifications */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 848C940E2AEA42FE009D5304 /* Build configuration list for PBXNativeTarget "JulstNotifications" */;
+			buildPhases = (
+				848C94022AEA42FD009D5304 /* Sources */,
+				848C94032AEA42FD009D5304 /* Frameworks */,
+				848C94042AEA42FD009D5304 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = Juls;
+			name = JulstNotifications;
 			packageProductDependencies = (
-				84D0A3DD2994241200B2DE8F /* FirebaseAnalytics */,
-				84D0A3DF2994241200B2DE8F /* FirebaseAuth */,
-				84D0A3E12994241200B2DE8F /* FirebaseDatabase */,
-				84D0A3E32994241200B2DE8F /* FirebaseStorage */,
+				848C94132AEA44AE009D5304 /* FirebaseMessaging */,
 			);
-			productName = Juls;
-			productReference = 848881A92964C97D006BE6A1 /* Juls.app */;
-			productType = "com.apple.product-type.application";
+			productName = JulstNotifications;
+			productReference = 848C94062AEA42FD009D5304 /* JulstNotifications.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -477,11 +561,14 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1400;
+				LastSwiftUpdateCheck = 1420;
 				LastUpgradeCheck = 1400;
 				TargetAttributes = {
 					848881A82964C97D006BE6A1 = {
 						CreatedOnToolsVersion = 14.0;
+					};
+					848C94052AEA42FD009D5304 = {
+						CreatedOnToolsVersion = 14.2;
 					};
 				};
 			};
@@ -495,13 +582,14 @@
 			);
 			mainGroup = 848881A02964C97D006BE6A1;
 			packageReferences = (
-				84D0A3DC2994241200B2DE8F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				848C93F72AEA4128009D5304 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			productRefGroup = 848881AA2964C97D006BE6A1 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				848881A82964C97D006BE6A1 /* Juls */,
+				848C94052AEA42FD009D5304 /* JulstNotifications */,
 			);
 		};
 /* End PBXProject section */
@@ -519,6 +607,13 @@
 				84B2DF8129ED567F00154910 /* unamused_face.gif in Resources */,
 				848AFC882A0B9A7900B3A6F9 /* J2.gif in Resources */,
 				84B2DF8A29ED7EB400154910 /* GoogleService-Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		848C94042AEA42FD009D5304 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -605,7 +700,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		848C94022AEA42FD009D5304 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				848C94092AEA42FD009D5304 /* NotificationService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		848C940C2AEA42FD009D5304 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 848C94052AEA42FD009D5304 /* JulstNotifications */;
+			targetProxy = 848C940B2AEA42FD009D5304 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		848881B72964C983006BE6A1 /* LaunchScreen.storyboard */ = {
@@ -736,10 +847,12 @@
 		848881BE2964C983006BE6A1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Juls/Juls.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = GBV3J46D65;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Juls/Info.plist;
@@ -772,10 +885,12 @@
 		848881BF2964C983006BE6A1 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Juls/Juls.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = GBV3J46D65;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Juls/Info.plist;
@@ -805,6 +920,58 @@
 			};
 			name = Release;
 		};
+		848C940F2AEA42FE009D5304 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 4;
+				DEVELOPMENT_TEAM = GBV3J46D65;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = JulstNotifications/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = JulstNotifications;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ru.FanilJr.Juls.JulstNotifications;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		848C94102AEA42FE009D5304 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 4;
+				DEVELOPMENT_TEAM = GBV3J46D65;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = JulstNotifications/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = JulstNotifications;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ru.FanilJr.Juls.JulstNotifications;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -826,39 +993,58 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		848C940E2AEA42FE009D5304 /* Build configuration list for PBXNativeTarget "JulstNotifications" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				848C940F2AEA42FE009D5304 /* Debug */,
+				848C94102AEA42FE009D5304 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		84D0A3DC2994241200B2DE8F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+		848C93F72AEA4128009D5304 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
 			requirement = {
 				kind = exactVersion;
-				version = 10.3.0;
+				version = 10.16.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		84D0A3DD2994241200B2DE8F /* FirebaseAnalytics */ = {
+		848C93F82AEA4128009D5304 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 84D0A3DC2994241200B2DE8F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			package = 848C93F72AEA4128009D5304 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAnalytics;
 		};
-		84D0A3DF2994241200B2DE8F /* FirebaseAuth */ = {
+		848C93FA2AEA4128009D5304 /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 84D0A3DC2994241200B2DE8F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			package = 848C93F72AEA4128009D5304 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAuth;
 		};
-		84D0A3E12994241200B2DE8F /* FirebaseDatabase */ = {
+		848C93FC2AEA4128009D5304 /* FirebaseDatabase */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 84D0A3DC2994241200B2DE8F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			package = 848C93F72AEA4128009D5304 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseDatabase;
 		};
-		84D0A3E32994241200B2DE8F /* FirebaseStorage */ = {
+		848C93FE2AEA4128009D5304 /* FirebaseMessaging */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 84D0A3DC2994241200B2DE8F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			package = 848C93F72AEA4128009D5304 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
+		848C94002AEA4128009D5304 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 848C93F72AEA4128009D5304 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
+		};
+		848C94132AEA44AE009D5304 /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 848C93F72AEA4128009D5304 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
