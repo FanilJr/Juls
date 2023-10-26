@@ -739,10 +739,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = GBV3J46D65;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Juls/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Juls;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Open CAM please";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Open Location please";
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Open Location please";
@@ -773,10 +775,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = GBV3J46D65;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Juls/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Juls;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Open CAM please";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Open Location please";
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "Open Location please";
